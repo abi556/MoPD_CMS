@@ -1,0 +1,65 @@
+services:
+  api:
+    build: ../../apps/api
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://cms:password@postgres:5432/cms
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: "9000"
+
+  web:
+    build: ../../apps/web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cms
+      POSTGRES_USER: cms
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+
+  clamav:
+    image: clamav/clamav:latest
+    volumes:
+      - clamdata:/var/lib/clamav
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
+  clamdata:
