@@ -41,11 +41,11 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(
+  logout(
     @CurrentUser() user: JwtUser,
     @Body() body: LogoutDto,
-  ): Promise<{ data: { message: string } }> {
-    await this.authService.logout(user.id, body.refreshToken);
+  ): { data: { message: string } } {
+    this.authService.logout(user.id, body.refreshToken);
     return {
       data: {
         message: 'Logged out successfully',
@@ -55,9 +55,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(
-    @CurrentUser() user: JwtUser,
-  ): { data: { id: string; email: string; roles: string[] } } {
+  me(@CurrentUser() user: JwtUser): {
+    data: { id: string; email: string; roles: string[] };
+  } {
     return {
       data: {
         id: user.id,

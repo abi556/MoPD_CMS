@@ -55,7 +55,11 @@ export class AuthService {
     }
 
     const [salt, expectedHash] = user.passwordHash.split(':');
-    if (!salt || !expectedHash || !comparePassword(password, expectedHash, salt)) {
+    if (
+      !salt ||
+      !expectedHash ||
+      !comparePassword(password, expectedHash, salt)
+    ) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -77,7 +81,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const user = this.users.find((candidate) => candidate.id === refreshState.userId);
+    const user = this.users.find(
+      (candidate) => candidate.id === refreshState.userId,
+    );
     if (!user) {
       this.refreshTokenStore.delete(refreshToken);
       throw new UnauthorizedException('Invalid refresh token');
@@ -88,7 +94,7 @@ export class AuthService {
     return this.issueTokenPair(user);
   }
 
-  async logout(userId: string, refreshToken: string): Promise<void> {
+  logout(userId: string, refreshToken: string): void {
     const refreshState = this.refreshTokenStore.get(refreshToken);
     if (!refreshState || refreshState.userId !== userId) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -123,12 +129,9 @@ export class AuthService {
 
   private buildSeedUsers(): AuthUserRecord[] {
     return [
-      this.createUser(
-        'user-admin-0001',
-        'admin@mopd.local',
-        'AdminPass123!',
-        ['SuperAdmin'],
-      ),
+      this.createUser('user-admin-0001', 'admin@mopd.local', 'AdminPass123!', [
+        'SuperAdmin',
+      ]),
       this.createUser(
         'user-officer-0001',
         'officer@mopd.local',

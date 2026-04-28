@@ -3,7 +3,6 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { RequestWithCorrelationId } from '../middleware/correlation-id.middleware';
@@ -36,7 +35,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
       const statusCode = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
-      if (statusCode === HttpStatus.NOT_FOUND) {
+      if (statusCode === 404) {
         return {
           statusCode,
           code: 'not_found',
@@ -44,9 +43,9 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
         };
       }
 
-      if (statusCode === HttpStatus.BAD_REQUEST) {
+      if (statusCode === 400) {
         return {
-          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          statusCode: 422,
           code: 'validation_error',
           message: this.extractValidationMessage(exceptionResponse),
         };
@@ -60,7 +59,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     }
 
     return {
-      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      statusCode: 500,
       code: 'internal_error',
       message: 'Something went wrong',
     };
@@ -108,15 +107,15 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 
   private mapStatusToCode(statusCode: number): string {
     switch (statusCode) {
-      case HttpStatus.UNAUTHORIZED:
+      case 401:
         return 'unauthorized';
-      case HttpStatus.FORBIDDEN:
+      case 403:
         return 'forbidden';
-      case HttpStatus.CONFLICT:
+      case 409:
         return 'conflict';
-      case HttpStatus.TOO_MANY_REQUESTS:
+      case 429:
         return 'rate_limit_exceeded';
-      case HttpStatus.UNPROCESSABLE_ENTITY:
+      case 422:
         return 'validation_error';
       default:
         return 'request_failed';
