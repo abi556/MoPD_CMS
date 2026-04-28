@@ -10,6 +10,7 @@ import type { App as SupertestApp } from 'supertest/types';
 import type { Server } from 'http';
 import { AppModule } from './../src/app.module';
 import { GlobalHttpExceptionFilter } from '../src/common/filters/http-exception.filter';
+import { PrismaService } from '../src/prisma/prisma.service';
 
 interface ErrorEnvelope {
   error: {
@@ -66,9 +67,101 @@ interface ComplaintTrackResponse {
   };
 }
 
+interface StoredComplaint {
+  id: string;
+  sequenceNo: number;
+  referenceNo: string;
+  status: 'SUBMITTED';
+  channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
+  subject: string;
+  description: string;
+  submittedAt: Date;
+  locale: 'en' | 'am';
+  consentGiven: boolean;
+  complainantName: string | null;
+  complainantEmail: string | null;
+  complainantPhone: string | null;
+}
+
 function getBody<T>(response: Response): T {
   const body: unknown = response.body;
   return body as T;
+}
+
+function createPrismaMock(): PrismaService {
+  const store = new Map<string, StoredComplaint>();
+  let sequence = 0;
+
+  const create = (args: {
+    data: Omit<StoredComplaint, 'id' | 'sequenceNo' | 'submittedAt'>;
+  }): StoredComplaint => {
+    sequence += 1;
+    const now = new Date();
+    const created: StoredComplaint = {
+      id: `cmp_${sequence}`,
+      sequenceNo: sequence,
+      referenceNo: args.data.referenceNo,
+      status: args.data.status,
+      channel: args.data.channel,
+      subject: args.data.subject,
+      description: args.data.description,
+      submittedAt: now,
+      locale: args.data.locale,
+      consentGiven: args.data.consentGiven,
+      complainantName: args.data.complainantName,
+      complainantEmail: args.data.complainantEmail,
+      complainantPhone: args.data.complainantPhone,
+    };
+    store.set(created.id, created);
+    return created;
+  };
+
+  const update = (args: {
+    where: { id: string };
+    data: { referenceNo: string };
+  }): StoredComplaint => {
+    const found = store.get(args.where.id);
+    if (!found) {
+      throw new Error('record not found');
+    }
+    const updated: StoredComplaint = {
+      ...found,
+      referenceNo: args.data.referenceNo,
+    };
+    store.set(updated.id, updated);
+    return updated;
+  };
+
+  const findUnique = (args: {
+    where: { referenceNo: string };
+  }): StoredComplaint | null => {
+    for (const value of store.values()) {
+      if (value.referenceNo === args.where.referenceNo) {
+        return value;
+      }
+    }
+    return null;
+  };
+
+  const prismaLike = {
+    complaint: {
+      findUnique,
+    },
+    $transaction: async <T>(
+      callback: (tx: {
+        complaint: { create: typeof create; update: typeof update };
+      }) => Promise<T>,
+    ): Promise<T> => {
+      return callback({
+        complaint: {
+          create,
+          update,
+        },
+      });
+    },
+  };
+
+  return prismaLike as unknown as PrismaService;
 }
 
 describe('AppController (e2e)', () => {
@@ -104,7 +197,10 @@ describe('AppController (e2e)', () => {
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(PrismaService)
+      .useValue(createPrismaMock())
+      .compile();
 
     const nestApp: INestApplication = moduleFixture.createNestApplication();
     applyTestBootstrap(nestApp);

@@ -36,8 +36,10 @@ export class ComplaintsController {
     description: 'Validation failed for one or more request fields.',
     type: ErrorResponseDto,
   })
-  create(@Body() body: CreateComplaintDto): { data: ComplaintCreatedDataDto } {
-    const created = this.complaintsService.create(body);
+  async create(
+    @Body() body: CreateComplaintDto,
+  ): Promise<{ data: ComplaintCreatedDataDto }> {
+    const created = await this.complaintsService.create(body);
 
     return {
       data: {
@@ -65,10 +67,10 @@ export class ComplaintsController {
     description: 'Complaint reference was not found.',
     type: ErrorResponseDto,
   })
-  track(@Param('referenceNo') referenceNo: string): {
+  async track(@Param('referenceNo') referenceNo: string): Promise<{
     data: ComplaintTrackingDataDto;
-  } {
-    const complaint = this.complaintsService.getByReference(referenceNo);
+  }> {
+    const complaint = await this.complaintsService.getByReference(referenceNo);
 
     return {
       data: {

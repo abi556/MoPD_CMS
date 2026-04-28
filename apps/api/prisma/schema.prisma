@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ComplaintStatus {
+  SUBMITTED
+}
+
+enum ComplaintChannel {
+  WEB
+  ASSISTED
+  EMAIL
+  SMS
+  USSD
+}
+
+enum ComplaintLocale {
+  en
+  am
+}
+
+model Complaint {
+  id              String          @id @default(cuid())
+  sequenceNo      Int             @unique @default(autoincrement())
+  referenceNo     String          @unique
+  status          ComplaintStatus @default(SUBMITTED)
+  channel         ComplaintChannel
+  subject         String
+  description     String
+  submittedAt     DateTime        @default(now())
+  locale          ComplaintLocale
+  consentGiven    Boolean
+  complainantName String?
+  complainantEmail String?
+  complainantPhone String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([referenceNo])
+  @@index([submittedAt])
+}
