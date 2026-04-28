@@ -1,13 +1,15 @@
 /// <reference types="jest" />
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 import request from 'supertest';
 import type { Response } from 'supertest';
 import type { App as SupertestApp } from 'supertest/types';
 import type { Server } from 'http';
 import { AppModule } from './../src/app.module';
-import { configureApp } from '../src/bootstrap';
+import { GlobalHttpExceptionFilter } from '../src/common/filters/http-exception.filter';
 
 interface ErrorEnvelope {
   error: {
@@ -42,6 +44,28 @@ interface TokenResponse {
   };
 }
 
+interface ComplaintCreateResponse {
+  data: {
+    id: string;
+    referenceNo: string;
+    status: 'SUBMITTED';
+    channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
+    subject: string;
+    submittedAt: string;
+    locale: 'en' | 'am';
+    consentGiven: boolean;
+  };
+}
+
+interface ComplaintTrackResponse {
+  data: {
+    referenceNo: string;
+    status: 'SUBMITTED';
+    subject: string;
+    submittedAt: string;
+  };
+}
+
 function getBody<T>(response: Response): T {
   const body: unknown = response.body;
   return body as T;
@@ -51,6 +75,31 @@ describe('AppController (e2e)', () => {
   let app: INestApplication<Server>;
 
   const httpApp = (): SupertestApp => app.getHttpServer();
+  const applyTestBootstrap = (targetApp: INestApplication): void => {
+    targetApp.setGlobalPrefix('api/v1');
+    targetApp.use(helmet());
+    targetApp.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
+    targetApp.useGlobalFilters(new GlobalHttpExceptionFilter());
+
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('MoPD CMS API')
+      .setDescription('API-first complaint management platform')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+
+    const swaggerDocument = SwaggerModule.createDocument(
+      targetApp,
+      swaggerConfig,
+    );
+    SwaggerModule.setup('api/docs', targetApp, swaggerDocument);
+  };
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -58,7 +107,7 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     const nestApp: INestApplication = moduleFixture.createNestApplication();
-    configureApp(nestApp);
+    applyTestBootstrap(nestApp);
     await nestApp.init();
     app = nestApp as INestApplication<Server>;
   });
@@ -106,6 +155,86 @@ describe('AppController (e2e)', () => {
 
   it('exposes swagger json docs', async () => {
     await request(httpApp()).get('/api/docs-json').expect(200);
+  });
+
+  it('creates complaint and returns tracking reference', async () => {
+    const response = await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Road project delay in zone 3',
+        description:
+          'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
+        channel: 'WEB',
+        complainantName: 'Abebe Kebede',
+        complainantEmail: 'abebe@example.com',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+
+    const body = getBody<ComplaintCreateResponse>(response);
+
+    expect(typeof body.data.id).toBe('string');
+    expect(body.data.referenceNo).toMatch(/^CMS-\d{4}-\d{6}$/);
+    expect(body.data.status).toBe('SUBMITTED');
+    expect(body.data.channel).toBe('WEB');
+    expect(body.data.subject).toBe('Road project delay in zone 3');
+    expect(body.data.locale).toBe('en');
+    expect(body.data.consentGiven).toBe(true);
+    expect(typeof body.data.submittedAt).toBe('string');
+  });
+
+  it('tracks complaint by reference number', async () => {
+    const created = await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Delayed fertilizer delivery',
+        description:
+          'Fertilizer delivery for kebele farmers has been delayed for the current season without notification.',
+        channel: 'WEB',
+        complainantName: 'Meron Tadesse',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+
+    const tracked = await request(httpApp())
+      .get(`/api/v1/complaints/track/${createdBody.data.referenceNo}`)
+      .expect(200);
+    const trackedBody = getBody<ComplaintTrackResponse>(tracked);
+
+    expect(trackedBody.data.referenceNo).toBe(createdBody.data.referenceNo);
+    expect(trackedBody.data.status).toBe('SUBMITTED');
+    expect(trackedBody.data.subject).toBe('Delayed fertilizer delivery');
+    expect(typeof trackedBody.data.submittedAt).toBe('string');
+  });
+
+  it('rejects complaint submission without consent', async () => {
+    const response = await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Electricity outage',
+        description:
+          'Neighborhood has had repeated outages for over two weeks and no response from local office.',
+        channel: 'WEB',
+        consentGiven: false,
+        locale: 'en',
+      })
+      .expect(422);
+    const body = getBody<ErrorEnvelope>(response);
+
+    expect(body.error.code).toBe('validation_error');
+  });
+
+  it('returns not_found for unknown complaint reference', async () => {
+    const response = await request(httpApp())
+      .get('/api/v1/complaints/track/CMS-2099-999999')
+      .expect(404);
+    const body = getBody<ErrorEnvelope>(response);
+
+    expect(body.error.code).toBe('not_found');
+    expect(body.error.message).toBe('Resource not found');
   });
 
   it('rejects /auth/me without access token', async () => {
