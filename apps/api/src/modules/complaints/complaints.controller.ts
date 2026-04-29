@@ -40,6 +40,7 @@ import {
 } from './dto/complaint-response.dto';
 import { AssignComplaintDto } from './dto/assign-complaint.dto';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
+import { TransitionComplaintDto } from './dto/transition-complaint.dto';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 import { ComplaintsService } from './complaints.service';
 
@@ -145,6 +146,9 @@ export class ComplaintsController {
         assignedByUserId: complaint.assignedByUserId ?? null,
         assignedAt: complaint.assignedAt ?? null,
         assignmentReason: complaint.assignmentReason ?? null,
+        lastTransitionByUserId: complaint.lastTransitionByUserId ?? null,
+        lastTransitionAt: complaint.lastTransitionAt ?? null,
+        lastTransitionReason: complaint.lastTransitionReason ?? null,
       },
     };
   }
@@ -214,6 +218,81 @@ export class ComplaintsController {
         assignedByUserId: complaint.assignedByUserId ?? null,
         assignedAt: complaint.assignedAt ?? null,
         assignmentReason: complaint.assignmentReason ?? null,
+        lastTransitionByUserId: complaint.lastTransitionByUserId ?? null,
+        lastTransitionAt: complaint.lastTransitionAt ?? null,
+        lastTransitionReason: complaint.lastTransitionReason ?? null,
+      },
+    };
+  }
+
+  @Post(':id/transition')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'CaseOfficer')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Transition complaint workflow status',
+    description:
+      'Transitions complaint status with guard-validated workflow rules and required reason.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Internal complaint id.',
+    example: 'cmojzpoy200006o9mjdpyn6w4',
+  })
+  @ApiOkResponse({
+    description: 'Complaint status transitioned successfully.',
+    type: ComplaintDetailEnvelopeDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Access token is missing or invalid.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Authenticated user does not have required role.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Complaint id was not found.',
+    type: ErrorResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid transition request payload or workflow transition.',
+    type: ErrorResponseDto,
+  })
+  @HttpCode(HttpStatus.OK)
+  async transition(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+    @Body() body: TransitionComplaintDto,
+  ): Promise<{ data: ComplaintDetailDataDto }> {
+    const complaint = await this.complaintsService.transitionComplaint(
+      id,
+      body.toStatus,
+      user.id,
+      body.reason,
+    );
+
+    return {
+      data: {
+        id: complaint.id,
+        referenceNo: complaint.referenceNo,
+        status: complaint.status,
+        channel: complaint.channel,
+        subject: complaint.subject,
+        description: complaint.description,
+        submittedAt: complaint.submittedAt,
+        locale: complaint.locale,
+        consentGiven: complaint.consentGiven,
+        complainantName: complaint.complainantName ?? null,
+        complainantEmail: complaint.complainantEmail ?? null,
+        complainantPhone: complaint.complainantPhone ?? null,
+        assignedToUserId: complaint.assignedToUserId ?? null,
+        assignedByUserId: complaint.assignedByUserId ?? null,
+        assignedAt: complaint.assignedAt ?? null,
+        assignmentReason: complaint.assignmentReason ?? null,
+        lastTransitionByUserId: complaint.lastTransitionByUserId ?? null,
+        lastTransitionAt: complaint.lastTransitionAt ?? null,
+        lastTransitionReason: complaint.lastTransitionReason ?? null,
       },
     };
   }

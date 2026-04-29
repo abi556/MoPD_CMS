@@ -3,6 +3,7 @@ import { ComplaintChannel, ComplaintLocale } from './dto/create-complaint.dto';
 import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ComplaintsService } from './complaints.service';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
+import { UnprocessableEntityException } from '@nestjs/common';
 
 describe('ComplaintsService', () => {
   let service: ComplaintsService;
@@ -239,5 +240,85 @@ describe('ComplaintsService', () => {
     expect(assigned.assignedToUserId).toBe('user-officer-0001');
     expect(assigned.assignedByUserId).toBe('user-admin-0001');
     expect(complaintUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it('transitions complaint from ASSIGNED to IN_INVESTIGATION', async () => {
+    complaintFindUnique.mockResolvedValue({
+      id: 'cmp_020',
+      referenceNo: 'CMS-2026-000020',
+      status: 'ASSIGNED',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road grading incomplete',
+      description: 'Road grading activity stopped mid-way.',
+      submittedAt: new Date('2026-04-29T09:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: null,
+      complainantEmail: null,
+      complainantPhone: null,
+      assignedToUserId: 'user-officer-0001',
+      assignedByUserId: 'user-admin-0001',
+      assignedAt: new Date('2026-04-29T12:00:00.000Z'),
+      assignmentReason: 'Routing based on transport infrastructure expertise.',
+    });
+    complaintUpdate.mockResolvedValue({
+      id: 'cmp_020',
+      referenceNo: 'CMS-2026-000020',
+      status: 'IN_INVESTIGATION',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road grading incomplete',
+      description: 'Road grading activity stopped mid-way.',
+      submittedAt: new Date('2026-04-29T09:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: null,
+      complainantEmail: null,
+      complainantPhone: null,
+      assignedToUserId: 'user-officer-0001',
+      assignedByUserId: 'user-admin-0001',
+      assignedAt: new Date('2026-04-29T12:00:00.000Z'),
+      assignmentReason: 'Routing based on transport infrastructure expertise.',
+      lastTransitionByUserId: 'user-officer-0001',
+      lastTransitionAt: new Date('2026-04-29T13:00:00.000Z'),
+      lastTransitionReason: 'Field verification started by assigned officer.',
+    });
+
+    const transitioned = await service.transitionComplaint(
+      'cmp_020',
+      ComplaintStatusValue.IN_INVESTIGATION,
+      'user-officer-0001',
+      'Field verification started by assigned officer.',
+    );
+
+    expect(transitioned.status).toBe(ComplaintStatusValue.IN_INVESTIGATION);
+    expect(transitioned.lastTransitionReason).toBe(
+      'Field verification started by assigned officer.',
+    );
+  });
+
+  it('rejects invalid workflow transition with unprocessable error', async () => {
+    complaintFindUnique.mockResolvedValue({
+      id: 'cmp_021',
+      referenceNo: 'CMS-2026-000021',
+      status: 'SUBMITTED',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road grading incomplete',
+      description: 'Road grading activity stopped mid-way.',
+      submittedAt: new Date('2026-04-29T09:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: null,
+      complainantEmail: null,
+      complainantPhone: null,
+    });
+
+    await expect(
+      service.transitionComplaint(
+        'cmp_021',
+        ComplaintStatusValue.CLOSED,
+        'user-officer-0001',
+        'Attempt to skip mandatory state.',
+      ),
+    ).rejects.toThrow(UnprocessableEntityException);
   });
 });

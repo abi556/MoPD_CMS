@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import type { Complaint as ComplaintEntity } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -27,6 +31,9 @@ export interface ComplaintRecord {
   assignedByUserId?: string;
   assignedAt?: string;
   assignmentReason?: string;
+  lastTransitionByUserId?: string;
+  lastTransitionAt?: string;
+  lastTransitionReason?: string;
 }
 
 export interface ComplaintListResult {
@@ -41,6 +48,16 @@ export interface ComplaintListResult {
 
 @Injectable()
 export class ComplaintsService {
+  private readonly allowedTransitions: Record<
+    ComplaintStatusValue,
+    ComplaintStatusValue[]
+  > = {
+    [ComplaintStatusValue.SUBMITTED]: [ComplaintStatusValue.ASSIGNED],
+    [ComplaintStatusValue.ASSIGNED]: [ComplaintStatusValue.IN_INVESTIGATION],
+    [ComplaintStatusValue.IN_INVESTIGATION]: [ComplaintStatusValue.CLOSED],
+    [ComplaintStatusValue.CLOSED]: [],
+  };
+
   constructor(private readonly prisma: PrismaService) {}
 
   async create(payload: CreateComplaintDto): Promise<ComplaintRecord> {
@@ -123,6 +140,39 @@ export class ComplaintsService {
     return this.toComplaintRecord(updated);
   }
 
+  async transitionComplaint(
+    id: string,
+    toStatus: ComplaintStatusValue,
+    transitionedByUserId: string,
+    reason: string,
+  ): Promise<ComplaintRecord> {
+    const existing = await this.prisma.complaint.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('Complaint not found');
+    }
+
+    const fromStatus = existing.status as ComplaintStatusValue;
+    const allowedNext = this.allowedTransitions[fromStatus] ?? [];
+
+    if (!allowedNext.includes(toStatus)) {
+      throw new UnprocessableEntityException(
+        `Invalid transition from ${fromStatus} to ${toStatus}`,
+      );
+    }
+
+    const updated = await this.prisma.complaint.update({
+      where: { id },
+      data: {
+        status: toStatus,
+        lastTransitionByUserId: transitionedByUserId,
+        lastTransitionAt: new Date(),
+        lastTransitionReason: reason,
+      },
+    });
+
+    return this.toComplaintRecord(updated);
+  }
+
   async listForStaff(
     query: ListComplaintsQueryDto,
   ): Promise<ComplaintListResult> {
@@ -190,6 +240,9 @@ export class ComplaintsService {
       assignedByUserId: complaint.assignedByUserId ?? undefined,
       assignedAt: complaint.assignedAt?.toISOString(),
       assignmentReason: complaint.assignmentReason ?? undefined,
+      lastTransitionByUserId: complaint.lastTransitionByUserId ?? undefined,
+      lastTransitionAt: complaint.lastTransitionAt?.toISOString(),
+      lastTransitionReason: complaint.lastTransitionReason ?? undefined,
     };
   }
 }

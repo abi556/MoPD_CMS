@@ -49,7 +49,7 @@ interface ComplaintCreateResponse {
   data: {
     id: string;
     referenceNo: string;
-    status: 'SUBMITTED' | 'ASSIGNED';
+    status: 'SUBMITTED' | 'ASSIGNED' | 'IN_INVESTIGATION' | 'CLOSED';
     channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
     subject: string;
     submittedAt: string;
@@ -61,7 +61,7 @@ interface ComplaintCreateResponse {
 interface ComplaintTrackResponse {
   data: {
     referenceNo: string;
-    status: 'SUBMITTED' | 'ASSIGNED';
+    status: 'SUBMITTED' | 'ASSIGNED' | 'IN_INVESTIGATION' | 'CLOSED';
     subject: string;
     submittedAt: string;
   };
@@ -71,7 +71,7 @@ interface ComplaintListResponse {
   data: Array<{
     id: string;
     referenceNo: string;
-    status: 'SUBMITTED' | 'ASSIGNED';
+    status: 'SUBMITTED' | 'ASSIGNED' | 'IN_INVESTIGATION' | 'CLOSED';
     channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
     subject: string;
     submittedAt: string;
@@ -89,7 +89,7 @@ interface ComplaintDetailResponse {
   data: {
     id: string;
     referenceNo: string;
-    status: 'SUBMITTED' | 'ASSIGNED';
+    status: 'SUBMITTED' | 'ASSIGNED' | 'IN_INVESTIGATION' | 'CLOSED';
     channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
     subject: string;
     description: string;
@@ -103,6 +103,9 @@ interface ComplaintDetailResponse {
     assignedByUserId: string | null;
     assignedAt: string | null;
     assignmentReason: string | null;
+    lastTransitionByUserId: string | null;
+    lastTransitionAt: string | null;
+    lastTransitionReason: string | null;
   };
 }
 
@@ -110,7 +113,7 @@ interface StoredComplaint {
   id: string;
   sequenceNo: number;
   referenceNo: string;
-  status: 'SUBMITTED' | 'ASSIGNED';
+  status: 'SUBMITTED' | 'ASSIGNED' | 'IN_INVESTIGATION' | 'CLOSED';
   channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
   subject: string;
   description: string;
@@ -124,6 +127,9 @@ interface StoredComplaint {
   assignedByUserId: string | null;
   assignedAt: Date | null;
   assignmentReason: string | null;
+  lastTransitionByUserId: string | null;
+  lastTransitionAt: Date | null;
+  lastTransitionReason: string | null;
 }
 
 function getBody<T>(response: Response): T {
@@ -145,11 +151,17 @@ function createPrismaMock(): PrismaService {
       | 'assignedByUserId'
       | 'assignedAt'
       | 'assignmentReason'
+      | 'lastTransitionByUserId'
+      | 'lastTransitionAt'
+      | 'lastTransitionReason'
     > & {
       assignedToUserId?: string | null;
       assignedByUserId?: string | null;
       assignedAt?: Date | null;
       assignmentReason?: string | null;
+      lastTransitionByUserId?: string | null;
+      lastTransitionAt?: Date | null;
+      lastTransitionReason?: string | null;
     };
   }): StoredComplaint => {
     sequence += 1;
@@ -172,6 +184,9 @@ function createPrismaMock(): PrismaService {
       assignedByUserId: args.data.assignedByUserId ?? null,
       assignedAt: args.data.assignedAt ?? null,
       assignmentReason: args.data.assignmentReason ?? null,
+      lastTransitionByUserId: args.data.lastTransitionByUserId ?? null,
+      lastTransitionAt: args.data.lastTransitionAt ?? null,
+      lastTransitionReason: args.data.lastTransitionReason ?? null,
     };
     store.set(created.id, created);
     return created;
@@ -602,6 +617,96 @@ describe('AppController (e2e)', () => {
     expect(assignedBody.data.assignmentReason).toBe(
       'Routing based on transport infrastructure expertise.',
     );
+  });
+
+  it('transitions complaint from ASSIGNED to IN_INVESTIGATION', async () => {
+    const created = await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Bridge construction delay',
+        description:
+          'Bridge construction has halted for several months without public update.',
+        channel: 'WEB',
+        complainantName: 'Hanna Bekele',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+
+    const officerLogin = await request(httpApp())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'officer@mopd.local',
+        password: 'OfficerPass123!',
+      })
+      .expect(200);
+    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+
+    await request(httpApp())
+      .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .send({
+        assigneeUserId: 'user-officer-0001',
+        reason: 'Routing based on transport infrastructure expertise.',
+      })
+      .expect(200);
+
+    const transitioned = await request(httpApp())
+      .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .send({
+        toStatus: 'IN_INVESTIGATION',
+        reason: 'Field verification started by assigned officer.',
+      })
+      .expect(200);
+    const transitionedBody = getBody<ComplaintDetailResponse>(transitioned);
+
+    expect(transitionedBody.data.status).toBe('IN_INVESTIGATION');
+    expect(transitionedBody.data.lastTransitionByUserId).toBe(
+      'user-officer-0001',
+    );
+    expect(typeof transitionedBody.data.lastTransitionAt).toBe('string');
+    expect(transitionedBody.data.lastTransitionReason).toBe(
+      'Field verification started by assigned officer.',
+    );
+  });
+
+  it('rejects invalid complaint transition with 422', async () => {
+    const created = await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Bridge construction delay',
+        description:
+          'Bridge construction has halted for several months without public update.',
+        channel: 'WEB',
+        complainantName: 'Hanna Bekele',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+
+    const officerLogin = await request(httpApp())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'officer@mopd.local',
+        password: 'OfficerPass123!',
+      })
+      .expect(200);
+    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+
+    const response = await request(httpApp())
+      .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .send({
+        toStatus: 'CLOSED',
+        reason: 'Attempt to skip mandatory state.',
+      })
+      .expect(422);
+    const body = getBody<ErrorEnvelope>(response);
+
+    expect(body.error.code).toBe('validation_error');
   });
 
   it('rejects complaint submission without consent', async () => {

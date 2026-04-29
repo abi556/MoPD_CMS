@@ -1,4 +1,6 @@
 export enum ComplaintStatusValue {
   SUBMITTED = 'SUBMITTED',
   ASSIGNED = 'ASSIGNED',
+  IN_INVESTIGATION = 'IN_INVESTIGATION',
+  CLOSED = 'CLOSED',
 }

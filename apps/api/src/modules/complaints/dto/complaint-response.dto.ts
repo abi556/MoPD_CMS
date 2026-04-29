@@ -288,6 +288,27 @@ export class ComplaintDetailDataDto {
     description: 'Optional assignment rationale.',
   })
   assignmentReason!: string | null;
+
+  @ApiProperty({
+    example: 'user-officer-0001',
+    nullable: true,
+    description: 'Actor who performed the latest status transition.',
+  })
+  lastTransitionByUserId!: string | null;
+
+  @ApiProperty({
+    example: '2026-04-29T12:30:00.000Z',
+    nullable: true,
+    description: 'ISO-8601 timestamp of latest status transition.',
+  })
+  lastTransitionAt!: string | null;
+
+  @ApiProperty({
+    example: 'Field verification started by assigned officer.',
+    nullable: true,
+    description: 'Reason for latest status transition.',
+  })
+  lastTransitionReason!: string | null;
 }
 
 export class ComplaintDetailEnvelopeDto {

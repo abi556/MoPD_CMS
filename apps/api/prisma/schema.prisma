@@ -9,6 +9,8 @@ datasource db {
 enum ComplaintStatus {
   SUBMITTED
   ASSIGNED
+  IN_INVESTIGATION
+  CLOSED
 }
 
 enum ComplaintChannel {
@@ -42,6 +44,9 @@ model Complaint {
   assignedByUserId String?
   assignedAt      DateTime?
   assignmentReason String?
+  lastTransitionByUserId String?
+  lastTransitionAt DateTime?
+  lastTransitionReason String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
