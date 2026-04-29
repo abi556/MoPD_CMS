@@ -1,15 +1,67 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   const signAsync = jest.fn<Promise<string>, [object, object?]>();
+  const ensureSeedUsers = jest.fn<Promise<void>, []>().mockResolvedValue();
+  const findActiveByEmail = jest
+    .fn<
+      Promise<{
+        id: string;
+        email: string;
+        passwordHash: string;
+        isActive: boolean;
+        userRoles: Array<{ role: { name: string } }>;
+      } | null>,
+      [string]
+    >()
+    .mockResolvedValue({
+      id: 'user-admin-0001',
+      email: 'admin@mopd.local',
+      passwordHash:
+        '35e8cf4f97d379ebfbe4e7f4c8b43f3a:242c897f7f29e05eb1271dbbb13b6ed5df1594318717e56b3271fa7e64d563a0d3ff71a8f6072fa63eef611626b1a26e5c979c6f5fb160f96ab2b235b6b0e2da',
+      isActive: true,
+      userRoles: [{ role: { name: 'SuperAdmin' } }],
+    });
+  const findActiveById = jest
+    .fn<
+      Promise<{
+        id: string;
+        email: string;
+        passwordHash: string;
+        isActive: boolean;
+        userRoles: Array<{ role: { name: string } }>;
+      } | null>,
+      [string]
+    >()
+    .mockResolvedValue({
+      id: 'user-admin-0001',
+      email: 'admin@mopd.local',
+      passwordHash:
+        '35e8cf4f97d379ebfbe4e7f4c8b43f3a:242c897f7f29e05eb1271dbbb13b6ed5df1594318717e56b3271fa7e64d563a0d3ff71a8f6072fa63eef611626b1a26e5c979c6f5fb160f96ab2b235b6b0e2da',
+      isActive: true,
+      userRoles: [{ role: { name: 'SuperAdmin' } }],
+    });
   let service: AuthService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     signAsync.mockReset();
+    ensureSeedUsers.mockClear();
+    findActiveByEmail.mockClear();
+    findActiveById.mockClear();
     signAsync.mockResolvedValue('signed-access-token');
-    service = new AuthService({ signAsync } as unknown as JwtService);
+
+    service = new AuthService(
+      { signAsync } as unknown as JwtService,
+      {
+        ensureSeedUsers,
+        findActiveByEmail,
+        findActiveById,
+      } as unknown as UserService,
+    );
+    await service.onModuleInit();
   });
 
   it('logs in with valid credentials and issues token pair', async () => {
@@ -25,6 +77,7 @@ describe('AuthService', () => {
   });
 
   it('rejects login with invalid credentials', async () => {
+    findActiveByEmail.mockResolvedValueOnce(null);
     await expect(
       service.login('admin@mopd.local', 'wrong-password'),
     ).rejects.toThrow(UnauthorizedException);

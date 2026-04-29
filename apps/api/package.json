@@ -21,7 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:migrate:deploy": "prisma migrate deploy"
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "seed:auth": "ts-node -r tsconfig-paths/register src/scripts/seed-auth-users.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

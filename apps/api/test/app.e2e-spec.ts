@@ -12,6 +12,24 @@ import { AppModule } from './../src/app.module';
 import { GlobalHttpExceptionFilter } from '../src/common/filters/http-exception.filter';
 import { PrismaService } from '../src/prisma/prisma.service';
 
+process.env.AUTH_SEED_ENABLED = process.env.AUTH_SEED_ENABLED ?? 'true';
+process.env.AUTH_SEED_SUPER_ADMIN_ROLE_ID =
+  process.env.AUTH_SEED_SUPER_ADMIN_ROLE_ID ?? 'role-super-admin';
+process.env.AUTH_SEED_CASE_OFFICER_ROLE_ID =
+  process.env.AUTH_SEED_CASE_OFFICER_ROLE_ID ?? 'role-case-officer';
+process.env.AUTH_SEED_SUPER_ADMIN_ID =
+  process.env.AUTH_SEED_SUPER_ADMIN_ID ?? 'user-admin-0001';
+process.env.AUTH_SEED_SUPER_ADMIN_EMAIL =
+  process.env.AUTH_SEED_SUPER_ADMIN_EMAIL ?? 'admin@mopd.local';
+process.env.AUTH_SEED_SUPER_ADMIN_PASSWORD =
+  process.env.AUTH_SEED_SUPER_ADMIN_PASSWORD ?? 'AdminPass123!';
+process.env.AUTH_SEED_CASE_OFFICER_ID =
+  process.env.AUTH_SEED_CASE_OFFICER_ID ?? 'user-officer-0001';
+process.env.AUTH_SEED_CASE_OFFICER_EMAIL =
+  process.env.AUTH_SEED_CASE_OFFICER_EMAIL ?? 'officer@mopd.local';
+process.env.AUTH_SEED_CASE_OFFICER_PASSWORD =
+  process.env.AUTH_SEED_CASE_OFFICER_PASSWORD ?? 'OfficerPass123!';
+
 interface ErrorEnvelope {
   error: {
     code: string;
@@ -155,6 +173,18 @@ interface StoredComplaintHistory {
   createdAt: Date;
 }
 
+interface StoredRole {
+  id: string;
+  name: string;
+}
+
+interface StoredUser {
+  id: string;
+  email: string;
+  passwordHash: string;
+  isActive: boolean;
+}
+
 function getBody<T>(response: Response): T {
   const body: unknown = response.body;
   return body as T;
@@ -163,6 +193,9 @@ function getBody<T>(response: Response): T {
 function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
+  const roleStore = new Map<string, StoredRole>();
+  const userStore = new Map<string, StoredUser>();
+  const userRoleStore = new Set<string>();
   let sequence = 0;
   let historySequence = 0;
 
@@ -335,6 +368,74 @@ function createPrismaMock(): PrismaService {
     return rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   };
 
+  const roleUpsert = (args: {
+    where: { id: string };
+    create: StoredRole;
+    update: Partial<StoredRole>;
+  }): Promise<StoredRole> => {
+    const existing = roleStore.get(args.where.id);
+    const next: StoredRole = existing
+      ? { ...existing, ...args.update }
+      : { ...args.create };
+    roleStore.set(args.where.id, next);
+    return Promise.resolve(next);
+  };
+
+  const userUpsert = (args: {
+    where: { id: string };
+    create: StoredUser;
+    update: Partial<StoredUser>;
+  }): Promise<StoredUser> => {
+    const existing = userStore.get(args.where.id);
+    const next: StoredUser = existing
+      ? { ...existing, ...args.update }
+      : { ...args.create };
+    userStore.set(args.where.id, next);
+    return Promise.resolve(next);
+  };
+
+  const userRoleUpsert = (args: {
+    where: { userId_roleId: { userId: string; roleId: string } };
+    create: { userId: string; roleId: string };
+    update: Record<string, never>;
+  }): Promise<{ userId: string; roleId: string }> => {
+    const key = `${args.where.userId_roleId.userId}:${args.where.userId_roleId.roleId}`;
+    userRoleStore.add(key);
+    return Promise.resolve({ ...args.create });
+  };
+
+  const userFindUnique = (args: {
+    where: { email?: string; id?: string };
+    include?: { userRoles?: { include?: { role?: boolean } } };
+  }): Promise<
+    (StoredUser & { userRoles: Array<{ role: { name: string } }> }) | null
+  > => {
+    const byEmail = args.where.email
+      ? Array.from(userStore.values()).find(
+          (user) => user.email === args.where.email,
+        )
+      : undefined;
+    const byId = args.where.id ? userStore.get(args.where.id) : undefined;
+    const user = byEmail ?? byId;
+    if (!user) {
+      return Promise.resolve(null);
+    }
+
+    const userRoles = Array.from(userRoleStore)
+      .map((entry) => entry.split(':'))
+      .filter(([userId]) => userId === user.id)
+      .map(([, roleId]) => ({
+        role: {
+          name: roleStore.get(roleId)?.name ?? roleId,
+        },
+      }));
+
+    return Promise.resolve({
+      ...user,
+      userRoles,
+    });
+  };
+
   const prismaLike = {
     complaint: {
       count,
@@ -344,6 +445,16 @@ function createPrismaMock(): PrismaService {
     },
     complaintHistory: {
       findMany: historyFindMany,
+    },
+    role: {
+      upsert: roleUpsert,
+    },
+    user: {
+      upsert: userUpsert,
+      findUnique: userFindUnique,
+    },
+    userRole: {
+      upsert: userRoleUpsert,
     },
     $transaction: async <T>(
       callback: (tx: {

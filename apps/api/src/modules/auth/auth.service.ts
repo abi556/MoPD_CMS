@@ -1,11 +1,12 @@
 import { randomBytes, scryptSync, timingSafeEqual } from 'crypto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
 import { JwtPayload, JwtUser } from './interfaces/jwt-user.interface';
-
-interface AuthUserRecord extends JwtUser {
-  passwordHash: string;
-}
 
 export interface TokenPair {
   accessToken: string;
@@ -34,22 +35,25 @@ function comparePassword(
 }
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private readonly accessTokenTtlSeconds = 900;
   private readonly refreshTokenTtlMs = 7 * 24 * 60 * 60 * 1000;
-
-  private readonly users: AuthUserRecord[];
   private readonly refreshTokenStore = new Map<
     string,
     { userId: string; expiresAt: number }
   >();
 
-  constructor(private readonly jwtService: JwtService) {
-    this.users = this.buildSeedUsers();
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly userService: UserService,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    await this.userService.ensureSeedUsers();
   }
 
   async login(email: string, password: string): Promise<AuthLoginResult> {
-    const user = this.users.find((candidate) => candidate.email === email);
+    const user = await this.userService.findActiveByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -63,14 +67,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const tokenPair = await this.issueTokenPair(user);
+    const authUser = this.toAuthUser(user.id, user.email, user.userRoles);
+    const tokenPair = await this.issueTokenPair(authUser);
     return {
       ...tokenPair,
-      user: {
-        id: user.id,
-        email: user.email,
-        roles: user.roles,
-      },
+      user: authUser,
     };
   }
 
@@ -81,9 +82,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const user = this.users.find(
-      (candidate) => candidate.id === refreshState.userId,
-    );
+    const user = await this.userService.findActiveById(refreshState.userId);
     if (!user) {
       this.refreshTokenStore.delete(refreshToken);
       throw new UnauthorizedException('Invalid refresh token');
@@ -91,7 +90,9 @@ export class AuthService {
 
     // One-time-use refresh token rotation.
     this.refreshTokenStore.delete(refreshToken);
-    return this.issueTokenPair(user);
+    return this.issueTokenPair(
+      this.toAuthUser(user.id, user.email, user.userRoles),
+    );
   }
 
   logout(userId: string, refreshToken: string): void {
@@ -127,34 +128,15 @@ export class AuthService {
     };
   }
 
-  private buildSeedUsers(): AuthUserRecord[] {
-    return [
-      this.createUser('user-admin-0001', 'admin@mopd.local', 'AdminPass123!', [
-        'SuperAdmin',
-      ]),
-      this.createUser(
-        'user-officer-0001',
-        'officer@mopd.local',
-        'OfficerPass123!',
-        ['CaseOfficer'],
-      ),
-    ];
-  }
-
-  private createUser(
+  private toAuthUser(
     id: string,
     email: string,
-    password: string,
-    roles: string[],
-  ): AuthUserRecord {
-    const salt = randomBytes(16).toString('hex');
-    const passwordHash = `${salt}:${hashPassword(password, salt)}`;
-
+    userRoles: Array<{ role: { name: string } }>,
+  ): JwtUser {
     return {
       id,
       email,
-      roles,
-      passwordHash,
+      roles: userRoles.map((userRole) => userRole.role.name),
     };
   }
 }
