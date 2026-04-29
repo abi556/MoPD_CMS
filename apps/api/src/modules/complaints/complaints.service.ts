@@ -4,7 +4,10 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import type { Complaint as ComplaintEntity } from '@prisma/client';
+import type {
+  Complaint as ComplaintEntity,
+  ComplaintHistory as ComplaintHistoryEntity,
+} from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   ComplaintChannel,
@@ -44,6 +47,17 @@ export interface ComplaintListResult {
     total: number;
     totalPages: number;
   };
+}
+
+export interface ComplaintHistoryRecord {
+  id: string;
+  complaintId: string;
+  action: 'ASSIGNED' | 'TRANSITIONED';
+  fromStatus: ComplaintStatusValue | null;
+  toStatus: ComplaintStatusValue;
+  actorUserId: string;
+  reason?: string;
+  createdAt: string;
 }
 
 @Injectable()
@@ -121,20 +135,35 @@ export class ComplaintsService {
     assignedByUserId: string,
     reason?: string,
   ): Promise<ComplaintRecord> {
-    const existing = await this.prisma.complaint.findUnique({ where: { id } });
-    if (!existing) {
-      throw new NotFoundException('Complaint not found');
-    }
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.complaint.findUnique({ where: { id } });
+      if (!existing) {
+        throw new NotFoundException('Complaint not found');
+      }
 
-    const updated = await this.prisma.complaint.update({
-      where: { id },
-      data: {
-        status: ComplaintStatusValue.ASSIGNED,
-        assignedToUserId: assigneeUserId,
-        assignedByUserId,
-        assignedAt: new Date(),
-        assignmentReason: reason ?? null,
-      },
+      const updatedComplaint = await tx.complaint.update({
+        where: { id },
+        data: {
+          status: ComplaintStatusValue.ASSIGNED,
+          assignedToUserId: assigneeUserId,
+          assignedByUserId,
+          assignedAt: new Date(),
+          assignmentReason: reason ?? null,
+        },
+      });
+
+      await tx.complaintHistory.create({
+        data: {
+          complaintId: id,
+          action: 'ASSIGNED',
+          fromStatus: existing.status,
+          toStatus: ComplaintStatusValue.ASSIGNED,
+          actorUserId: assignedByUserId,
+          reason: reason ?? null,
+        },
+      });
+
+      return updatedComplaint;
     });
 
     return this.toComplaintRecord(updated);
@@ -146,31 +175,60 @@ export class ComplaintsService {
     transitionedByUserId: string,
     reason: string,
   ): Promise<ComplaintRecord> {
-    const existing = await this.prisma.complaint.findUnique({ where: { id } });
-    if (!existing) {
-      throw new NotFoundException('Complaint not found');
-    }
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.complaint.findUnique({ where: { id } });
+      if (!existing) {
+        throw new NotFoundException('Complaint not found');
+      }
 
-    const fromStatus = existing.status as ComplaintStatusValue;
-    const allowedNext = this.allowedTransitions[fromStatus] ?? [];
+      const fromStatus = existing.status as ComplaintStatusValue;
+      const allowedNext = this.allowedTransitions[fromStatus] ?? [];
 
-    if (!allowedNext.includes(toStatus)) {
-      throw new UnprocessableEntityException(
-        `Invalid transition from ${fromStatus} to ${toStatus}`,
-      );
-    }
+      if (!allowedNext.includes(toStatus)) {
+        throw new UnprocessableEntityException(
+          `Invalid transition from ${fromStatus} to ${toStatus}`,
+        );
+      }
 
-    const updated = await this.prisma.complaint.update({
-      where: { id },
-      data: {
-        status: toStatus,
-        lastTransitionByUserId: transitionedByUserId,
-        lastTransitionAt: new Date(),
-        lastTransitionReason: reason,
-      },
+      const updatedComplaint = await tx.complaint.update({
+        where: { id },
+        data: {
+          status: toStatus,
+          lastTransitionByUserId: transitionedByUserId,
+          lastTransitionAt: new Date(),
+          lastTransitionReason: reason,
+        },
+      });
+
+      await tx.complaintHistory.create({
+        data: {
+          complaintId: id,
+          action: 'TRANSITIONED',
+          fromStatus,
+          toStatus,
+          actorUserId: transitionedByUserId,
+          reason,
+        },
+      });
+
+      return updatedComplaint;
     });
 
     return this.toComplaintRecord(updated);
+  }
+
+  async getHistoryForStaff(id: string): Promise<ComplaintHistoryRecord[]> {
+    const exists = await this.prisma.complaint.findUnique({ where: { id } });
+    if (!exists) {
+      throw new NotFoundException('Complaint not found');
+    }
+
+    const rows = await this.prisma.complaintHistory.findMany({
+      where: { complaintId: id },
+      orderBy: [{ createdAt: 'asc' }],
+    });
+
+    return rows.map((row) => this.toHistoryRecord(row));
   }
 
   async listForStaff(
@@ -243,6 +301,21 @@ export class ComplaintsService {
       lastTransitionByUserId: complaint.lastTransitionByUserId ?? undefined,
       lastTransitionAt: complaint.lastTransitionAt?.toISOString(),
       lastTransitionReason: complaint.lastTransitionReason ?? undefined,
+    };
+  }
+
+  private toHistoryRecord(
+    item: ComplaintHistoryEntity,
+  ): ComplaintHistoryRecord {
+    return {
+      id: item.id,
+      complaintId: item.complaintId,
+      action: item.action as 'ASSIGNED' | 'TRANSITIONED',
+      fromStatus: item.fromStatus as ComplaintStatusValue | null,
+      toStatus: item.toStatus as ComplaintStatusValue,
+      actorUserId: item.actorUserId,
+      reason: item.reason ?? undefined,
+      createdAt: item.createdAt.toISOString(),
     };
   }
 }

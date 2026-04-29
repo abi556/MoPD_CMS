@@ -47,9 +47,24 @@ model Complaint {
   lastTransitionByUserId String?
   lastTransitionAt DateTime?
   lastTransitionReason String?
+  history         ComplaintHistory[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([referenceNo])
   @@index([submittedAt])
+}
+
+model ComplaintHistory {
+  id            String          @id @default(cuid())
+  complaintId   String
+  action        String
+  fromStatus    ComplaintStatus?
+  toStatus      ComplaintStatus
+  actorUserId   String
+  reason        String?
+  createdAt     DateTime        @default(now())
+  complaint     Complaint       @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+
+  @@index([complaintId, createdAt])
 }

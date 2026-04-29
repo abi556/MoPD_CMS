@@ -32,6 +32,8 @@ import {
   ComplaintCreatedEnvelopeDto,
   ComplaintDetailDataDto,
   ComplaintDetailEnvelopeDto,
+  ComplaintHistoryEnvelopeDto,
+  ComplaintHistoryItemDto,
   ComplaintListEnvelopeDto,
   ComplaintListItemDto,
   ComplaintListMetaDto,
@@ -150,6 +152,54 @@ export class ComplaintsController {
         lastTransitionAt: complaint.lastTransitionAt ?? null,
         lastTransitionReason: complaint.lastTransitionReason ?? null,
       },
+    };
+  }
+
+  @Get(':id/history')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'CaseOfficer')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get immutable complaint history timeline',
+    description:
+      'Returns assignment and workflow transition events in chronological order.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Internal complaint id.',
+    example: 'cmojzpoy200006o9mjdpyn6w4',
+  })
+  @ApiOkResponse({
+    description: 'Complaint history timeline for staff view.',
+    type: ComplaintHistoryEnvelopeDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Access token is missing or invalid.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Authenticated user does not have required role.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Complaint id was not found.',
+    type: ErrorResponseDto,
+  })
+  async history(
+    @Param('id') id: string,
+  ): Promise<{ data: ComplaintHistoryItemDto[] }> {
+    const items = await this.complaintsService.getHistoryForStaff(id);
+
+    return {
+      data: items.map((item) => ({
+        id: item.id,
+        action: item.action,
+        fromStatus: item.fromStatus,
+        toStatus: item.toStatus,
+        actorUserId: item.actorUserId,
+        reason: item.reason ?? null,
+        createdAt: item.createdAt,
+      })),
     };
   }
 

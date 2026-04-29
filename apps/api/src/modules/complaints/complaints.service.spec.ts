@@ -8,6 +8,8 @@ import { UnprocessableEntityException } from '@nestjs/common';
 describe('ComplaintsService', () => {
   let service: ComplaintsService;
   const complaintCreate = jest.fn();
+  const complaintHistoryCreate = jest.fn();
+  const complaintHistoryFindMany = jest.fn();
   const complaintUpdate = jest.fn();
   const complaintFindUnique = jest.fn();
   const complaintFindMany = jest.fn();
@@ -16,6 +18,8 @@ describe('ComplaintsService', () => {
 
   beforeEach(() => {
     complaintCreate.mockReset();
+    complaintHistoryCreate.mockReset();
+    complaintHistoryFindMany.mockReset();
     complaintUpdate.mockReset();
     complaintFindUnique.mockReset();
     complaintFindMany.mockReset();
@@ -28,6 +32,10 @@ describe('ComplaintsService', () => {
           complaint: {
             create: complaintCreate,
             update: complaintUpdate,
+            findUnique: complaintFindUnique,
+          },
+          complaintHistory: {
+            create: complaintHistoryCreate,
           },
         };
         return callback(tx);
@@ -40,6 +48,9 @@ describe('ComplaintsService', () => {
         findMany: complaintFindMany,
         findUnique: complaintFindUnique,
         update: complaintUpdate,
+      },
+      complaintHistory: {
+        findMany: complaintHistoryFindMany,
       },
       $transaction: transaction,
     } as never);
@@ -239,6 +250,7 @@ describe('ComplaintsService', () => {
     expect(assigned.status).toBe(ComplaintStatusValue.ASSIGNED);
     expect(assigned.assignedToUserId).toBe('user-officer-0001');
     expect(assigned.assignedByUserId).toBe('user-admin-0001');
+    expect(complaintHistoryCreate).toHaveBeenCalledTimes(1);
     expect(complaintUpdate).toHaveBeenCalledTimes(1);
   });
 
@@ -294,6 +306,7 @@ describe('ComplaintsService', () => {
     expect(transitioned.lastTransitionReason).toBe(
       'Field verification started by assigned officer.',
     );
+    expect(complaintHistoryCreate).toHaveBeenCalledTimes(1);
   });
 
   it('rejects invalid workflow transition with unprocessable error', async () => {
@@ -320,5 +333,39 @@ describe('ComplaintsService', () => {
         'Attempt to skip mandatory state.',
       ),
     ).rejects.toThrow(UnprocessableEntityException);
+  });
+
+  it('returns complaint history timeline by complaint id', async () => {
+    complaintFindUnique.mockResolvedValue({
+      id: 'cmp_030',
+    });
+    complaintHistoryFindMany.mockResolvedValue([
+      {
+        id: 'hist_001',
+        complaintId: 'cmp_030',
+        action: 'ASSIGNED',
+        fromStatus: 'SUBMITTED',
+        toStatus: 'ASSIGNED',
+        actorUserId: 'user-admin-0001',
+        reason: 'Initial assignment.',
+        createdAt: new Date('2026-04-29T12:00:00.000Z'),
+      },
+      {
+        id: 'hist_002',
+        complaintId: 'cmp_030',
+        action: 'TRANSITIONED',
+        fromStatus: 'ASSIGNED',
+        toStatus: 'IN_INVESTIGATION',
+        actorUserId: 'user-officer-0001',
+        reason: 'Started field verification.',
+        createdAt: new Date('2026-04-29T13:00:00.000Z'),
+      },
+    ]);
+
+    const history = await service.getHistoryForStaff('cmp_030');
+
+    expect(history).toHaveLength(2);
+    expect(history[0]?.action).toBe('ASSIGNED');
+    expect(history[1]?.toStatus).toBe(ComplaintStatusValue.IN_INVESTIGATION);
   });
 });

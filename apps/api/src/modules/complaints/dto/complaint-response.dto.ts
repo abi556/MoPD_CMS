@@ -317,3 +317,59 @@ export class ComplaintDetailEnvelopeDto {
   })
   data!: ComplaintDetailDataDto;
 }
+
+export class ComplaintHistoryItemDto {
+  @ApiProperty({
+    example: 'cmok1history0001',
+    description: 'Immutable history event id.',
+  })
+  id!: string;
+
+  @ApiProperty({
+    example: 'ASSIGNED',
+    enum: ['ASSIGNED', 'TRANSITIONED'],
+    description: 'History event type.',
+  })
+  action!: 'ASSIGNED' | 'TRANSITIONED';
+
+  @ApiProperty({
+    enum: ComplaintStatusValue,
+    nullable: true,
+    example: ComplaintStatusValue.SUBMITTED,
+    description: 'Workflow status before this event.',
+  })
+  fromStatus!: ComplaintStatusValue | null;
+
+  @ApiProperty({
+    enum: ComplaintStatusValue,
+    example: ComplaintStatusValue.ASSIGNED,
+    description: 'Workflow status after this event.',
+  })
+  toStatus!: ComplaintStatusValue;
+
+  @ApiProperty({
+    example: 'user-officer-0001',
+    description: 'User id of event actor.',
+  })
+  actorUserId!: string;
+
+  @ApiProperty({
+    example: 'Routing based on transport infrastructure expertise.',
+    nullable: true,
+    description: 'Optional reason/comment for this event.',
+  })
+  reason!: string | null;
+
+  @ApiProperty({
+    example: '2026-04-29T12:30:00.000Z',
+    description: 'ISO-8601 event creation timestamp.',
+  })
+  createdAt!: string;
+}
+
+export class ComplaintHistoryEnvelopeDto {
+  @ApiProperty({
+    type: [ComplaintHistoryItemDto],
+  })
+  data!: ComplaintHistoryItemDto[];
+}

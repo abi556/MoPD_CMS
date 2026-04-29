@@ -109,6 +109,18 @@ interface ComplaintDetailResponse {
   };
 }
 
+interface ComplaintHistoryResponse {
+  data: Array<{
+    id: string;
+    action: 'ASSIGNED' | 'TRANSITIONED';
+    fromStatus: 'SUBMITTED' | 'ASSIGNED' | 'IN_INVESTIGATION' | 'CLOSED' | null;
+    toStatus: 'SUBMITTED' | 'ASSIGNED' | 'IN_INVESTIGATION' | 'CLOSED';
+    actorUserId: string;
+    reason: string | null;
+    createdAt: string;
+  }>;
+}
+
 interface StoredComplaint {
   id: string;
   sequenceNo: number;
@@ -132,6 +144,17 @@ interface StoredComplaint {
   lastTransitionReason: string | null;
 }
 
+interface StoredComplaintHistory {
+  id: string;
+  complaintId: string;
+  action: 'ASSIGNED' | 'TRANSITIONED';
+  fromStatus: StoredComplaint['status'] | null;
+  toStatus: StoredComplaint['status'];
+  actorUserId: string;
+  reason: string | null;
+  createdAt: Date;
+}
+
 function getBody<T>(response: Response): T {
   const body: unknown = response.body;
   return body as T;
@@ -139,7 +162,9 @@ function getBody<T>(response: Response): T {
 
 function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
+  const historyStore: StoredComplaintHistory[] = [];
   let sequence = 0;
+  let historySequence = 0;
 
   const create = (args: {
     data: Omit<
@@ -287,6 +312,29 @@ function createPrismaMock(): PrismaService {
     return applyWhere(Array.from(store.values()), args.where).length;
   };
 
+  const historyCreate = (args: {
+    data: Omit<StoredComplaintHistory, 'id' | 'createdAt'>;
+  }): StoredComplaintHistory => {
+    historySequence += 1;
+    const entry: StoredComplaintHistory = {
+      id: `hist_${historySequence}`,
+      createdAt: new Date(),
+      ...args.data,
+    };
+    historyStore.push(entry);
+    return entry;
+  };
+
+  const historyFindMany = (args: {
+    where: { complaintId: string };
+    orderBy?: Array<{ createdAt?: 'asc' | 'desc' }>;
+  }): StoredComplaintHistory[] => {
+    const rows = historyStore.filter(
+      (item) => item.complaintId === args.where.complaintId,
+    );
+    return rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  };
+
   const prismaLike = {
     complaint: {
       count,
@@ -294,15 +342,27 @@ function createPrismaMock(): PrismaService {
       findUnique,
       update,
     },
+    complaintHistory: {
+      findMany: historyFindMany,
+    },
     $transaction: async <T>(
       callback: (tx: {
-        complaint: { create: typeof create; update: typeof update };
+        complaint: {
+          create: typeof create;
+          update: typeof update;
+          findUnique: typeof findUnique;
+        };
+        complaintHistory: { create: typeof historyCreate };
       }) => Promise<T>,
     ): Promise<T> => {
       return callback({
         complaint: {
           create,
           update,
+          findUnique,
+        },
+        complaintHistory: {
+          create: historyCreate,
         },
       });
     },
@@ -707,6 +767,60 @@ describe('AppController (e2e)', () => {
     const body = getBody<ErrorEnvelope>(response);
 
     expect(body.error.code).toBe('validation_error');
+  });
+
+  it('returns complaint history timeline for staff users', async () => {
+    const created = await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Bridge construction delay',
+        description:
+          'Bridge construction has halted for several months without public update.',
+        channel: 'WEB',
+        complainantName: 'Hanna Bekele',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+
+    const officerLogin = await request(httpApp())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'officer@mopd.local',
+        password: 'OfficerPass123!',
+      })
+      .expect(200);
+    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+
+    await request(httpApp())
+      .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .send({
+        assigneeUserId: 'user-officer-0001',
+        reason: 'Routing based on transport infrastructure expertise.',
+      })
+      .expect(200);
+
+    await request(httpApp())
+      .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .send({
+        toStatus: 'IN_INVESTIGATION',
+        reason: 'Field verification started by assigned officer.',
+      })
+      .expect(200);
+
+    const response = await request(httpApp())
+      .get(`/api/v1/complaints/${createdBody.data.id}/history`)
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .expect(200);
+    const body = getBody<ComplaintHistoryResponse>(response);
+
+    expect(body.data).toHaveLength(2);
+    expect(body.data[0]?.action).toBe('ASSIGNED');
+    expect(body.data[1]?.action).toBe('TRANSITIONED');
+    expect(body.data[1]?.toStatus).toBe('IN_INVESTIGATION');
   });
 
   it('rejects complaint submission without consent', async () => {
