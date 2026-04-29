@@ -117,6 +117,38 @@ describe('ComplaintsService', () => {
     );
   });
 
+  it('returns complaint by internal id for staff details view', async () => {
+    complaintFindUnique.mockResolvedValue({
+      id: 'cmp_099',
+      referenceNo: 'CMS-2026-000099',
+      status: 'SUBMITTED',
+      channel: ComplaintChannel.EMAIL,
+      subject: 'Missing medicine stock',
+      description:
+        'Public clinic has no stock for the listed medicine for two weeks.',
+      submittedAt: new Date('2026-04-29T10:05:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: 'Sami Yonas',
+      complainantEmail: 'sami@example.com',
+      complainantPhone: '+251922334455',
+    });
+
+    const found = await service.getByIdForStaff('cmp_099');
+
+    expect(found.id).toBe('cmp_099');
+    expect(found.referenceNo).toBe('CMS-2026-000099');
+    expect(found.complainantEmail).toBe('sami@example.com');
+  });
+
+  it('throws not found for unknown complaint id', async () => {
+    complaintFindUnique.mockResolvedValue(null);
+
+    await expect(service.getByIdForStaff('cmp_missing')).rejects.toThrow(
+      NotFoundException,
+    );
+  });
+
   it('lists complaints for staff using filters and pagination', async () => {
     complaintFindMany.mockResolvedValue([
       {

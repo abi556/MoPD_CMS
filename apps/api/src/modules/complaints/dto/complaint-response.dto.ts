@@ -176,3 +176,90 @@ export class ComplaintListEnvelopeDto {
   })
   meta!: ComplaintListMetaDto;
 }
+
+export class ComplaintDetailDataDto {
+  @ApiProperty({
+    example: 'cmojx636z0000tc9mj1pge0zh',
+    description: 'Internal complaint id.',
+  })
+  id!: string;
+
+  @ApiProperty({
+    example: 'CMS-2026-000001',
+    description: 'Public reference used for tracking.',
+  })
+  referenceNo!: string;
+
+  @ApiProperty({
+    example: 'SUBMITTED',
+    description: 'Current complaint status.',
+  })
+  status!: 'SUBMITTED';
+
+  @ApiProperty({
+    enum: ComplaintChannel,
+    example: ComplaintChannel.WEB,
+    description: 'Submission channel.',
+  })
+  channel!: ComplaintChannel;
+
+  @ApiProperty({
+    example: 'Road project delay in zone 3',
+    description: 'Complaint subject.',
+  })
+  subject!: string;
+
+  @ApiProperty({
+    example:
+      'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
+    description: 'Full complaint narrative text.',
+  })
+  description!: string;
+
+  @ApiProperty({
+    example: '2026-04-29T10:35:54.923Z',
+    description: 'ISO-8601 submission timestamp.',
+  })
+  submittedAt!: string;
+
+  @ApiProperty({
+    enum: ComplaintLocale,
+    example: ComplaintLocale.EN,
+    description: 'Preferred language.',
+  })
+  locale!: ComplaintLocale;
+
+  @ApiProperty({
+    example: true,
+    description: 'Consent acknowledgement flag.',
+  })
+  consentGiven!: boolean;
+
+  @ApiProperty({
+    example: 'Abebe Kebede',
+    nullable: true,
+    description: 'Optional complainant name.',
+  })
+  complainantName!: string | null;
+
+  @ApiProperty({
+    example: 'abebe@example.com',
+    nullable: true,
+    description: 'Optional complainant email.',
+  })
+  complainantEmail!: string | null;
+
+  @ApiProperty({
+    example: '+251911223344',
+    nullable: true,
+    description: 'Optional complainant phone.',
+  })
+  complainantPhone!: string | null;
+}
+
+export class ComplaintDetailEnvelopeDto {
+  @ApiProperty({
+    type: ComplaintDetailDataDto,
+  })
+  data!: ComplaintDetailDataDto;
+}

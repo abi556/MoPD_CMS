@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiParam,
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -25,6 +26,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   ComplaintCreatedDataDto,
   ComplaintCreatedEnvelopeDto,
+  ComplaintDetailDataDto,
+  ComplaintDetailEnvelopeDto,
   ComplaintListEnvelopeDto,
   ComplaintListItemDto,
   ComplaintListMetaDto,
@@ -82,6 +85,58 @@ export class ComplaintsController {
         locale: item.locale,
       })),
       meta: result.meta,
+    };
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'CaseOfficer')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get complaint details by internal id',
+    description: 'Returns full complaint details for internal staff workflows.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Internal complaint id.',
+    example: 'cmojx636z0000tc9mj1pge0zh',
+  })
+  @ApiOkResponse({
+    description: 'Complaint details for internal staff view.',
+    type: ComplaintDetailEnvelopeDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Access token is missing or invalid.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Authenticated user does not have required role.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Complaint id was not found.',
+    type: ErrorResponseDto,
+  })
+  async getById(
+    @Param('id') id: string,
+  ): Promise<{ data: ComplaintDetailDataDto }> {
+    const complaint = await this.complaintsService.getByIdForStaff(id);
+
+    return {
+      data: {
+        id: complaint.id,
+        referenceNo: complaint.referenceNo,
+        status: complaint.status,
+        channel: complaint.channel,
+        subject: complaint.subject,
+        description: complaint.description,
+        submittedAt: complaint.submittedAt,
+        locale: complaint.locale,
+        consentGiven: complaint.consentGiven,
+        complainantName: complaint.complainantName ?? null,
+        complainantEmail: complaint.complainantEmail ?? null,
+        complainantPhone: complaint.complainantPhone ?? null,
+      },
     };
   }
 

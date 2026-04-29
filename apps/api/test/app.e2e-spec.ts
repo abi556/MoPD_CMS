@@ -85,6 +85,23 @@ interface ComplaintListResponse {
   };
 }
 
+interface ComplaintDetailResponse {
+  data: {
+    id: string;
+    referenceNo: string;
+    status: 'SUBMITTED';
+    channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
+    subject: string;
+    description: string;
+    submittedAt: string;
+    locale: 'en' | 'am';
+    consentGiven: boolean;
+    complainantName: string | null;
+    complainantEmail: string | null;
+    complainantPhone: string | null;
+  };
+}
+
 interface StoredComplaint {
   id: string;
   sequenceNo: number;
@@ -151,10 +168,14 @@ function createPrismaMock(): PrismaService {
   };
 
   const findUnique = (args: {
-    where: { referenceNo: string };
+    where: { referenceNo?: string; id?: string };
   }): StoredComplaint | null => {
     for (const value of store.values()) {
-      if (value.referenceNo === args.where.referenceNo) {
+      if (
+        (args.where.referenceNo &&
+          value.referenceNo === args.where.referenceNo) ||
+        (args.where.id && value.id === args.where.id)
+      ) {
         return value;
       }
     }
@@ -451,6 +472,63 @@ describe('AppController (e2e)', () => {
       total: 1,
       totalPages: 1,
     });
+  });
+
+  it('returns complaint details by id for staff users', async () => {
+    const created = await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Road project delay in zone 3',
+        description:
+          'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
+        channel: 'WEB',
+        complainantName: 'Abebe Kebede',
+        complainantEmail: 'abebe@example.com',
+        complainantPhone: '+251911223344',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+
+    const officerLogin = await request(httpApp())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'officer@mopd.local',
+        password: 'OfficerPass123!',
+      })
+      .expect(200);
+    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+
+    const details = await request(httpApp())
+      .get(`/api/v1/complaints/${createdBody.data.id}`)
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .expect(200);
+    const detailsBody = getBody<ComplaintDetailResponse>(details);
+
+    expect(detailsBody.data.id).toBe(createdBody.data.id);
+    expect(detailsBody.data.referenceNo).toBe(createdBody.data.referenceNo);
+    expect(detailsBody.data.description).toContain('Road expansion in zone 3');
+    expect(detailsBody.data.complainantEmail).toBe('abebe@example.com');
+  });
+
+  it('returns not_found for unknown complaint id on staff detail route', async () => {
+    const officerLogin = await request(httpApp())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'officer@mopd.local',
+        password: 'OfficerPass123!',
+      })
+      .expect(200);
+    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+
+    const response = await request(httpApp())
+      .get('/api/v1/complaints/cmp_missing')
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .expect(404);
+    const body = getBody<ErrorEnvelope>(response);
+
+    expect(body.error.code).toBe('not_found');
   });
 
   it('rejects complaint submission without consent', async () => {

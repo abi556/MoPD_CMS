@@ -81,6 +81,18 @@ export class ComplaintsService {
     return this.toComplaintRecord(found);
   }
 
+  async getByIdForStaff(id: string): Promise<ComplaintRecord> {
+    const found = await this.prisma.complaint.findUnique({
+      where: { id },
+    });
+
+    if (!found) {
+      throw new NotFoundException('Complaint not found');
+    }
+
+    return this.toComplaintRecord(found);
+  }
+
   async listForStaff(
     query: ListComplaintsQueryDto,
   ): Promise<ComplaintListResult> {
