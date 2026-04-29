@@ -9,10 +9,7 @@ import {
   Min,
 } from 'class-validator';
 import { ComplaintChannel, ComplaintLocale } from './create-complaint.dto';
-
-const ComplaintStatusFilter = {
-  SUBMITTED: 'SUBMITTED',
-} as const;
+import { ComplaintStatusValue } from './complaint-status.enum';
 
 export class ListComplaintsQueryDto {
   @ApiPropertyOptional({
@@ -42,13 +39,13 @@ export class ListComplaintsQueryDto {
   pageSize?: number = 20;
 
   @ApiPropertyOptional({
-    example: 'SUBMITTED',
-    enum: ComplaintStatusFilter,
+    example: ComplaintStatusValue.SUBMITTED,
+    enum: ComplaintStatusValue,
     description: 'Filter by complaint workflow status.',
   })
   @IsOptional()
-  @IsEnum(ComplaintStatusFilter)
-  status?: 'SUBMITTED';
+  @IsEnum(ComplaintStatusValue)
+  status?: ComplaintStatusValue;
 
   @ApiPropertyOptional({
     enum: ComplaintChannel,

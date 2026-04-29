@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { ComplaintChannel, ComplaintLocale } from './dto/create-complaint.dto';
+import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ComplaintsService } from './complaints.service';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 
@@ -37,6 +38,7 @@ describe('ComplaintsService', () => {
         count: complaintCount,
         findMany: complaintFindMany,
         findUnique: complaintFindUnique,
+        update: complaintUpdate,
       },
       $transaction: transaction,
     } as never);
@@ -171,7 +173,7 @@ describe('ComplaintsService', () => {
     const query: ListComplaintsQueryDto = {
       page: 1,
       pageSize: 10,
-      status: 'SUBMITTED',
+      status: ComplaintStatusValue.SUBMITTED,
       channel: ComplaintChannel.WEB,
       locale: ComplaintLocale.EN,
       submittedFrom: '2026-04-01T00:00:00.000Z',
@@ -190,5 +192,52 @@ describe('ComplaintsService', () => {
     });
     expect(complaintFindMany).toHaveBeenCalledTimes(1);
     expect(complaintCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('assigns complaint and updates status to ASSIGNED', async () => {
+    complaintFindUnique.mockResolvedValue({
+      id: 'cmp_011',
+      referenceNo: 'CMS-2026-000011',
+      status: 'SUBMITTED',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road grading incomplete',
+      description: 'Road grading activity stopped mid-way.',
+      submittedAt: new Date('2026-04-29T09:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: null,
+      complainantEmail: null,
+      complainantPhone: null,
+    });
+    complaintUpdate.mockResolvedValue({
+      id: 'cmp_011',
+      referenceNo: 'CMS-2026-000011',
+      status: 'ASSIGNED',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road grading incomplete',
+      description: 'Road grading activity stopped mid-way.',
+      submittedAt: new Date('2026-04-29T09:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: null,
+      complainantEmail: null,
+      complainantPhone: null,
+      assignedToUserId: 'user-officer-0001',
+      assignedByUserId: 'user-admin-0001',
+      assignedAt: new Date('2026-04-29T12:00:00.000Z'),
+      assignmentReason: 'Routing based on transport infrastructure expertise.',
+    });
+
+    const assigned = await service.assignComplaint(
+      'cmp_011',
+      'user-officer-0001',
+      'user-admin-0001',
+      'Routing based on transport infrastructure expertise.',
+    );
+
+    expect(assigned.status).toBe(ComplaintStatusValue.ASSIGNED);
+    expect(assigned.assignedToUserId).toBe('user-officer-0001');
+    expect(assigned.assignedByUserId).toBe('user-admin-0001');
+    expect(complaintUpdate).toHaveBeenCalledTimes(1);
   });
 });

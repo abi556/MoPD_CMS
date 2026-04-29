@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -19,10 +21,12 @@ import {
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import {
   ComplaintCreatedDataDto,
   ComplaintCreatedEnvelopeDto,
@@ -34,6 +38,7 @@ import {
   ComplaintTrackingDataDto,
   ComplaintTrackingEnvelopeDto,
 } from './dto/complaint-response.dto';
+import { AssignComplaintDto } from './dto/assign-complaint.dto';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 import { ComplaintsService } from './complaints.service';
@@ -136,6 +141,79 @@ export class ComplaintsController {
         complainantName: complaint.complainantName ?? null,
         complainantEmail: complaint.complainantEmail ?? null,
         complainantPhone: complaint.complainantPhone ?? null,
+        assignedToUserId: complaint.assignedToUserId ?? null,
+        assignedByUserId: complaint.assignedByUserId ?? null,
+        assignedAt: complaint.assignedAt ?? null,
+        assignmentReason: complaint.assignmentReason ?? null,
+      },
+    };
+  }
+
+  @Post(':id/assign')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SuperAdmin', 'CaseOfficer')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Assign or reassign complaint to an officer',
+    description:
+      'Sets assignment ownership and marks complaint status as ASSIGNED.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Internal complaint id.',
+    example: 'cmojzpoy200006o9mjdpyn6w4',
+  })
+  @ApiOkResponse({
+    description: 'Complaint assignment updated.',
+    type: ComplaintDetailEnvelopeDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Access token is missing or invalid.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Authenticated user does not have required role.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Complaint id was not found.',
+    type: ErrorResponseDto,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Request body failed validation.',
+    type: ErrorResponseDto,
+  })
+  @HttpCode(HttpStatus.OK)
+  async assign(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+    @Body() body: AssignComplaintDto,
+  ): Promise<{ data: ComplaintDetailDataDto }> {
+    const complaint = await this.complaintsService.assignComplaint(
+      id,
+      body.assigneeUserId,
+      user.id,
+      body.reason,
+    );
+
+    return {
+      data: {
+        id: complaint.id,
+        referenceNo: complaint.referenceNo,
+        status: complaint.status,
+        channel: complaint.channel,
+        subject: complaint.subject,
+        description: complaint.description,
+        submittedAt: complaint.submittedAt,
+        locale: complaint.locale,
+        consentGiven: complaint.consentGiven,
+        complainantName: complaint.complainantName ?? null,
+        complainantEmail: complaint.complainantEmail ?? null,
+        complainantPhone: complaint.complainantPhone ?? null,
+        assignedToUserId: complaint.assignedToUserId ?? null,
+        assignedByUserId: complaint.assignedByUserId ?? null,
+        assignedAt: complaint.assignedAt ?? null,
+        assignmentReason: complaint.assignmentReason ?? null,
       },
     };
   }

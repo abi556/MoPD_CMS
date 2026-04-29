@@ -7,12 +7,13 @@ import {
   ComplaintLocale,
   CreateComplaintDto,
 } from './dto/create-complaint.dto';
+import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 
 export interface ComplaintRecord {
   id: string;
   referenceNo: string;
-  status: 'SUBMITTED';
+  status: ComplaintStatusValue;
   channel: ComplaintChannel;
   subject: string;
   description: string;
@@ -22,6 +23,10 @@ export interface ComplaintRecord {
   complainantName?: string;
   complainantEmail?: string;
   complainantPhone?: string;
+  assignedToUserId?: string;
+  assignedByUserId?: string;
+  assignedAt?: string;
+  assignmentReason?: string;
 }
 
 export interface ComplaintListResult {
@@ -43,7 +48,7 @@ export class ComplaintsService {
       const inserted = await tx.complaint.create({
         data: {
           referenceNo: `TMP-${randomUUID()}`,
-          status: 'SUBMITTED',
+          status: ComplaintStatusValue.SUBMITTED,
           channel: payload.channel,
           subject: payload.subject,
           description: payload.description,
@@ -91,6 +96,31 @@ export class ComplaintsService {
     }
 
     return this.toComplaintRecord(found);
+  }
+
+  async assignComplaint(
+    id: string,
+    assigneeUserId: string,
+    assignedByUserId: string,
+    reason?: string,
+  ): Promise<ComplaintRecord> {
+    const existing = await this.prisma.complaint.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('Complaint not found');
+    }
+
+    const updated = await this.prisma.complaint.update({
+      where: { id },
+      data: {
+        status: ComplaintStatusValue.ASSIGNED,
+        assignedToUserId: assigneeUserId,
+        assignedByUserId,
+        assignedAt: new Date(),
+        assignmentReason: reason ?? null,
+      },
+    });
+
+    return this.toComplaintRecord(updated);
   }
 
   async listForStaff(
@@ -146,7 +176,7 @@ export class ComplaintsService {
     return {
       id: complaint.id,
       referenceNo: complaint.referenceNo,
-      status: complaint.status,
+      status: complaint.status as ComplaintStatusValue,
       channel: complaint.channel as ComplaintChannel,
       subject: complaint.subject,
       description: complaint.description,
@@ -156,6 +186,10 @@ export class ComplaintsService {
       complainantName: complaint.complainantName ?? undefined,
       complainantEmail: complaint.complainantEmail ?? undefined,
       complainantPhone: complaint.complainantPhone ?? undefined,
+      assignedToUserId: complaint.assignedToUserId ?? undefined,
+      assignedByUserId: complaint.assignedByUserId ?? undefined,
+      assignedAt: complaint.assignedAt?.toISOString(),
+      assignmentReason: complaint.assignmentReason ?? undefined,
     };
   }
 }

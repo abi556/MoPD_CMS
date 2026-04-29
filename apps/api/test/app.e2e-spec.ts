@@ -49,7 +49,7 @@ interface ComplaintCreateResponse {
   data: {
     id: string;
     referenceNo: string;
-    status: 'SUBMITTED';
+    status: 'SUBMITTED' | 'ASSIGNED';
     channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
     subject: string;
     submittedAt: string;
@@ -61,7 +61,7 @@ interface ComplaintCreateResponse {
 interface ComplaintTrackResponse {
   data: {
     referenceNo: string;
-    status: 'SUBMITTED';
+    status: 'SUBMITTED' | 'ASSIGNED';
     subject: string;
     submittedAt: string;
   };
@@ -71,7 +71,7 @@ interface ComplaintListResponse {
   data: Array<{
     id: string;
     referenceNo: string;
-    status: 'SUBMITTED';
+    status: 'SUBMITTED' | 'ASSIGNED';
     channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
     subject: string;
     submittedAt: string;
@@ -89,7 +89,7 @@ interface ComplaintDetailResponse {
   data: {
     id: string;
     referenceNo: string;
-    status: 'SUBMITTED';
+    status: 'SUBMITTED' | 'ASSIGNED';
     channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
     subject: string;
     description: string;
@@ -99,6 +99,10 @@ interface ComplaintDetailResponse {
     complainantName: string | null;
     complainantEmail: string | null;
     complainantPhone: string | null;
+    assignedToUserId: string | null;
+    assignedByUserId: string | null;
+    assignedAt: string | null;
+    assignmentReason: string | null;
   };
 }
 
@@ -106,7 +110,7 @@ interface StoredComplaint {
   id: string;
   sequenceNo: number;
   referenceNo: string;
-  status: 'SUBMITTED';
+  status: 'SUBMITTED' | 'ASSIGNED';
   channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
   subject: string;
   description: string;
@@ -116,6 +120,10 @@ interface StoredComplaint {
   complainantName: string | null;
   complainantEmail: string | null;
   complainantPhone: string | null;
+  assignedToUserId: string | null;
+  assignedByUserId: string | null;
+  assignedAt: Date | null;
+  assignmentReason: string | null;
 }
 
 function getBody<T>(response: Response): T {
@@ -128,7 +136,21 @@ function createPrismaMock(): PrismaService {
   let sequence = 0;
 
   const create = (args: {
-    data: Omit<StoredComplaint, 'id' | 'sequenceNo' | 'submittedAt'>;
+    data: Omit<
+      StoredComplaint,
+      | 'id'
+      | 'sequenceNo'
+      | 'submittedAt'
+      | 'assignedToUserId'
+      | 'assignedByUserId'
+      | 'assignedAt'
+      | 'assignmentReason'
+    > & {
+      assignedToUserId?: string | null;
+      assignedByUserId?: string | null;
+      assignedAt?: Date | null;
+      assignmentReason?: string | null;
+    };
   }): StoredComplaint => {
     sequence += 1;
     const now = new Date();
@@ -146,6 +168,10 @@ function createPrismaMock(): PrismaService {
       complainantName: args.data.complainantName,
       complainantEmail: args.data.complainantEmail,
       complainantPhone: args.data.complainantPhone,
+      assignedToUserId: args.data.assignedToUserId ?? null,
+      assignedByUserId: args.data.assignedByUserId ?? null,
+      assignedAt: args.data.assignedAt ?? null,
+      assignmentReason: args.data.assignmentReason ?? null,
     };
     store.set(created.id, created);
     return created;
@@ -153,7 +179,7 @@ function createPrismaMock(): PrismaService {
 
   const update = (args: {
     where: { id: string };
-    data: { referenceNo: string };
+    data: Partial<Omit<StoredComplaint, 'id' | 'sequenceNo' | 'submittedAt'>>;
   }): StoredComplaint => {
     const found = store.get(args.where.id);
     if (!found) {
@@ -161,7 +187,7 @@ function createPrismaMock(): PrismaService {
     }
     const updated: StoredComplaint = {
       ...found,
-      referenceNo: args.data.referenceNo,
+      ...args.data,
     };
     store.set(updated.id, updated);
     return updated;
@@ -251,6 +277,7 @@ function createPrismaMock(): PrismaService {
       count,
       findMany,
       findUnique,
+      update,
     },
     $transaction: async <T>(
       callback: (tx: {
@@ -510,6 +537,8 @@ describe('AppController (e2e)', () => {
     expect(detailsBody.data.referenceNo).toBe(createdBody.data.referenceNo);
     expect(detailsBody.data.description).toContain('Road expansion in zone 3');
     expect(detailsBody.data.complainantEmail).toBe('abebe@example.com');
+    expect(detailsBody.data.assignedToUserId).toBeNull();
+    expect(detailsBody.data.assignedByUserId).toBeNull();
   });
 
   it('returns not_found for unknown complaint id on staff detail route', async () => {
@@ -529,6 +558,50 @@ describe('AppController (e2e)', () => {
     const body = getBody<ErrorEnvelope>(response);
 
     expect(body.error.code).toBe('not_found');
+  });
+
+  it('assigns complaint to officer and sets status ASSIGNED', async () => {
+    const created = await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Bridge construction delay',
+        description:
+          'Bridge construction has halted for several months without public update.',
+        channel: 'WEB',
+        complainantName: 'Hanna Bekele',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+
+    const officerLogin = await request(httpApp())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'officer@mopd.local',
+        password: 'OfficerPass123!',
+      })
+      .expect(200);
+    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+
+    const assigned = await request(httpApp())
+      .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .send({
+        assigneeUserId: 'user-officer-0001',
+        reason: 'Routing based on transport infrastructure expertise.',
+      })
+      .expect(200);
+    const assignedBody = getBody<ComplaintDetailResponse>(assigned);
+
+    expect(assignedBody.data.id).toBe(createdBody.data.id);
+    expect(assignedBody.data.status).toBe('ASSIGNED');
+    expect(assignedBody.data.assignedToUserId).toBe('user-officer-0001');
+    expect(assignedBody.data.assignedByUserId).toBe('user-officer-0001');
+    expect(typeof assignedBody.data.assignedAt).toBe('string');
+    expect(assignedBody.data.assignmentReason).toBe(
+      'Routing based on transport infrastructure expertise.',
+    );
   });
 
   it('rejects complaint submission without consent', async () => {

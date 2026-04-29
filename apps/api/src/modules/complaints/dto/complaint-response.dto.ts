@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ComplaintChannel, ComplaintLocale } from './create-complaint.dto';
+import { ComplaintStatusValue } from './complaint-status.enum';
 
 export class ComplaintCreatedDataDto {
   @ApiProperty({
@@ -15,10 +16,11 @@ export class ComplaintCreatedDataDto {
   referenceNo!: string;
 
   @ApiProperty({
-    example: 'SUBMITTED',
+    enum: ComplaintStatusValue,
+    example: ComplaintStatusValue.SUBMITTED,
     description: 'Current complaint status.',
   })
-  status!: 'SUBMITTED';
+  status!: ComplaintStatusValue;
 
   @ApiProperty({
     enum: ComplaintChannel,
@@ -68,10 +70,11 @@ export class ComplaintTrackingDataDto {
   referenceNo!: string;
 
   @ApiProperty({
-    example: 'SUBMITTED',
+    enum: ComplaintStatusValue,
+    example: ComplaintStatusValue.SUBMITTED,
     description: 'Current complaint status.',
   })
-  status!: 'SUBMITTED';
+  status!: ComplaintStatusValue;
 
   @ApiProperty({
     example: 'Road project delay in zone 3',
@@ -107,10 +110,11 @@ export class ComplaintListItemDto {
   referenceNo!: string;
 
   @ApiProperty({
-    example: 'SUBMITTED',
+    enum: ComplaintStatusValue,
+    example: ComplaintStatusValue.SUBMITTED,
     description: 'Current complaint status.',
   })
-  status!: 'SUBMITTED';
+  status!: ComplaintStatusValue;
 
   @ApiProperty({
     enum: ComplaintChannel,
@@ -191,10 +195,11 @@ export class ComplaintDetailDataDto {
   referenceNo!: string;
 
   @ApiProperty({
-    example: 'SUBMITTED',
+    enum: ComplaintStatusValue,
+    example: ComplaintStatusValue.SUBMITTED,
     description: 'Current complaint status.',
   })
-  status!: 'SUBMITTED';
+  status!: ComplaintStatusValue;
 
   @ApiProperty({
     enum: ComplaintChannel,
@@ -255,6 +260,34 @@ export class ComplaintDetailDataDto {
     description: 'Optional complainant phone.',
   })
   complainantPhone!: string | null;
+
+  @ApiProperty({
+    example: 'user-officer-0001',
+    nullable: true,
+    description: 'Current assignee user id.',
+  })
+  assignedToUserId!: string | null;
+
+  @ApiProperty({
+    example: 'user-admin-0001',
+    nullable: true,
+    description: 'Actor who last performed assignment.',
+  })
+  assignedByUserId!: string | null;
+
+  @ApiProperty({
+    example: '2026-04-29T12:05:00.000Z',
+    nullable: true,
+    description: 'ISO-8601 assignment timestamp.',
+  })
+  assignedAt!: string | null;
+
+  @ApiProperty({
+    example: 'Routing based on transport infrastructure expertise.',
+    nullable: true,
+    description: 'Optional assignment rationale.',
+  })
+  assignmentReason!: string | null;
 }
 
 export class ComplaintDetailEnvelopeDto {
