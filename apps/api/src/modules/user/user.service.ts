@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { randomBytes, scryptSync } from 'crypto';
+import bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 
 interface AuthUserWithRoles {
@@ -7,7 +7,12 @@ interface AuthUserWithRoles {
   email: string;
   isActive: boolean;
   passwordHash: string;
-  userRoles: Array<{ role: { name: string } }>;
+  userRoles: Array<{
+    role: {
+      name: string;
+      rolePermissions: Array<{ permission: { code: string } }>;
+    };
+  }>;
 }
 
 interface UserDbGateway {
@@ -16,6 +21,28 @@ interface UserDbGateway {
       where: { id: string };
       create: { id: string; name: string };
       update: { name: string };
+    }): Promise<unknown>;
+  };
+  permission: {
+    upsert(args: {
+      where: { id: string };
+      create: { id: string; code: string; description?: string };
+      update: { code: string; description?: string };
+    }): Promise<unknown>;
+  };
+  rolePermission: {
+    upsert(args: {
+      where: {
+        roleId_permissionId: {
+          roleId: string;
+          permissionId: string;
+        };
+      };
+      create: {
+        roleId: string;
+        permissionId: string;
+      };
+      update: Record<string, never>;
     }): Promise<unknown>;
   };
   user: {
@@ -38,11 +65,23 @@ interface UserDbGateway {
       include: {
         userRoles: {
           include: {
-            role: true;
+            role: {
+              include: {
+                rolePermissions: {
+                  include: {
+                    permission: true;
+                  };
+                };
+              };
+            };
           };
         };
       };
     }): Promise<AuthUserWithRoles | null>;
+    update(args: {
+      where: { id: string };
+      data: { passwordHash: string };
+    }): Promise<unknown>;
   };
   userRole: {
     upsert(args: {
@@ -61,10 +100,6 @@ interface UserDbGateway {
   };
 }
 
-function hashPassword(password: string, salt: string): string {
-  return scryptSync(password, salt, 64).toString('hex');
-}
-
 function isTruthy(value: string | undefined): boolean {
   return value === 'true' || value === '1';
 }
@@ -75,6 +110,18 @@ function getRequiredEnv(name: string): string {
     throw new Error(`${name} must be configured when auth seeding is enabled`);
   }
   return value;
+}
+
+function getBcryptCostFactor(): number {
+  const raw = process.env.AUTH_BCRYPT_COST;
+  if (!raw) {
+    return 12;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  if (Number.isNaN(parsed) || parsed < 10 || parsed > 15) {
+    return 12;
+  }
+  return parsed;
 }
 
 @Injectable()
@@ -106,6 +153,77 @@ export class UserService {
         create: role,
         update: { name: role.name },
       });
+    }
+
+    const seedPermissions = [
+      {
+        id: 'perm-admin-ping',
+        code: 'admin:ping',
+        description: 'Access admin health endpoint.',
+      },
+      {
+        id: 'perm-complaints-list',
+        code: 'complaints:list',
+        description: 'List complaints for staff operations.',
+      },
+      {
+        id: 'perm-complaints-detail',
+        code: 'complaints:detail',
+        description: 'View complaint detail for staff workflows.',
+      },
+      {
+        id: 'perm-complaints-history',
+        code: 'complaints:history',
+        description: 'View complaint history timeline.',
+      },
+      {
+        id: 'perm-complaints-assign',
+        code: 'complaints:assign',
+        description: 'Assign or reassign complaint ownership.',
+      },
+      {
+        id: 'perm-complaints-transition',
+        code: 'complaints:transition',
+        description: 'Transition complaint workflow status.',
+      },
+    ];
+    for (const permission of seedPermissions) {
+      await this.db.permission.upsert({
+        where: { id: permission.id },
+        create: permission,
+        update: {
+          code: permission.code,
+          description: permission.description,
+        },
+      });
+    }
+
+    const rolePermissionMap: Record<string, string[]> = {
+      'role-super-admin': seedPermissions.map((permission) => permission.id),
+      'role-case-officer': [
+        'perm-complaints-list',
+        'perm-complaints-detail',
+        'perm-complaints-history',
+        'perm-complaints-assign',
+        'perm-complaints-transition',
+      ],
+    };
+    for (const [roleId, permissionIds] of Object.entries(rolePermissionMap)) {
+      for (const permissionId of permissionIds) {
+        await this.db.rolePermission.upsert({
+          where: {
+            roleId_permissionId: {
+              roleId,
+              permissionId,
+            },
+          },
+          create: {
+            roleId,
+            permissionId,
+          },
+          update: {},
+        });
+      }
     }
 
     const seedUsers = [
@@ -163,7 +281,15 @@ export class UserService {
       include: {
         userRoles: {
           include: {
-            role: true,
+            role: {
+              include: {
+                rolePermissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -180,7 +306,15 @@ export class UserService {
       include: {
         userRoles: {
           include: {
-            role: true,
+            role: {
+              include: {
+                rolePermissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -191,8 +325,17 @@ export class UserService {
     return user;
   }
 
+  async updatePasswordHash(
+    userId: string,
+    passwordHash: string,
+  ): Promise<void> {
+    await this.db.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+  }
+
   private createPasswordHash(password: string): string {
-    const salt = randomBytes(16).toString('hex');
-    return `${salt}:${hashPassword(password, salt)}`;
+    return bcrypt.hashSync(password, getBcryptCostFactor());
   }
 }

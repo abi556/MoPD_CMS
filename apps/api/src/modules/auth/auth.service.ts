@@ -5,6 +5,7 @@ import {
   scryptSync,
   timingSafeEqual,
 } from 'crypto';
+import bcrypt from 'bcrypt';
 import {
   Injectable,
   OnModuleInit,
@@ -49,6 +50,26 @@ function comparePassword(
   const expectedHash = Buffer.from(expectedHashHex, 'hex');
 
   return timingSafeEqual(computedHash, expectedHash);
+}
+
+function isBcryptHash(hash: string): boolean {
+  return (
+    hash.startsWith('$2a$') ||
+    hash.startsWith('$2b$') ||
+    hash.startsWith('$2y$')
+  );
+}
+
+function getBcryptCostFactor(): number {
+  const raw = process.env.AUTH_BCRYPT_COST;
+  if (!raw) {
+    return 12;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  if (Number.isNaN(parsed) || parsed < 10 || parsed > 15) {
+    return 12;
+  }
+  return parsed;
 }
 
 function getRedisUrl(): string {
@@ -103,13 +124,15 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const [salt, expectedHash] = user.passwordHash.split(':');
-    if (
-      !salt ||
-      !expectedHash ||
-      !comparePassword(password, expectedHash, salt)
-    ) {
+    const isValid = this.verifyPassword(password, user.passwordHash);
+    if (!isValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+    if (!isBcryptHash(user.passwordHash)) {
+      await this.userService.updatePasswordHash(
+        user.id,
+        bcrypt.hashSync(password, getBcryptCostFactor()),
+      );
     }
 
     const authUser = this.toAuthUser(user.id, user.email, user.userRoles);
@@ -198,6 +221,7 @@ export class AuthService implements OnModuleInit {
       sub: user.id,
       email: user.email,
       roles: user.roles,
+      permissions: user.permissions,
       jti: accessJti,
     };
 
@@ -305,13 +329,15 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const [salt, expectedHash] = user.passwordHash.split(':');
-    if (
-      !salt ||
-      !expectedHash ||
-      !comparePassword(password, expectedHash, salt)
-    ) {
+    const isValid = this.verifyPassword(password, user.passwordHash);
+    if (!isValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+    if (!isBcryptHash(user.passwordHash)) {
+      await this.userService.updatePasswordHash(
+        user.id,
+        bcrypt.hashSync(password, getBcryptCostFactor()),
+      );
     }
     const authUser = this.toAuthUser(user.id, user.email, user.userRoles);
     const issuedTokens = await this.issueTokenPair(authUser);
@@ -348,12 +374,38 @@ export class AuthService implements OnModuleInit {
   private toAuthUser(
     id: string,
     email: string,
-    userRoles: Array<{ role: { name: string } }>,
+    userRoles: Array<{
+      role: {
+        name: string;
+        rolePermissions: Array<{ permission: { code: string } }>;
+      };
+    }>,
   ): JwtUser {
+    const permissions = Array.from(
+      new Set(
+        userRoles.flatMap((userRole) =>
+          userRole.role.rolePermissions.map(
+            (rolePermission) => rolePermission.permission.code,
+          ),
+        ),
+      ),
+    );
     return {
       id,
       email,
       roles: userRoles.map((userRole) => userRole.role.name),
+      permissions,
     };
+  }
+
+  private verifyPassword(password: string, storedHash: string): boolean {
+    if (isBcryptHash(storedHash)) {
+      return bcrypt.compareSync(password, storedHash);
+    }
+    const [salt, expectedHash] = storedHash.split(':');
+    if (!salt || !expectedHash) {
+      return false;
+    }
+    return comparePassword(password, expectedHash, salt);
   }
 }

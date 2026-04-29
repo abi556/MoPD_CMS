@@ -19,6 +19,13 @@ class AuthUserDto {
     type: [String],
   })
   roles!: string[];
+
+  @ApiProperty({
+    example: ['admin:ping', 'complaints:list'],
+    description: 'Effective user permissions.',
+    type: [String],
+  })
+  permissions!: string[];
 }
 
 class TokenPairDto {

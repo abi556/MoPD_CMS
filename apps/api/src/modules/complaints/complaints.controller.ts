@@ -22,8 +22,10 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Permissions } from '../../common/decorators/permissions.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
@@ -52,8 +54,9 @@ export class ComplaintsController {
   constructor(private readonly complaintsService: ComplaintsService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles('SuperAdmin', 'CaseOfficer')
+  @Permissions('complaints:list')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'List complaints for staff operations',
@@ -97,8 +100,9 @@ export class ComplaintsController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles('SuperAdmin', 'CaseOfficer')
+  @Permissions('complaints:detail')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get complaint details by internal id',
@@ -156,8 +160,9 @@ export class ComplaintsController {
   }
 
   @Get(':id/history')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles('SuperAdmin', 'CaseOfficer')
+  @Permissions('complaints:history')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get immutable complaint history timeline',
@@ -204,8 +209,9 @@ export class ComplaintsController {
   }
 
   @Post(':id/assign')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles('SuperAdmin', 'CaseOfficer')
+  @Permissions('complaints:assign')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Assign or reassign complaint to an officer',
@@ -276,8 +282,9 @@ export class ComplaintsController {
   }
 
   @Post(':id/transition')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles('SuperAdmin', 'CaseOfficer')
+  @Permissions('complaints:transition')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Transition complaint workflow status',

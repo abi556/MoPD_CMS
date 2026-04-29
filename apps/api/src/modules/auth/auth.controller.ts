@@ -175,13 +175,14 @@ export class AuthController {
     type: ErrorResponseDto,
   })
   me(@CurrentUser() user: JwtUser): {
-    data: { id: string; email: string; roles: string[] };
+    data: { id: string; email: string; roles: string[]; permissions: string[] };
   } {
     return {
       data: {
         id: user.id,
         email: user.email,
         roles: user.roles,
+        permissions: user.permissions,
       },
     };
   }

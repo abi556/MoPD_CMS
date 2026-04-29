@@ -43,6 +43,7 @@ interface AuthUserResponse {
   id: string;
   email: string;
   roles: string[];
+  permissions: string[];
 }
 
 interface LoginResponse {
@@ -177,6 +178,12 @@ interface StoredRole {
   name: string;
 }
 
+interface StoredPermission {
+  id: string;
+  code: string;
+  description?: string;
+}
+
 interface StoredUser {
   id: string;
   email: string;
@@ -206,8 +213,10 @@ function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
   const roleStore = new Map<string, StoredRole>();
+  const permissionStore = new Map<string, StoredPermission>();
   const userStore = new Map<string, StoredUser>();
   const userRoleStore = new Set<string>();
+  const rolePermissionStore = new Set<string>();
   let sequence = 0;
   let historySequence = 0;
 
@@ -405,6 +414,41 @@ function createPrismaMock(): PrismaService {
     userStore.set(args.where.id, next);
     return Promise.resolve(next);
   };
+  const userUpdate = (args: {
+    where: { id: string };
+    data: Partial<StoredUser>;
+  }): Promise<StoredUser> => {
+    const existing = userStore.get(args.where.id);
+    if (!existing) {
+      throw new Error('record not found');
+    }
+    const next: StoredUser = { ...existing, ...args.data };
+    userStore.set(args.where.id, next);
+    return Promise.resolve(next);
+  };
+
+  const permissionUpsert = (args: {
+    where: { id: string };
+    create: StoredPermission;
+    update: Partial<StoredPermission>;
+  }): Promise<StoredPermission> => {
+    const existing = permissionStore.get(args.where.id);
+    const next: StoredPermission = existing
+      ? { ...existing, ...args.update }
+      : { ...args.create };
+    permissionStore.set(args.where.id, next);
+    return Promise.resolve(next);
+  };
+
+  const rolePermissionUpsert = (args: {
+    where: { roleId_permissionId: { roleId: string; permissionId: string } };
+    create: { roleId: string; permissionId: string };
+    update: Record<string, never>;
+  }): Promise<{ roleId: string; permissionId: string }> => {
+    const key = `${args.where.roleId_permissionId.roleId}:${args.where.roleId_permissionId.permissionId}`;
+    rolePermissionStore.add(key);
+    return Promise.resolve({ ...args.create });
+  };
 
   const userRoleUpsert = (args: {
     where: { userId_roleId: { userId: string; roleId: string } };
@@ -418,9 +462,27 @@ function createPrismaMock(): PrismaService {
 
   const userFindUnique = (args: {
     where: { email?: string; id?: string };
-    include?: { userRoles?: { include?: { role?: boolean } } };
+    include?: {
+      userRoles?: {
+        include?: {
+          role?: {
+            include?: {
+              rolePermissions?: { include?: { permission?: boolean } };
+            };
+          };
+        };
+      };
+    };
   }): Promise<
-    (StoredUser & { userRoles: Array<{ role: { name: string } }> }) | null
+    | (StoredUser & {
+        userRoles: Array<{
+          role: {
+            name: string;
+            rolePermissions: Array<{ permission: { code: string } }>;
+          };
+        }>;
+      })
+    | null
   > => {
     const byEmail = args.where.email
       ? Array.from(userStore.values()).find(
@@ -439,6 +501,14 @@ function createPrismaMock(): PrismaService {
       .map(([, roleId]) => ({
         role: {
           name: roleStore.get(roleId)?.name ?? roleId,
+          rolePermissions: Array.from(rolePermissionStore)
+            .map((entry) => entry.split(':'))
+            .filter(([mappedRoleId]) => mappedRoleId === roleId)
+            .map(([, permissionId]) => ({
+              permission: {
+                code: permissionStore.get(permissionId)?.code ?? permissionId,
+              },
+            })),
         },
       }));
 
@@ -461,8 +531,15 @@ function createPrismaMock(): PrismaService {
     role: {
       upsert: roleUpsert,
     },
+    permission: {
+      upsert: permissionUpsert,
+    },
+    rolePermission: {
+      upsert: rolePermissionUpsert,
+    },
     user: {
       upsert: userUpsert,
+      update: userUpdate,
       findUnique: userFindUnique,
     },
     userRole: {
@@ -1005,6 +1082,7 @@ describe('AppController (e2e)', () => {
     expect(typeof body.data.user.id).toBe('string');
     expect(body.data.user.email).toBe('admin@mopd.local');
     expect(body.data.user.roles).toEqual(['SuperAdmin']);
+    expect(body.data.user.permissions).toContain('admin:ping');
     expect(refreshCookieHeader).toContain('refresh_token=');
   });
 
@@ -1027,6 +1105,7 @@ describe('AppController (e2e)', () => {
     expect(typeof meBody.data.id).toBe('string');
     expect(meBody.data.email).toBe('admin@mopd.local');
     expect(meBody.data.roles).toEqual(['SuperAdmin']);
+    expect(meBody.data.permissions).toContain('admin:ping');
   });
 
   it('refreshes and rotates refresh token', async () => {

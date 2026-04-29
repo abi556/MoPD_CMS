@@ -43,11 +43,24 @@ pnpm install
 ```
 
 ### 5. Database Setup (Prisma)
-Initialize the database schema and generate the Prisma Client:
+Initialize/apply the database schema and generate the Prisma Client:
 ```bash
 # Inside apps/api
 pnpm prisma:migrate:dev --name init
 pnpm prisma:generate
+```
+
+For shared/staged environments or when syncing the local DB to committed migrations:
+```bash
+# From monorepo root
+pnpm --filter @mopd-cms/api run prisma:migrate:deploy
+pnpm --filter @mopd-cms/api run prisma:generate
+```
+
+If auth seed data is enabled in `.env`, seed users/roles/permissions:
+```bash
+# From monorepo root
+pnpm --filter @mopd-cms/api run seed:auth
 ```
 
 ### 6. Run the Server
@@ -95,6 +108,8 @@ pnpm test:cov
 - `pnpm format` - Run Prettier to format code
 - `pnpm prisma:generate` - Generate Prisma Client types
 - `pnpm prisma:migrate:dev` - Apply database migrations in development
+- `pnpm prisma:migrate:deploy` - Apply committed migrations (non-interactive)
+- `pnpm seed:auth` - Seed auth roles/users/permissions from environment
 
 ---
 

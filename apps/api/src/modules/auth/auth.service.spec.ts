@@ -13,7 +13,12 @@ describe('AuthService', () => {
         email: string;
         passwordHash: string;
         isActive: boolean;
-        userRoles: Array<{ role: { name: string } }>;
+        userRoles: Array<{
+          role: {
+            name: string;
+            rolePermissions: Array<{ permission: { code: string } }>;
+          };
+        }>;
       } | null>,
       [string]
     >()
@@ -23,7 +28,14 @@ describe('AuthService', () => {
       passwordHash:
         '35e8cf4f97d379ebfbe4e7f4c8b43f3a:242c897f7f29e05eb1271dbbb13b6ed5df1594318717e56b3271fa7e64d563a0d3ff71a8f6072fa63eef611626b1a26e5c979c6f5fb160f96ab2b235b6b0e2da',
       isActive: true,
-      userRoles: [{ role: { name: 'SuperAdmin' } }],
+      userRoles: [
+        {
+          role: {
+            name: 'SuperAdmin',
+            rolePermissions: [{ permission: { code: 'admin:ping' } }],
+          },
+        },
+      ],
     });
   const findActiveById = jest
     .fn<
@@ -32,7 +44,12 @@ describe('AuthService', () => {
         email: string;
         passwordHash: string;
         isActive: boolean;
-        userRoles: Array<{ role: { name: string } }>;
+        userRoles: Array<{
+          role: {
+            name: string;
+            rolePermissions: Array<{ permission: { code: string } }>;
+          };
+        }>;
       } | null>,
       [string]
     >()
@@ -42,8 +59,16 @@ describe('AuthService', () => {
       passwordHash:
         '35e8cf4f97d379ebfbe4e7f4c8b43f3a:242c897f7f29e05eb1271dbbb13b6ed5df1594318717e56b3271fa7e64d563a0d3ff71a8f6072fa63eef611626b1a26e5c979c6f5fb160f96ab2b235b6b0e2da',
       isActive: true,
-      userRoles: [{ role: { name: 'SuperAdmin' } }],
+      userRoles: [
+        {
+          role: {
+            name: 'SuperAdmin',
+            rolePermissions: [{ permission: { code: 'admin:ping' } }],
+          },
+        },
+      ],
     });
+  const updatePasswordHash = jest.fn<Promise<void>, [string, string]>();
   let service: AuthService;
 
   beforeEach(async () => {
@@ -51,6 +76,8 @@ describe('AuthService', () => {
     ensureSeedUsers.mockClear();
     findActiveByEmail.mockClear();
     findActiveById.mockClear();
+    updatePasswordHash.mockReset();
+    updatePasswordHash.mockResolvedValue(undefined);
     signAsync.mockResolvedValue('signed-access-token');
 
     service = new AuthService(
@@ -59,6 +86,7 @@ describe('AuthService', () => {
         ensureSeedUsers,
         findActiveByEmail,
         findActiveById,
+        updatePasswordHash,
       } as unknown as UserService,
     );
     await service.onModuleInit();
@@ -74,6 +102,11 @@ describe('AuthService', () => {
     expect(result.expiresIn).toBe(900);
     expect(result.user.email).toBe('admin@mopd.local');
     expect(result.user.roles).toEqual(['SuperAdmin']);
+    expect(result.user.permissions).toEqual(['admin:ping']);
+    expect(updatePasswordHash).toHaveBeenCalledWith(
+      'user-admin-0001',
+      expect.stringMatching(/^\$2[aby]\$\d{2}\$.+/),
+    );
   });
 
   it('rejects login with invalid credentials', async () => {
