@@ -92,3 +92,87 @@ export class ComplaintTrackingEnvelopeDto {
   })
   data!: ComplaintTrackingDataDto;
 }
+
+export class ComplaintListItemDto {
+  @ApiProperty({
+    example: 'cmojx636z0000tc9mj1pge0zh',
+    description: 'Internal complaint id.',
+  })
+  id!: string;
+
+  @ApiProperty({
+    example: 'CMS-2026-000001',
+    description: 'Public reference used for tracking.',
+  })
+  referenceNo!: string;
+
+  @ApiProperty({
+    example: 'SUBMITTED',
+    description: 'Current complaint status.',
+  })
+  status!: 'SUBMITTED';
+
+  @ApiProperty({
+    enum: ComplaintChannel,
+    example: ComplaintChannel.WEB,
+    description: 'Submission channel.',
+  })
+  channel!: ComplaintChannel;
+
+  @ApiProperty({
+    example: 'Road project delay in zone 3',
+    description: 'Complaint subject.',
+  })
+  subject!: string;
+
+  @ApiProperty({
+    example: '2026-04-29T10:35:54.923Z',
+    description: 'ISO-8601 submission timestamp.',
+  })
+  submittedAt!: string;
+
+  @ApiProperty({
+    enum: ComplaintLocale,
+    example: ComplaintLocale.EN,
+    description: 'Preferred language.',
+  })
+  locale!: ComplaintLocale;
+}
+
+export class ComplaintListMetaDto {
+  @ApiProperty({
+    example: 1,
+    description: 'Current result page.',
+  })
+  page!: number;
+
+  @ApiProperty({
+    example: 20,
+    description: 'Requested page size.',
+  })
+  pageSize!: number;
+
+  @ApiProperty({
+    example: 57,
+    description: 'Total matching records across all pages.',
+  })
+  total!: number;
+
+  @ApiProperty({
+    example: 3,
+    description: 'Computed page count for the current filters.',
+  })
+  totalPages!: number;
+}
+
+export class ComplaintListEnvelopeDto {
+  @ApiProperty({
+    type: [ComplaintListItemDto],
+  })
+  data!: ComplaintListItemDto[];
+
+  @ApiProperty({
+    type: ComplaintListMetaDto,
+  })
+  meta!: ComplaintListMetaDto;
+}

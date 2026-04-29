@@ -1,98 +1,108 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MoPD CMS - API Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The core backend service for the Ministry of Peace and Development (MoPD) Complaint Management System. Built with [NestJS](https://nestjs.com/), [Prisma](https://www.prisma.io/), and PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🏗 Architecture & Tech Stack
 
-## Description
+- **Framework**: NestJS (Node.js / TypeScript)
+- **Database**: PostgreSQL
+- **ORM**: Prisma v7 (with `@prisma/adapter-pg`)
+- **Caching/Queues**: Redis (planned)
+- **API Design**: RESTful, API-First approach
+- **Documentation**: Swagger / OpenAPI
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Getting Started (Onboarding)
 
-## Project setup
+Follow these steps to set up the API service locally.
 
+### 1. Prerequisites
+- **Node.js**: v22.0.0 or higher
+- **Package Manager**: [pnpm](https://pnpm.io/) v10+
+- **Docker**: For running local infrastructure (Postgres, Redis, MinIO)
+
+### 2. Start Local Infrastructure
+From the root of the monorepo, start the required databases using Docker Compose:
 ```bash
-$ pnpm install
+cd ../../infra/docker
+docker compose up -d
 ```
 
-## Compile and run the project
-
+### 3. Environment Variables
+The API requires specific environment variables to connect to the database and sign tokens.
 ```bash
-# development
-$ pnpm run start
+# Inside apps/api
+cp .env.example .env
+```
+*(The default values in `.env.example` are pre-configured to work with the local Docker Compose setup).*
 
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+### 4. Install Dependencies
+If you haven't already, install dependencies from the monorepo root:
+```bash
+cd ../../
+pnpm install
 ```
 
-## Run tests
-
+### 5. Database Setup (Prisma)
+Initialize the database schema and generate the Prisma Client:
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+# Inside apps/api
+pnpm prisma:migrate:dev --name init
+pnpm prisma:generate
 ```
 
-## Deployment
+### 6. Run the Server
+Start the development server in watch mode:
+```bash
+# Inside apps/api
+pnpm dev
+```
+The API will be available at `http://localhost:3001/api/v1`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 📚 API Documentation (Swagger)
+
+Once the server is running, you can access the interactive API documentation at:
+👉 **[http://localhost:3001/api/docs](http://localhost:3001/api/docs)**
+
+This interface allows you to explore endpoints, view request/response schemas, and test the API directly (including JWT authentication).
+
+---
+
+## 🧪 Testing
+
+The project follows a Test-Driven Development (TDD) workflow. We maintain unit, integration, and end-to-end (e2e) tests.
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# Run unit tests
+pnpm test
+
+# Run e2e tests (requires database)
+pnpm test:e2e
+
+# Run tests with coverage report
+pnpm test:cov
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🛠 Available Scripts
 
-Check out a few resources that may come in handy when working with NestJS:
+- `pnpm dev` - Start development server (watch mode)
+- `pnpm build` - Build the application for production
+- `pnpm start:prod` - Run the compiled production build
+- `pnpm lint` - Run ESLint to check for code issues
+- `pnpm format` - Run Prettier to format code
+- `pnpm prisma:generate` - Generate Prisma Client types
+- `pnpm prisma:migrate:dev` - Apply database migrations in development
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 🔐 Security & Authentication
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **JWT**: Endpoints are protected using short-lived Access Tokens (15m) and rotating Refresh Tokens (7d).
+- **RBAC**: Role-Based Access Control is enforced via the `@Roles()` decorator.
+- **Rate Limiting**: Global rate limiting is applied to prevent abuse.
+- **Helmet**: HTTP headers are secured using Helmet.
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+*Note: This README will be continuously updated as new infrastructure (like Redis queues or MinIO storage) is fully integrated into the application logic.*

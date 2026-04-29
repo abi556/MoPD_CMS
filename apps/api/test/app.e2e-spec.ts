@@ -67,6 +67,24 @@ interface ComplaintTrackResponse {
   };
 }
 
+interface ComplaintListResponse {
+  data: Array<{
+    id: string;
+    referenceNo: string;
+    status: 'SUBMITTED';
+    channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
+    subject: string;
+    submittedAt: string;
+    locale: 'en' | 'am';
+  }>;
+  meta: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 interface StoredComplaint {
   id: string;
   sequenceNo: number;
@@ -143,8 +161,74 @@ function createPrismaMock(): PrismaService {
     return null;
   };
 
+  const applyWhere = (
+    input: StoredComplaint[],
+    where?: {
+      status?: StoredComplaint['status'];
+      channel?: StoredComplaint['channel'];
+      locale?: StoredComplaint['locale'];
+      submittedAt?: { gte?: Date; lte?: Date };
+    },
+  ): StoredComplaint[] => {
+    if (!where) {
+      return input;
+    }
+
+    return input.filter((item) => {
+      if (where.status && item.status !== where.status) {
+        return false;
+      }
+      if (where.channel && item.channel !== where.channel) {
+        return false;
+      }
+      if (where.locale && item.locale !== where.locale) {
+        return false;
+      }
+      if (where.submittedAt?.gte && item.submittedAt < where.submittedAt.gte) {
+        return false;
+      }
+      if (where.submittedAt?.lte && item.submittedAt > where.submittedAt.lte) {
+        return false;
+      }
+      return true;
+    });
+  };
+
+  const findMany = (args: {
+    where?: {
+      status?: StoredComplaint['status'];
+      channel?: StoredComplaint['channel'];
+      locale?: StoredComplaint['locale'];
+      submittedAt?: { gte?: Date; lte?: Date };
+    };
+    orderBy?: Array<
+      { submittedAt?: 'asc' | 'desc' } | { sequenceNo?: 'asc' | 'desc' }
+    >;
+    skip?: number;
+    take?: number;
+  }): StoredComplaint[] => {
+    const filtered = applyWhere(Array.from(store.values()), args.where);
+    const sorted = filtered.sort((a, b) => b.sequenceNo - a.sequenceNo);
+    const skip = args.skip ?? 0;
+    const take = args.take ?? sorted.length;
+    return sorted.slice(skip, skip + take);
+  };
+
+  const count = (args: {
+    where?: {
+      status?: StoredComplaint['status'];
+      channel?: StoredComplaint['channel'];
+      locale?: StoredComplaint['locale'];
+      submittedAt?: { gte?: Date; lte?: Date };
+    };
+  }): number => {
+    return applyWhere(Array.from(store.values()), args.where).length;
+  };
+
   const prismaLike = {
     complaint: {
+      count,
+      findMany,
       findUnique,
     },
     $transaction: async <T>(
@@ -304,6 +388,69 @@ describe('AppController (e2e)', () => {
     expect(trackedBody.data.status).toBe('SUBMITTED');
     expect(trackedBody.data.subject).toBe('Delayed fertilizer delivery');
     expect(typeof trackedBody.data.submittedAt).toBe('string');
+  });
+
+  it('rejects complaint list for unauthenticated request', async () => {
+    await request(httpApp()).get('/api/v1/complaints').expect(401);
+  });
+
+  it('lists complaints for staff with pagination and filters', async () => {
+    await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Road project delay in zone 3',
+        description:
+          'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
+        channel: 'WEB',
+        complainantName: 'Abebe Kebede',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+
+    await request(httpApp())
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Delayed fertilizer delivery',
+        description:
+          'Fertilizer delivery for kebele farmers has been delayed for the current season without notification.',
+        channel: 'EMAIL',
+        complainantName: 'Meron Tadesse',
+        consentGiven: true,
+        locale: 'am',
+      })
+      .expect(201);
+
+    const officerLogin = await request(httpApp())
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'officer@mopd.local',
+        password: 'OfficerPass123!',
+      })
+      .expect(200);
+    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+
+    const response = await request(httpApp())
+      .get('/api/v1/complaints')
+      .query({
+        channel: 'WEB',
+        locale: 'en',
+        page: 1,
+        pageSize: 10,
+      })
+      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .expect(200);
+    const body = getBody<ComplaintListResponse>(response);
+
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0]?.channel).toBe('WEB');
+    expect(body.data[0]?.locale).toBe('en');
+    expect(body.meta).toEqual({
+      page: 1,
+      pageSize: 10,
+      total: 1,
+      totalPages: 1,
+    });
   });
 
   it('rejects complaint submission without consent', async () => {

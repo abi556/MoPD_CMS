@@ -7,6 +7,7 @@ import {
   ComplaintLocale,
   CreateComplaintDto,
 } from './dto/create-complaint.dto';
+import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 
 export interface ComplaintRecord {
   id: string;
@@ -21,6 +22,16 @@ export interface ComplaintRecord {
   complainantName?: string;
   complainantEmail?: string;
   complainantPhone?: string;
+}
+
+export interface ComplaintListResult {
+  data: ComplaintRecord[];
+  meta: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 @Injectable()
@@ -68,6 +79,49 @@ export class ComplaintsService {
     }
 
     return this.toComplaintRecord(found);
+  }
+
+  async listForStaff(
+    query: ListComplaintsQueryDto,
+  ): Promise<ComplaintListResult> {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const where = {
+      status: query.status,
+      channel: query.channel,
+      locale: query.locale,
+      submittedAt:
+        query.submittedFrom || query.submittedTo
+          ? {
+              gte: query.submittedFrom
+                ? new Date(query.submittedFrom)
+                : undefined,
+              lte: query.submittedTo ? new Date(query.submittedTo) : undefined,
+            }
+          : undefined,
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.complaint.findMany({
+        where,
+        orderBy: [{ submittedAt: 'desc' }, { sequenceNo: 'desc' }],
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.complaint.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((row) => this.toComplaintRecord(row)),
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: total === 0 ? 0 : Math.ceil(total / pageSize),
+      },
+    };
   }
 
   private buildReferenceNo(submittedAt: Date, sequenceNo: number): string {
