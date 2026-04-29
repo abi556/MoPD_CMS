@@ -210,7 +210,7 @@ describe('ComplaintsService', () => {
     complaintFindUnique.mockResolvedValue({
       id: 'cmp_011',
       referenceNo: 'CMS-2026-000011',
-      status: 'SUBMITTED',
+      status: 'TRIAGE',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
       description: 'Road grading activity stopped mid-way.',
@@ -252,6 +252,32 @@ describe('ComplaintsService', () => {
     expect(assigned.assignedByUserId).toBe('user-admin-0001');
     expect(complaintHistoryCreate).toHaveBeenCalledTimes(1);
     expect(complaintUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects assignment when complaint is not in TRIAGE or APPEAL', async () => {
+    complaintFindUnique.mockResolvedValue({
+      id: 'cmp_012',
+      referenceNo: 'CMS-2026-000012',
+      status: 'SUBMITTED',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road grading incomplete',
+      description: 'Road grading activity stopped mid-way.',
+      submittedAt: new Date('2026-04-29T09:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: null,
+      complainantEmail: null,
+      complainantPhone: null,
+    });
+
+    await expect(
+      service.assignComplaint(
+        'cmp_012',
+        'user-officer-0001',
+        'user-admin-0001',
+        'Routing based on transport infrastructure expertise.',
+      ),
+    ).rejects.toThrow(UnprocessableEntityException);
   });
 
   it('transitions complaint from ASSIGNED to IN_INVESTIGATION', async () => {

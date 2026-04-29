@@ -66,9 +66,27 @@ export class ComplaintsService {
     ComplaintStatusValue,
     ComplaintStatusValue[]
   > = {
-    [ComplaintStatusValue.SUBMITTED]: [ComplaintStatusValue.ASSIGNED],
+    [ComplaintStatusValue.SUBMITTED]: [ComplaintStatusValue.TRIAGE],
+    [ComplaintStatusValue.TRIAGE]: [ComplaintStatusValue.ASSIGNED],
     [ComplaintStatusValue.ASSIGNED]: [ComplaintStatusValue.IN_INVESTIGATION],
-    [ComplaintStatusValue.IN_INVESTIGATION]: [ComplaintStatusValue.CLOSED],
+    [ComplaintStatusValue.IN_INVESTIGATION]: [
+      ComplaintStatusValue.DRAFT_RESPONSE,
+    ],
+    [ComplaintStatusValue.DRAFT_RESPONSE]: [
+      ComplaintStatusValue.QA_LEGAL_REVIEW,
+    ],
+    [ComplaintStatusValue.QA_LEGAL_REVIEW]: [
+      ComplaintStatusValue.DRAFT_RESPONSE,
+      ComplaintStatusValue.RESPONSE_ISSUED,
+    ],
+    [ComplaintStatusValue.RESPONSE_ISSUED]: [
+      ComplaintStatusValue.AWAITING_FEEDBACK,
+    ],
+    [ComplaintStatusValue.AWAITING_FEEDBACK]: [
+      ComplaintStatusValue.CLOSED,
+      ComplaintStatusValue.APPEAL,
+    ],
+    [ComplaintStatusValue.APPEAL]: [ComplaintStatusValue.ASSIGNED],
     [ComplaintStatusValue.CLOSED]: [],
   };
 
@@ -140,6 +158,15 @@ export class ComplaintsService {
       if (!existing) {
         throw new NotFoundException('Complaint not found');
       }
+      const currentStatus = existing.status as ComplaintStatusValue;
+      if (
+        currentStatus !== ComplaintStatusValue.TRIAGE &&
+        currentStatus !== ComplaintStatusValue.APPEAL
+      ) {
+        throw new UnprocessableEntityException(
+          `Invalid assignment from ${currentStatus}. Assignment requires TRIAGE or APPEAL.`,
+        );
+      }
 
       const updatedComplaint = await tx.complaint.update({
         where: { id },
@@ -156,7 +183,7 @@ export class ComplaintsService {
         data: {
           complaintId: id,
           action: 'ASSIGNED',
-          fromStatus: existing.status,
+          fromStatus: currentStatus,
           toStatus: ComplaintStatusValue.ASSIGNED,
           actorUserId: assignedByUserId,
           reason: reason ?? null,
