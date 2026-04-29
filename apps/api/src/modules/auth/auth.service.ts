@@ -1,4 +1,10 @@
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'crypto';
+import {
+  createHash,
+  randomBytes,
+  randomUUID,
+  scryptSync,
+  timingSafeEqual,
+} from 'crypto';
 import {
   Injectable,
   OnModuleInit,
@@ -55,13 +61,26 @@ function getRedisUrl(): string {
   return 'redis://localhost:6379';
 }
 
+function getRefreshTtlMs(): number {
+  const raw = process.env.AUTH_REFRESH_TTL_MS;
+  if (!raw) {
+    return 7 * 24 * 60 * 60 * 1000;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  if (Number.isNaN(parsed) || parsed <= 0) {
+    return 7 * 24 * 60 * 60 * 1000;
+  }
+  return parsed;
+}
+
 @Injectable()
 export class AuthService implements OnModuleInit {
   private readonly accessTokenTtlSeconds = 900;
-  private readonly refreshTokenTtlMs = 7 * 24 * 60 * 60 * 1000;
+  private readonly refreshTokenTtlMs = getRefreshTtlMs();
   private readonly useInMemoryStore =
     process.env.NODE_ENV === 'test' || Boolean(process.env.JEST_WORKER_ID);
   private readonly refreshTokenStore = new Map<string, string>();
+  private readonly revokedAccessStore = new Map<string, number>();
   private readonly redis = this.useInMemoryStore
     ? null
     : new Redis(getRedisUrl(), {
@@ -131,11 +150,55 @@ export class AuthService implements OnModuleInit {
     await this.deleteRefreshToken(refreshToken);
   }
 
+  async logoutByRefreshToken(refreshToken: string): Promise<void> {
+    const tokenUserId = await this.getRefreshUserId(refreshToken);
+    if (!tokenUserId) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    await this.deleteRefreshToken(refreshToken);
+  }
+
+  async logoutSession(
+    userId: string,
+    refreshToken: string,
+    accessJti: string,
+    accessExp?: number,
+  ): Promise<void> {
+    const tokenUserId = await this.getRefreshUserId(refreshToken);
+    if (!tokenUserId || tokenUserId !== userId) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    await this.deleteRefreshToken(refreshToken);
+    await this.revokeAccessToken(accessJti, accessExp);
+  }
+
+  async isAccessTokenRevoked(jti: string): Promise<boolean> {
+    const key = this.accessRevokeKey(jti);
+    if (this.useInMemoryStore) {
+      const expiresAt = this.revokedAccessStore.get(key);
+      if (!expiresAt) {
+        return false;
+      }
+      if (expiresAt <= Date.now()) {
+        this.revokedAccessStore.delete(key);
+        return false;
+      }
+      return true;
+    }
+    if (!this.redis) {
+      return false;
+    }
+    const value = await this.redis.get(key);
+    return value === '1';
+  }
+
   private async issueTokenPair(user: JwtUser): Promise<IssuedTokens> {
+    const accessJti = randomUUID();
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       roles: user.roles,
+      jti: accessJti,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
@@ -163,6 +226,28 @@ export class AuthService implements OnModuleInit {
   private refreshKey(refreshToken: string): string {
     const tokenHash = createHash('sha256').update(refreshToken).digest('hex');
     return `auth:refresh:${tokenHash}`;
+  }
+
+  private accessRevokeKey(jti: string): string {
+    return `auth:access:revoked:${jti}`;
+  }
+
+  private async revokeAccessToken(
+    jti: string,
+    accessExp?: number,
+  ): Promise<void> {
+    const fallbackTtlMs = this.accessTokenTtlSeconds * 1000;
+    const expiresAt = accessExp ? accessExp * 1000 : Date.now() + fallbackTtlMs;
+    const ttlMs = Math.max(expiresAt - Date.now(), 1000);
+    const key = this.accessRevokeKey(jti);
+    if (this.useInMemoryStore) {
+      this.revokedAccessStore.set(key, Date.now() + ttlMs);
+      return;
+    }
+    if (!this.redis) {
+      return;
+    }
+    await this.redis.set(key, '1', 'PX', ttlMs);
   }
 
   private async setRefreshToken(

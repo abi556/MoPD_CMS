@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AuthService } from '../auth.service';
 import { JwtPayload, JwtUser } from '../interfaces/jwt-user.interface';
 
 function getJwtSecret(): string {
@@ -17,7 +18,7 @@ function getJwtSecret(): string {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly authService: AuthService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -25,11 +26,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: JwtPayload): JwtUser {
+  async validate(payload: JwtPayload): Promise<JwtUser> {
+    if (!payload.jti) {
+      throw new UnauthorizedException('Invalid access token');
+    }
+    const isRevoked = await this.authService.isAccessTokenRevoked(payload.jti);
+    if (isRevoked) {
+      throw new UnauthorizedException('Access token has been revoked');
+    }
     return {
       id: payload.sub,
       email: payload.email,
       roles: payload.roles,
+      jti: payload.jti,
+      exp: payload.exp,
     };
   }
 }

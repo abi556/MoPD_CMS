@@ -25,5 +25,9 @@ export function configureApp(app: INestApplication): void {
     .addCookieAuth('refresh_token')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, documentFactory);
+  SwaggerModule.setup('api/docs', app, documentFactory, {
+    swaggerOptions: {
+      withCredentials: true,
+    },
+  });
 }

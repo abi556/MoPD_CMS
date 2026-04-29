@@ -1082,6 +1082,11 @@ describe('AppController (e2e)', () => {
       .post('/api/v1/auth/refresh')
       .set('Cookie', loginRefreshCookie)
       .expect(401);
+
+    await request(httpApp())
+      .get('/api/v1/admin/ping')
+      .set('Authorization', `Bearer ${loginBody.data.accessToken}`)
+      .expect(401);
   });
 
   it('enforces role-based route protection', async () => {
