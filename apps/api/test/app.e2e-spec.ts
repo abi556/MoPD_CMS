@@ -3,6 +3,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import request from 'supertest';
 import type { Response } from 'supertest';
@@ -47,7 +48,6 @@ interface AuthUserResponse {
 interface LoginResponse {
   data: {
     accessToken: string;
-    refreshToken: string;
     tokenType: 'Bearer';
     expiresIn: number;
     user: AuthUserResponse;
@@ -57,7 +57,6 @@ interface LoginResponse {
 interface TokenResponse {
   data: {
     accessToken: string;
-    refreshToken: string;
     tokenType: 'Bearer';
     expiresIn: number;
   };
@@ -188,6 +187,19 @@ interface StoredUser {
 function getBody<T>(response: Response): T {
   const body: unknown = response.body;
   return body as T;
+}
+
+function getRefreshCookieHeader(response: Response): string {
+  const setCookie = response.headers['set-cookie'];
+  if (!Array.isArray(setCookie) || setCookie.length === 0) {
+    throw new Error('Expected refresh cookie to be set');
+  }
+  const fullHeader = setCookie[0] as string;
+  const [cookiePair] = fullHeader.split(';');
+  if (!cookiePair) {
+    throw new Error('Invalid refresh cookie header');
+  }
+  return cookiePair;
 }
 
 function createPrismaMock(): PrismaService {
@@ -489,6 +501,7 @@ describe('AppController (e2e)', () => {
   const applyTestBootstrap = (targetApp: INestApplication): void => {
     targetApp.setGlobalPrefix('api/v1');
     targetApp.use(helmet());
+    targetApp.use(cookieParser());
     targetApp.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -503,6 +516,7 @@ describe('AppController (e2e)', () => {
       .setDescription('API-first complaint management platform')
       .setVersion('1.0')
       .addBearerAuth()
+      .addCookieAuth('refresh_token')
       .build();
 
     const swaggerDocument = SwaggerModule.createDocument(
@@ -555,7 +569,7 @@ describe('AppController (e2e)', () => {
 
     const body = getBody<ErrorEnvelope>(response);
 
-    expect(body.error.code).toBe('not_found');
+    expect(body.error.code).toBe('NOT_FOUND');
     expect(body.error.message).toBe('Resource not found');
     expect(typeof body.error.correlationId).toBe('string');
   });
@@ -727,7 +741,7 @@ describe('AppController (e2e)', () => {
     expect(detailsBody.data.assignedByUserId).toBeNull();
   });
 
-  it('returns not_found for unknown complaint id on staff detail route', async () => {
+  it('returns NOT_FOUND for unknown complaint id on staff detail route', async () => {
     const officerLogin = await request(httpApp())
       .post('/api/v1/auth/login')
       .send({
@@ -743,7 +757,7 @@ describe('AppController (e2e)', () => {
       .expect(404);
     const body = getBody<ErrorEnvelope>(response);
 
-    expect(body.error.code).toBe('not_found');
+    expect(body.error.code).toBe('NOT_FOUND');
   });
 
   it('assigns complaint to officer and sets status ASSIGNED', async () => {
@@ -877,7 +891,7 @@ describe('AppController (e2e)', () => {
       .expect(422);
     const body = getBody<ErrorEnvelope>(response);
 
-    expect(body.error.code).toBe('validation_error');
+    expect(body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('returns complaint history timeline for staff users', async () => {
@@ -948,16 +962,16 @@ describe('AppController (e2e)', () => {
       .expect(422);
     const body = getBody<ErrorEnvelope>(response);
 
-    expect(body.error.code).toBe('validation_error');
+    expect(body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('returns not_found for unknown complaint reference', async () => {
+  it('returns NOT_FOUND for unknown complaint reference', async () => {
     const response = await request(httpApp())
       .get('/api/v1/complaints/track/CMS-2099-999999')
       .expect(404);
     const body = getBody<ErrorEnvelope>(response);
 
-    expect(body.error.code).toBe('not_found');
+    expect(body.error.code).toBe('NOT_FOUND');
     expect(body.error.message).toBe('Resource not found');
   });
 
@@ -968,7 +982,7 @@ describe('AppController (e2e)', () => {
 
     const body = getBody<ErrorEnvelope>(response);
 
-    expect(body.error.code).toBe('unauthorized');
+    expect(body.error.code).toBe('UNAUTHORIZED');
     expect(body.error.message).toBe('Unauthorized');
     expect(typeof body.error.correlationId).toBe('string');
   });
@@ -983,14 +997,15 @@ describe('AppController (e2e)', () => {
       .expect(200);
 
     const body = getBody<LoginResponse>(response);
+    const refreshCookieHeader = getRefreshCookieHeader(response);
 
     expect(typeof body.data.accessToken).toBe('string');
-    expect(typeof body.data.refreshToken).toBe('string');
     expect(body.data.tokenType).toBe('Bearer');
     expect(body.data.expiresIn).toBe(900);
     expect(typeof body.data.user.id).toBe('string');
     expect(body.data.user.email).toBe('admin@mopd.local');
     expect(body.data.user.roles).toEqual(['SuperAdmin']);
+    expect(refreshCookieHeader).toContain('refresh_token=');
   });
 
   it('returns current user for authenticated token', async () => {
@@ -1022,23 +1037,22 @@ describe('AppController (e2e)', () => {
         password: 'AdminPass123!',
       })
       .expect(200);
-    const loginBody = getBody<LoginResponse>(login);
+    const loginRefreshCookie = getRefreshCookieHeader(login);
 
     const refreshResponse = await request(httpApp())
       .post('/api/v1/auth/refresh')
-      .send({ refreshToken: loginBody.data.refreshToken })
+      .set('Cookie', loginRefreshCookie)
       .expect(200);
     const refreshBody = getBody<TokenResponse>(refreshResponse);
+    const rotatedRefreshCookie = getRefreshCookieHeader(refreshResponse);
 
     expect(refreshBody.data.accessToken).toEqual(expect.any(String));
-    expect(refreshBody.data.refreshToken).toEqual(expect.any(String));
-    expect(refreshBody.data.refreshToken).not.toEqual(
-      loginBody.data.refreshToken,
-    );
+    expect(rotatedRefreshCookie).toContain('refresh_token=');
+    expect(rotatedRefreshCookie).not.toEqual(loginRefreshCookie);
 
     await request(httpApp())
       .post('/api/v1/auth/refresh')
-      .send({ refreshToken: loginBody.data.refreshToken })
+      .set('Cookie', loginRefreshCookie)
       .expect(401);
   });
 
@@ -1051,11 +1065,12 @@ describe('AppController (e2e)', () => {
       })
       .expect(200);
     const loginBody = getBody<LoginResponse>(login);
+    const loginRefreshCookie = getRefreshCookieHeader(login);
 
     await request(httpApp())
       .post('/api/v1/auth/logout')
       .set('Authorization', `Bearer ${loginBody.data.accessToken}`)
-      .send({ refreshToken: loginBody.data.refreshToken })
+      .set('Cookie', loginRefreshCookie)
       .expect(200)
       .expect({
         data: {
@@ -1065,7 +1080,7 @@ describe('AppController (e2e)', () => {
 
     await request(httpApp())
       .post('/api/v1/auth/refresh')
-      .send({ refreshToken: loginBody.data.refreshToken })
+      .set('Cookie', loginRefreshCookie)
       .expect(401);
   });
 

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 class ErrorDetailsDto {
   @ApiProperty({
-    example: 'validation_error',
+    example: 'VALIDATION_ERROR',
     description: 'Machine-readable error code.',
   })
   code!: string;

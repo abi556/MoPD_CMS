@@ -5,16 +5,20 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
+  Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCookieAuth,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
-  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import {
@@ -24,12 +28,13 @@ import {
   RefreshResponseDto,
 } from './dto/auth-response.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { LogoutDto } from './dto/logout.dto';
 import { LoginDto } from './dto/login.dto';
-import { RefreshDto } from './dto/refresh.dto';
 import type { JwtUser } from './interfaces/jwt-user.interface';
 import { AuthService } from './auth.service';
-import type { AuthLoginResult, TokenPair } from './auth.service';
+import type { PublicTokenPair } from './auth.service';
+
+const REFRESH_COOKIE_NAME = 'refresh_token';
+const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 @ApiTags('auth')
 @Controller('auth')
@@ -47,14 +52,28 @@ export class AuthController {
     description: 'Credentials are invalid.',
     type: ErrorResponseDto,
   })
-  @ApiUnprocessableEntityResponse({
-    description: 'Request body failed validation.',
-    type: ErrorResponseDto,
-  })
-  async login(@Body() body: LoginDto): Promise<{ data: AuthLoginResult }> {
-    const loginResult = await this.authService.login(body.email, body.password);
+  @ApiCookieAuth(REFRESH_COOKIE_NAME)
+  async login(
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: LoginDto,
+  ): Promise<{
+    data: {
+      user: JwtUser;
+      accessToken: string;
+      tokenType: 'Bearer';
+      expiresIn: number;
+    };
+  }> {
+    const loginResult = await this.authService.issueLoginTokens(
+      body.email,
+      body.password,
+    );
+    this.setRefreshCookie(response, loginResult.refreshToken);
     return {
-      data: loginResult,
+      data: {
+        ...loginResult.tokenPair,
+        user: loginResult.user,
+      },
     };
   }
 
@@ -69,14 +88,17 @@ export class AuthController {
     description: 'Refresh token is invalid or expired.',
     type: ErrorResponseDto,
   })
-  @ApiUnprocessableEntityResponse({
-    description: 'Request body failed validation.',
-    type: ErrorResponseDto,
-  })
-  async refresh(@Body() body: RefreshDto): Promise<{ data: TokenPair }> {
-    const refreshedTokens = await this.authService.refresh(body.refreshToken);
+  @ApiCookieAuth(REFRESH_COOKIE_NAME)
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ data: PublicTokenPair }> {
+    const refreshToken = this.getRefreshTokenFromCookie(request);
+    const refreshedTokens =
+      await this.authService.rotateRefreshToken(refreshToken);
+    this.setRefreshCookie(response, refreshedTokens.refreshToken);
     return {
-      data: refreshedTokens,
+      data: refreshedTokens.tokenPair,
     };
   }
 
@@ -93,15 +115,15 @@ export class AuthController {
     description: 'Access token or refresh token is invalid.',
     type: ErrorResponseDto,
   })
-  @ApiUnprocessableEntityResponse({
-    description: 'Request body failed validation.',
-    type: ErrorResponseDto,
-  })
-  logout(
+  @ApiCookieAuth(REFRESH_COOKIE_NAME)
+  async logout(
     @CurrentUser() user: JwtUser,
-    @Body() body: LogoutDto,
-  ): { data: { message: string } } {
-    this.authService.logout(user.id, body.refreshToken);
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ data: { message: string } }> {
+    const refreshToken = this.getRefreshTokenFromCookie(request);
+    await this.authService.logout(user.id, refreshToken);
+    response.clearCookie(REFRESH_COOKIE_NAME, this.getCookieOptions());
     return {
       data: {
         message: 'Logged out successfully',
@@ -130,6 +152,35 @@ export class AuthController {
         email: user.email,
         roles: user.roles,
       },
+    };
+  }
+
+  private getRefreshTokenFromCookie(request: Request): string {
+    const cookies = request.cookies as Record<string, string> | undefined;
+    const refreshToken = cookies?.[REFRESH_COOKIE_NAME];
+    if (!refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    return refreshToken;
+  }
+
+  private setRefreshCookie(response: Response, refreshToken: string): void {
+    response.cookie(REFRESH_COOKIE_NAME, refreshToken, this.getCookieOptions());
+  }
+
+  private getCookieOptions(): {
+    httpOnly: boolean;
+    secure: boolean;
+    sameSite: 'lax';
+    maxAge: number;
+    path: string;
+  } {
+    return {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+      path: '/api/v1/auth',
     };
   }
 }

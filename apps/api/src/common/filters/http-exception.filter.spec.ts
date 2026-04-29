@@ -33,7 +33,7 @@ describe('GlobalHttpExceptionFilter', () => {
     expect(status).toHaveBeenCalledWith(404);
     expect(json).toHaveBeenCalledWith({
       error: {
-        code: 'not_found',
+        code: 'NOT_FOUND',
         message: 'Resource not found',
         correlationId: 'corr-test-id',
       },
@@ -51,7 +51,7 @@ describe('GlobalHttpExceptionFilter', () => {
     expect(status).toHaveBeenCalledWith(422);
     expect(json).toHaveBeenCalledWith({
       error: {
-        code: 'validation_error',
+        code: 'VALIDATION_ERROR',
         message: 'subject must be longer than or equal to 5 characters',
         correlationId: 'corr-test-id',
       },
@@ -66,14 +66,14 @@ describe('GlobalHttpExceptionFilter', () => {
     expect(status).toHaveBeenCalledWith(401);
     expect(json).toHaveBeenCalledWith({
       error: {
-        code: 'unauthorized',
+        code: 'UNAUTHORIZED',
         message: 'Invalid token',
         correlationId: 'corr-test-id',
       },
     });
   });
 
-  it('maps unknown errors to internal_error envelope', () => {
+  it('maps unknown errors to INTERNAL_ERROR envelope', () => {
     const { host, status, json } = createHostMocks();
 
     filter.catch(new Error('boom'), host as never);
@@ -81,7 +81,7 @@ describe('GlobalHttpExceptionFilter', () => {
     expect(status).toHaveBeenCalledWith(500);
     expect(json).toHaveBeenCalledWith({
       error: {
-        code: 'internal_error',
+        code: 'INTERNAL_ERROR',
         message: 'Something went wrong',
         correlationId: 'corr-test-id',
       },

@@ -98,7 +98,7 @@ describe('AuthService', () => {
 
   it('invalidates refresh token on logout', async () => {
     const login = await service.login('admin@mopd.local', 'AdminPass123!');
-    service.logout(login.user.id, login.refreshToken);
+    await service.logout(login.user.id, login.refreshToken);
 
     await expect(service.refresh(login.refreshToken)).rejects.toThrow(
       UnauthorizedException,
@@ -108,8 +108,8 @@ describe('AuthService', () => {
   it('rejects logout when refresh token does not belong to user', async () => {
     const login = await service.login('admin@mopd.local', 'AdminPass123!');
 
-    expect(() =>
+    await expect(
       service.logout('user-officer-0001', login.refreshToken),
-    ).toThrow(UnauthorizedException);
+    ).rejects.toThrow(UnauthorizedException);
   });
 });

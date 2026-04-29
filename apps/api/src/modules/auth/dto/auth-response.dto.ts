@@ -30,12 +30,6 @@ class TokenPairDto {
   accessToken!: string;
 
   @ApiProperty({
-    example: 'f2CKSZXV32B2phYIwnopgoaIlE8MOu9j_INBQvjtVyPeX6ZS3SEDwoSam58_e0C9',
-    description: 'Refresh token for token rotation.',
-  })
-  refreshToken!: string;
-
-  @ApiProperty({
     example: 'Bearer',
     description: 'Token type.',
   })

@@ -38,7 +38,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
       if (statusCode === 404) {
         return {
           statusCode,
-          code: 'not_found',
+          code: 'NOT_FOUND',
           message: 'Resource not found',
         };
       }
@@ -46,7 +46,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
       if (statusCode === 400) {
         return {
           statusCode: 422,
-          code: 'validation_error',
+          code: 'VALIDATION_ERROR',
           message: this.extractValidationMessage(exceptionResponse),
         };
       }
@@ -60,7 +60,7 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
 
     return {
       statusCode: 500,
-      code: 'internal_error',
+      code: 'INTERNAL_ERROR',
       message: 'Something went wrong',
     };
   }
@@ -108,17 +108,17 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
   private mapStatusToCode(statusCode: number): string {
     switch (statusCode) {
       case 401:
-        return 'unauthorized';
+        return 'UNAUTHORIZED';
       case 403:
-        return 'forbidden';
+        return 'FORBIDDEN';
       case 409:
-        return 'conflict';
+        return 'CONFLICT';
       case 429:
-        return 'rate_limit_exceeded';
+        return 'RATE_LIMIT_EXCEEDED';
       case 422:
-        return 'validation_error';
+        return 'VALIDATION_ERROR';
       default:
-        return 'request_failed';
+        return 'REQUEST_FAILED';
     }
   }
 }
