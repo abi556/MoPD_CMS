@@ -1,9 +1,12 @@
+import { Logger } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { AUDIT_EVENT } from './audit-event.types';
 
 describe('AuditService', () => {
   const auditLogCreate = jest.fn();
-  const loggerError = jest.spyOn(console, 'error').mockImplementation(() => {});
+  const loggerError = jest
+    .spyOn(Logger.prototype, 'error')
+    .mockImplementation(() => undefined);
 
   beforeEach(() => {
     auditLogCreate.mockReset();

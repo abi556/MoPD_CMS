@@ -8,6 +8,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Permissions } from '../../common/decorators/permissions.decorator';
@@ -58,6 +59,7 @@ export class AdminController {
     description: 'Authenticated user does not have required role.',
     type: ErrorResponseDto,
   })
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
   async ping(
     @CurrentUser() user: JwtUser,
     @Req() request: RequestWithCorrelationId,

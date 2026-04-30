@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiParam,
   ApiBearerAuth,
@@ -81,6 +82,7 @@ export class ComplaintsController {
     description: 'Query parameters failed validation.',
     type: ErrorResponseDto,
   })
+  @Throttle({ default: { limit: 180, ttl: 60000 } })
   async list(@Query() query: ListComplaintsQueryDto): Promise<{
     data: ComplaintListItemDto[];
     meta: ComplaintListMetaDto;
@@ -131,6 +133,7 @@ export class ComplaintsController {
     description: 'Complaint id was not found.',
     type: ErrorResponseDto,
   })
+  @Throttle({ default: { limit: 180, ttl: 60000 } })
   async getById(
     @Param('id') id: string,
   ): Promise<{ data: ComplaintDetailDataDto }> {
@@ -192,6 +195,7 @@ export class ComplaintsController {
     description: 'Complaint id was not found.',
     type: ErrorResponseDto,
   })
+  @Throttle({ default: { limit: 180, ttl: 60000 } })
   async history(
     @Param('id') id: string,
   ): Promise<{ data: ComplaintHistoryItemDto[] }> {
@@ -246,6 +250,7 @@ export class ComplaintsController {
     type: ErrorResponseDto,
   })
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
   async assign(
     @Param('id') id: string,
     @CurrentUser() user: JwtUser,
@@ -321,6 +326,7 @@ export class ComplaintsController {
     type: ErrorResponseDto,
   })
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
   async transition(
     @Param('id') id: string,
     @CurrentUser() user: JwtUser,
@@ -374,6 +380,7 @@ export class ComplaintsController {
     description: 'Validation failed for one or more request fields.',
     type: ErrorResponseDto,
   })
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   async create(
     @Body() body: CreateComplaintDto,
     @Req() request: RequestWithCorrelationId,
@@ -409,6 +416,7 @@ export class ComplaintsController {
     description: 'Complaint reference was not found.',
     type: ErrorResponseDto,
   })
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
   async track(@Param('referenceNo') referenceNo: string): Promise<{
     data: ComplaintTrackingDataDto;
   }> {

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -10,6 +11,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiBearerAuth,
   ApiCookieAuth,
@@ -57,11 +59,32 @@ function getCookieSecure(): boolean {
   return process.env.NODE_ENV === 'production';
 }
 
+function getCsrfTrustedOrigins(): string[] {
+  const raw = process.env.AUTH_CSRF_TRUSTED_ORIGINS;
+  if (!raw) {
+    return ['http://localhost:3000'];
+  }
+  return raw
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+}
+
+function shouldEnforceCsrfOriginCheck(): boolean {
+  const raw = process.env.AUTH_CSRF_ENFORCED;
+  if (!raw) {
+    return process.env.NODE_ENV === 'production';
+  }
+  return raw === 'true';
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   private readonly refreshCookieName = getRefreshCookieName();
   private readonly refreshCookieMaxAgeMs = getRefreshTtlMs();
+  private readonly csrfTrustedOrigins = getCsrfTrustedOrigins();
+  private readonly enforceCsrfOriginCheck = shouldEnforceCsrfOriginCheck();
 
   constructor(private readonly authService: AuthService) {}
 
@@ -77,6 +100,7 @@ export class AuthController {
     type: ErrorResponseDto,
   })
   @ApiCookieAuth('refresh_token')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   async login(
     @Req() request: RequestWithCorrelationId,
     @Res({ passthrough: true }) response: Response,
@@ -115,16 +139,17 @@ export class AuthController {
     type: ErrorResponseDto,
   })
   @ApiCookieAuth('refresh_token')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   async refresh(
     @Req() request: RequestWithCorrelationId,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ data: PublicTokenPair }> {
+    this.enforceCookieAuthOrigin(request);
     const refreshToken = this.getRefreshTokenFromCookie(request);
-    const refreshedTokens =
-      await this.authService.rotateRefreshToken(
-        refreshToken,
-        request.correlationId,
-      );
+    const refreshedTokens = await this.authService.rotateRefreshToken(
+      refreshToken,
+      request.correlationId,
+    );
     this.setRefreshCookie(response, refreshedTokens.refreshToken);
     return {
       data: refreshedTokens.tokenPair,
@@ -145,11 +170,13 @@ export class AuthController {
     type: ErrorResponseDto,
   })
   @ApiCookieAuth('refresh_token')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   async logout(
     @CurrentUser() user: JwtUser,
     @Req() request: RequestWithCorrelationId,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ data: { message: string } }> {
+    this.enforceCookieAuthOrigin(request);
     if (!user.jti) {
       throw new UnauthorizedException('Invalid access token');
     }
@@ -225,5 +252,36 @@ export class AuthController {
       maxAge: this.refreshCookieMaxAgeMs,
       path: '/api/v1/auth',
     };
+  }
+
+  private enforceCookieAuthOrigin(request: Request): void {
+    if (!this.enforceCsrfOriginCheck) {
+      return;
+    }
+    const source = request.header('origin') || request.header('referer');
+    if (!source) {
+      throw new ForbiddenException('Missing request origin');
+    }
+
+    const parsed = this.parseOrigin(source);
+    if (!parsed) {
+      throw new ForbiddenException('Invalid request origin');
+    }
+
+    const isTrusted = this.csrfTrustedOrigins.some(
+      (trusted) => trusted === parsed,
+    );
+    if (!isTrusted) {
+      throw new ForbiddenException('Untrusted request origin');
+    }
+  }
+
+  private parseOrigin(raw: string): string | null {
+    try {
+      const url = new URL(raw);
+      return url.origin;
+    } catch {
+      return null;
+    }
   }
 }

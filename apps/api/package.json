@@ -22,7 +22,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "seed:auth": "ts-node -r tsconfig-paths/register src/scripts/seed-auth-users.ts"
+    "seed:auth": "ts-node -r tsconfig-paths/register src/scripts/seed-auth-users.ts",
+    "security:check": "ts-node src/scripts/security-check.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

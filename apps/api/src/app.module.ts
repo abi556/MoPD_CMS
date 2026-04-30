@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { AppThrottlerGuard } from './common/guards/app-throttler.guard';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
@@ -18,8 +19,9 @@ import { PrismaModule } from './prisma/prisma.module';
     ThrottlerModule.forRoot({
       throttlers: [
         {
+          name: 'default',
           ttl: 60000,
-          limit: 120,
+          limit: 300,
         },
       ],
     }),
@@ -29,7 +31,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: AppThrottlerGuard,
     },
   ],
 })
