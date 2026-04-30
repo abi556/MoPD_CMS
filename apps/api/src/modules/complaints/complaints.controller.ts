@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiParam,
@@ -22,6 +23,7 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { RequestWithCorrelationId } from '../../common/middleware/correlation-id.middleware';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
@@ -248,12 +250,14 @@ export class ComplaintsController {
     @Param('id') id: string,
     @CurrentUser() user: JwtUser,
     @Body() body: AssignComplaintDto,
+    @Req() request: RequestWithCorrelationId,
   ): Promise<{ data: ComplaintDetailDataDto }> {
     const complaint = await this.complaintsService.assignComplaint(
       id,
       body.assigneeUserId,
       user.id,
       body.reason,
+      request.correlationId,
     );
 
     return {
@@ -321,12 +325,14 @@ export class ComplaintsController {
     @Param('id') id: string,
     @CurrentUser() user: JwtUser,
     @Body() body: TransitionComplaintDto,
+    @Req() request: RequestWithCorrelationId,
   ): Promise<{ data: ComplaintDetailDataDto }> {
     const complaint = await this.complaintsService.transitionComplaint(
       id,
       body.toStatus,
       user.id,
       body.reason,
+      request.correlationId,
     );
 
     return {
@@ -370,8 +376,12 @@ export class ComplaintsController {
   })
   async create(
     @Body() body: CreateComplaintDto,
+    @Req() request: RequestWithCorrelationId,
   ): Promise<{ data: ComplaintCreatedDataDto }> {
-    const created = await this.complaintsService.create(body);
+    const created = await this.complaintsService.create(
+      body,
+      request.correlationId,
+    );
 
     return {
       data: {

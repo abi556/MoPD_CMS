@@ -53,16 +53,29 @@ interface StoredUser {
   isActive: boolean;
 }
 
+interface StoredAuditLog {
+  id: string;
+  eventType: string;
+  actorUserId: string | null;
+  entityType: string | null;
+  entityId: string | null;
+  correlationId: string | null;
+  metadata: unknown;
+  createdAt: Date;
+}
+
 export function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
   const roleStore = new Map<string, StoredRole>();
   const permissionStore = new Map<string, StoredPermission>();
   const userStore = new Map<string, StoredUser>();
+  const auditLogStore: StoredAuditLog[] = [];
   const userRoleStore = new Set<string>();
   const rolePermissionStore = new Set<string>();
   let sequence = 0;
   let historySequence = 0;
+  let auditSequence = 0;
 
   const create = (args: {
     data: Omit<
@@ -334,6 +347,19 @@ export function createPrismaMock(): PrismaService {
     return Promise.resolve({ ...user, userRoles });
   };
 
+  const auditLogCreate = (args: {
+    data: Omit<StoredAuditLog, 'id' | 'createdAt'>;
+  }): Promise<StoredAuditLog> => {
+    auditSequence += 1;
+    const entry: StoredAuditLog = {
+      id: `audit_${auditSequence}`,
+      createdAt: new Date(),
+      ...args.data,
+    };
+    auditLogStore.push(entry);
+    return Promise.resolve(entry);
+  };
+
   const prismaLike = {
     complaint: {
       count,
@@ -353,6 +379,7 @@ export function createPrismaMock(): PrismaService {
       findUnique: userFindUnique,
     },
     userRole: { upsert: userRoleUpsert },
+    auditLog: { create: auditLogCreate },
     $transaction: async <T>(
       callback: (tx: {
         complaint: {

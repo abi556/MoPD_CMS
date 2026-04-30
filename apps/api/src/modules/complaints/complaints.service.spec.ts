@@ -7,6 +7,7 @@ import { UnprocessableEntityException } from '@nestjs/common';
 
 describe('ComplaintsService', () => {
   let service: ComplaintsService;
+  const logEvent = jest.fn();
   const complaintCreate = jest.fn();
   const complaintHistoryCreate = jest.fn();
   const complaintHistoryFindMany = jest.fn();
@@ -25,6 +26,8 @@ describe('ComplaintsService', () => {
     complaintFindMany.mockReset();
     complaintCount.mockReset();
     transaction.mockReset();
+    logEvent.mockReset();
+    logEvent.mockResolvedValue(undefined);
 
     transaction.mockImplementation(
       async <T>(callback: (tx: unknown) => Promise<T>) => {
@@ -42,18 +45,23 @@ describe('ComplaintsService', () => {
       },
     );
 
-    service = new ComplaintsService({
-      complaint: {
-        count: complaintCount,
-        findMany: complaintFindMany,
-        findUnique: complaintFindUnique,
-        update: complaintUpdate,
-      },
-      complaintHistory: {
-        findMany: complaintHistoryFindMany,
-      },
-      $transaction: transaction,
-    } as never);
+    service = new ComplaintsService(
+      {
+        complaint: {
+          count: complaintCount,
+          findMany: complaintFindMany,
+          findUnique: complaintFindUnique,
+          update: complaintUpdate,
+        },
+        complaintHistory: {
+          findMany: complaintHistoryFindMany,
+        },
+        $transaction: transaction,
+      } as never,
+      {
+        logEvent,
+      } as never,
+    );
   });
 
   it('creates complaint with generated reference number', async () => {

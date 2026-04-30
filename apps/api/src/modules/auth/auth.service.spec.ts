@@ -88,6 +88,9 @@ describe('AuthService', () => {
         findActiveById,
         updatePasswordHash,
       } as unknown as UserService,
+      {
+        logEvent: jest.fn().mockResolvedValue(undefined),
+      } as never,
     );
     await service.onModuleInit();
   });

@@ -13,6 +13,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
+import { AUDIT_EVENT } from '../audit/audit-event.types';
+import { AuditService } from '../audit/audit.service';
 import { UserService } from '../user/user.service';
 import { JwtPayload, JwtUser } from './interfaces/jwt-user.interface';
 
@@ -112,6 +114,7 @@ export class AuthService implements OnModuleInit {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly auditService: AuditService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -186,13 +189,26 @@ export class AuthService implements OnModuleInit {
     refreshToken: string,
     accessJti: string,
     accessExp?: number,
+    correlationId?: string,
   ): Promise<void> {
     const tokenUserId = await this.getRefreshUserId(refreshToken);
     if (!tokenUserId || tokenUserId !== userId) {
+      await this.auditService.logEvent({
+        eventType: AUDIT_EVENT.AUTH_LOGOUT_FAILED,
+        actorUserId: userId,
+        correlationId,
+        metadata: { reason: 'refresh_token_invalid' },
+      });
       throw new UnauthorizedException('Invalid refresh token');
     }
     await this.deleteRefreshToken(refreshToken);
     await this.revokeAccessToken(accessJti, accessExp);
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.AUTH_LOGOUT_SUCCEEDED,
+      actorUserId: userId,
+      correlationId,
+      metadata: { accessJti },
+    });
   }
 
   async isAccessTokenRevoked(jti: string): Promise<boolean> {
@@ -319,6 +335,7 @@ export class AuthService implements OnModuleInit {
   async issueLoginTokens(
     email: string,
     password: string,
+    correlationId?: string,
   ): Promise<{
     user: JwtUser;
     tokenPair: PublicTokenPair;
@@ -326,11 +343,22 @@ export class AuthService implements OnModuleInit {
   }> {
     const user = await this.userService.findActiveByEmail(email);
     if (!user) {
+      await this.auditService.logEvent({
+        eventType: AUDIT_EVENT.AUTH_LOGIN_FAILED,
+        correlationId,
+        metadata: { email, reason: 'user_not_found' },
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isValid = this.verifyPassword(password, user.passwordHash);
     if (!isValid) {
+      await this.auditService.logEvent({
+        eventType: AUDIT_EVENT.AUTH_LOGIN_FAILED,
+        actorUserId: user.id,
+        correlationId,
+        metadata: { email, reason: 'invalid_password' },
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
     if (!isBcryptHash(user.passwordHash)) {
@@ -341,6 +369,12 @@ export class AuthService implements OnModuleInit {
     }
     const authUser = this.toAuthUser(user.id, user.email, user.userRoles);
     const issuedTokens = await this.issueTokenPair(authUser);
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.AUTH_LOGIN_SUCCEEDED,
+      actorUserId: authUser.id,
+      correlationId,
+      metadata: { email: authUser.email },
+    });
     return {
       user: authUser,
       tokenPair: this.toPublicTokenPair(issuedTokens),
@@ -350,21 +384,38 @@ export class AuthService implements OnModuleInit {
 
   async rotateRefreshToken(
     refreshToken: string,
+    correlationId?: string,
   ): Promise<{ tokenPair: PublicTokenPair; refreshToken: string }> {
     const userId = await this.getRefreshUserId(refreshToken);
     if (!userId) {
       await this.deleteRefreshToken(refreshToken);
+      await this.auditService.logEvent({
+        eventType: AUDIT_EVENT.AUTH_REFRESH_FAILED,
+        correlationId,
+        metadata: { reason: 'refresh_token_not_found' },
+      });
       throw new UnauthorizedException('Invalid refresh token');
     }
     const user = await this.userService.findActiveById(userId);
     if (!user) {
       await this.deleteRefreshToken(refreshToken);
+      await this.auditService.logEvent({
+        eventType: AUDIT_EVENT.AUTH_REFRESH_FAILED,
+        actorUserId: userId,
+        correlationId,
+        metadata: { reason: 'user_not_found' },
+      });
       throw new UnauthorizedException('Invalid refresh token');
     }
     await this.deleteRefreshToken(refreshToken);
     const issuedTokens = await this.issueTokenPair(
       this.toAuthUser(user.id, user.email, user.userRoles),
     );
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.AUTH_REFRESH_SUCCEEDED,
+      actorUserId: user.id,
+      correlationId,
+    });
     return {
       tokenPair: this.toPublicTokenPair(issuedTokens),
       refreshToken: issuedTokens.refreshToken,

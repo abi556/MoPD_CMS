@@ -16,6 +16,8 @@ import {
 } from './dto/create-complaint.dto';
 import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
+import { AUDIT_EVENT } from '../audit/audit-event.types';
+import { AuditService } from '../audit/audit.service';
 
 export interface ComplaintRecord {
   id: string;
@@ -90,9 +92,15 @@ export class ComplaintsService {
     [ComplaintStatusValue.CLOSED]: [],
   };
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
-  async create(payload: CreateComplaintDto): Promise<ComplaintRecord> {
+  async create(
+    payload: CreateComplaintDto,
+    correlationId?: string,
+  ): Promise<ComplaintRecord> {
     const created = await this.prisma.$transaction(async (tx) => {
       const inserted = await tx.complaint.create({
         data: {
@@ -120,7 +128,19 @@ export class ComplaintsService {
       });
     });
 
-    return this.toComplaintRecord(created);
+    const record = this.toComplaintRecord(created);
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.COMPLAINT_CREATED,
+      entityType: 'complaint',
+      entityId: record.id,
+      correlationId,
+      metadata: {
+        referenceNo: record.referenceNo,
+        channel: record.channel,
+        locale: record.locale,
+      },
+    });
+    return record;
   }
 
   async getByReference(referenceNo: string): Promise<ComplaintRecord> {
@@ -152,6 +172,7 @@ export class ComplaintsService {
     assigneeUserId: string,
     assignedByUserId: string,
     reason?: string,
+    correlationId?: string,
   ): Promise<ComplaintRecord> {
     const updated = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.complaint.findUnique({ where: { id } });
@@ -193,7 +214,20 @@ export class ComplaintsService {
       return updatedComplaint;
     });
 
-    return this.toComplaintRecord(updated);
+    const record = this.toComplaintRecord(updated);
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.COMPLAINT_ASSIGNED,
+      actorUserId: assignedByUserId,
+      entityType: 'complaint',
+      entityId: id,
+      correlationId,
+      metadata: {
+        assigneeUserId,
+        reason: reason ?? null,
+        status: record.status,
+      },
+    });
+    return record;
   }
 
   async transitionComplaint(
@@ -201,6 +235,7 @@ export class ComplaintsService {
     toStatus: ComplaintStatusValue,
     transitionedByUserId: string,
     reason: string,
+    correlationId?: string,
   ): Promise<ComplaintRecord> {
     const updated = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.complaint.findUnique({ where: { id } });
@@ -241,7 +276,19 @@ export class ComplaintsService {
       return updatedComplaint;
     });
 
-    return this.toComplaintRecord(updated);
+    const record = this.toComplaintRecord(updated);
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.COMPLAINT_TRANSITIONED,
+      actorUserId: transitionedByUserId,
+      entityType: 'complaint',
+      entityId: id,
+      correlationId,
+      metadata: {
+        toStatus,
+        reason,
+      },
+    });
+    return record;
   }
 
   async getHistoryForStaff(id: string): Promise<ComplaintHistoryRecord[]> {

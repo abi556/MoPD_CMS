@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiForbiddenResponse,
@@ -9,11 +9,16 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import type { RequestWithCorrelationId } from '../../common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
+import { AUDIT_EVENT } from '../audit/audit-event.types';
+import { AuditService } from '../audit/audit.service';
 
 class AdminPingDataDto {
   @ApiProperty({
@@ -33,6 +38,8 @@ class AdminPingResponseDto {
 @ApiTags('admin')
 @Controller('admin')
 export class AdminController {
+  constructor(private readonly auditService: AuditService) {}
+
   @Get('ping')
   @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles('SuperAdmin')
@@ -51,7 +58,17 @@ export class AdminController {
     description: 'Authenticated user does not have required role.',
     type: ErrorResponseDto,
   })
-  ping() {
+  async ping(
+    @CurrentUser() user: JwtUser,
+    @Req() request: RequestWithCorrelationId,
+  ) {
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.ADMIN_PING,
+      actorUserId: user.id,
+      entityType: 'admin',
+      entityId: 'ping',
+      correlationId: request.correlationId,
+    });
     return {
       data: {
         status: 'admin-ok',

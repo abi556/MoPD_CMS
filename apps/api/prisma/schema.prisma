@@ -124,3 +124,18 @@ model UserRole {
   @@id([userId, roleId])
   @@index([roleId])
 }
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  eventType     String
+  actorUserId   String?
+  entityType    String?
+  entityId      String?
+  correlationId String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([entityType, entityId, createdAt])
+}

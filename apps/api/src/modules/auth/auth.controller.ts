@@ -20,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
+import type { RequestWithCorrelationId } from '../../common/middleware/correlation-id.middleware';
 import {
   LoginResponseDto,
   LogoutResponseDto,
@@ -77,6 +78,7 @@ export class AuthController {
   })
   @ApiCookieAuth('refresh_token')
   async login(
+    @Req() request: RequestWithCorrelationId,
     @Res({ passthrough: true }) response: Response,
     @Body() body: LoginDto,
   ): Promise<{
@@ -90,6 +92,7 @@ export class AuthController {
     const loginResult = await this.authService.issueLoginTokens(
       body.email,
       body.password,
+      request.correlationId,
     );
     this.setRefreshCookie(response, loginResult.refreshToken);
     return {
@@ -113,12 +116,15 @@ export class AuthController {
   })
   @ApiCookieAuth('refresh_token')
   async refresh(
-    @Req() request: Request,
+    @Req() request: RequestWithCorrelationId,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ data: PublicTokenPair }> {
     const refreshToken = this.getRefreshTokenFromCookie(request);
     const refreshedTokens =
-      await this.authService.rotateRefreshToken(refreshToken);
+      await this.authService.rotateRefreshToken(
+        refreshToken,
+        request.correlationId,
+      );
     this.setRefreshCookie(response, refreshedTokens.refreshToken);
     return {
       data: refreshedTokens.tokenPair,
@@ -141,7 +147,7 @@ export class AuthController {
   @ApiCookieAuth('refresh_token')
   async logout(
     @CurrentUser() user: JwtUser,
-    @Req() request: Request,
+    @Req() request: RequestWithCorrelationId,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ data: { message: string } }> {
     if (!user.jti) {
@@ -153,6 +159,7 @@ export class AuthController {
       refreshToken,
       user.jti,
       user.exp,
+      request.correlationId,
     );
     response.clearCookie(this.refreshCookieName, this.getCookieOptions());
     return {

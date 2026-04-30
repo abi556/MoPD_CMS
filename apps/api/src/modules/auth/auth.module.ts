@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
+import { AuditModule } from '../audit/audit.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 function getJwtSecret(): string {
@@ -20,6 +21,7 @@ function getJwtSecret(): string {
 
 @Module({
   imports: [
+    AuditModule,
     UserModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
