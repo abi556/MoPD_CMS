@@ -186,6 +186,16 @@ export class UserService {
         code: 'complaints:transition',
         description: 'Transition complaint workflow status.',
       },
+      {
+        id: 'perm-user-manage',
+        code: 'user:manage',
+        description: 'Manage users lifecycle and profile updates.',
+      },
+      {
+        id: 'perm-role-manage',
+        code: 'role:manage',
+        description: 'Manage roles and permission mappings.',
+      },
     ];
     for (const permission of seedPermissions) {
       await this.db.permission.upsert({

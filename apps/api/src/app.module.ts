@@ -8,6 +8,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
+import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -15,6 +16,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AuthModule,
     AdminModule,
     ComplaintsModule,
+    UserModule,
     PrismaModule,
     ThrottlerModule.forRoot({
       throttlers: [
