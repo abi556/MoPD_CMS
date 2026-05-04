@@ -7,6 +7,8 @@ interface AuthUserWithRoles {
   email: string;
   isActive: boolean;
   passwordHash: string;
+  passwordVersion: number;
+  mfaEnabled: boolean;
   userRoles: Array<{
     role: {
       name: string;
@@ -80,7 +82,11 @@ interface UserDbGateway {
     }): Promise<AuthUserWithRoles | null>;
     update(args: {
       where: { id: string };
-      data: { passwordHash: string };
+      data: {
+        passwordHash?: string;
+        passwordVersion?: { increment: number };
+        mfaEnabled?: boolean;
+      };
     }): Promise<unknown>;
   };
   userRole: {
@@ -342,6 +348,20 @@ export class UserService {
     await this.db.user.update({
       where: { id: userId },
       data: { passwordHash },
+    });
+  }
+
+  /** Used after forgot-password flow: bumps passwordVersion to invalidate old refresh tokens. */
+  async resetPasswordWithVersionBump(
+    userId: string,
+    passwordHash: string,
+  ): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        passwordVersion: { increment: 1 },
+      },
     });
   }
 

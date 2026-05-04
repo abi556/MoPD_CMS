@@ -12,6 +12,8 @@ describe('AuthService', () => {
         id: string;
         email: string;
         passwordHash: string;
+        passwordVersion: number;
+        mfaEnabled: boolean;
         isActive: boolean;
         userRoles: Array<{
           role: {
@@ -27,6 +29,8 @@ describe('AuthService', () => {
       email: 'admin@mopd.local',
       passwordHash:
         '35e8cf4f97d379ebfbe4e7f4c8b43f3a:242c897f7f29e05eb1271dbbb13b6ed5df1594318717e56b3271fa7e64d563a0d3ff71a8f6072fa63eef611626b1a26e5c979c6f5fb160f96ab2b235b6b0e2da',
+      passwordVersion: 0,
+      mfaEnabled: false,
       isActive: true,
       userRoles: [
         {
@@ -43,6 +47,8 @@ describe('AuthService', () => {
         id: string;
         email: string;
         passwordHash: string;
+        passwordVersion: number;
+        mfaEnabled: boolean;
         isActive: boolean;
         userRoles: Array<{
           role: {
@@ -58,6 +64,8 @@ describe('AuthService', () => {
       email: 'admin@mopd.local',
       passwordHash:
         '35e8cf4f97d379ebfbe4e7f4c8b43f3a:242c897f7f29e05eb1271dbbb13b6ed5df1594318717e56b3271fa7e64d563a0d3ff71a8f6072fa63eef611626b1a26e5c979c6f5fb160f96ab2b235b6b0e2da',
+      passwordVersion: 0,
+      mfaEnabled: false,
       isActive: true,
       userRoles: [
         {
@@ -69,6 +77,15 @@ describe('AuthService', () => {
       ],
     });
   const updatePasswordHash = jest.fn<Promise<void>, [string, string]>();
+  const loginAttemptStub = {
+    normalizeEmail: (e: string) => e.trim().toLowerCase(),
+    ensureEmailNotLockedAsync: jest.fn().mockResolvedValue(undefined),
+    recordFailedAttempt: jest.fn().mockResolvedValue(false),
+    clearFailures: jest.fn().mockResolvedValue(undefined),
+  };
+  const mfaStub = {
+    isGloballyRequired: jest.fn().mockReturnValue(false),
+  };
   let service: AuthService;
 
   beforeEach(async () => {
@@ -77,6 +94,9 @@ describe('AuthService', () => {
     findActiveByEmail.mockClear();
     findActiveById.mockClear();
     updatePasswordHash.mockReset();
+    loginAttemptStub.ensureEmailNotLockedAsync.mockClear();
+    loginAttemptStub.recordFailedAttempt.mockResolvedValue(false);
+    loginAttemptStub.clearFailures.mockClear();
     updatePasswordHash.mockResolvedValue(undefined);
     signAsync.mockResolvedValue('signed-access-token');
 
@@ -91,6 +111,8 @@ describe('AuthService', () => {
       {
         logEvent: jest.fn().mockResolvedValue(undefined),
       } as never,
+      loginAttemptStub as never,
+      mfaStub as never,
     );
     await service.onModuleInit();
   });

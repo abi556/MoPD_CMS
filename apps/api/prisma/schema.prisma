@@ -76,13 +76,15 @@ model ComplaintHistory {
 }
 
 model User {
-  id           String     @id
-  email        String     @unique
-  passwordHash String
-  isActive     Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  userRoles    UserRole[]
+  id              String     @id
+  email           String     @unique
+  passwordHash    String
+  passwordVersion Int        @default(0)
+  mfaEnabled      Boolean    @default(false)
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  userRoles       UserRole[]
 }
 
 model Role {

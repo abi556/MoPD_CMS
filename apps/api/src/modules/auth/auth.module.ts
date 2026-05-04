@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { AuditModule } from '../audit/audit.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { LoginAttemptService } from './login-attempt.service';
+import { MfaService } from './mfa.service';
 
 function getJwtSecret(): string {
   if (process.env.JWT_ACCESS_SECRET) {
@@ -32,7 +34,7 @@ function getJwtSecret(): string {
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, LoginAttemptService, MfaService],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -32,6 +32,8 @@ import {
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import type { JwtUser } from './interfaces/jwt-user.interface';
 import { AuthService } from './auth.service';
 import type { PublicTokenPair } from './auth.service';
@@ -194,6 +196,65 @@ export class AuthController {
         message: 'Logged out successfully',
       },
     };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Request password reset (email delivery not wired yet in MVP)',
+  })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  async forgotPassword(
+    @Req() request: RequestWithCorrelationId,
+    @Body() body: ForgotPasswordDto,
+  ): Promise<{ data: { message: string } }> {
+    await this.authService.requestPasswordReset(
+      body.email,
+      request.correlationId,
+    );
+    return {
+      data: {
+        message:
+          'If an active account matches this email, password reset instructions will be processed.',
+      },
+    };
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Complete password reset using emailed token' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  async resetPassword(
+    @Req() request: RequestWithCorrelationId,
+    @Body() body: ResetPasswordDto,
+  ): Promise<{ data: { message: string } }> {
+    await this.authService.completePasswordReset(
+      body.token,
+      body.newPassword,
+      request.correlationId,
+    );
+    return {
+      data: {
+        message: 'Password has been reset. Sign in with your new password.',
+      },
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('mfa/status')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'MFA enrollment status hook (enforcement off until TOTP ships)',
+  })
+  async mfaStatus(@CurrentUser() user: JwtUser): Promise<{
+    data: {
+      enrolled: boolean;
+      provider: 'totp';
+      policy: 'optional' | 'required';
+    };
+  }> {
+    const status = await this.authService.describeMfaStatus(user.id);
+    return { data: status };
   }
 
   @UseGuards(JwtAuthGuard)

@@ -50,6 +50,8 @@ interface StoredUser {
   id: string;
   email: string;
   passwordHash: string;
+  passwordVersion: number;
+  mfaEnabled: boolean;
   isActive: boolean;
 }
 
@@ -252,22 +254,49 @@ export function createPrismaMock(): PrismaService {
     update: Partial<StoredUser>;
   }): Promise<StoredUser> => {
     const existing = userStore.get(args.where.id);
+    const create = args.create as StoredUser &
+      Partial<Pick<StoredUser, 'passwordVersion' | 'mfaEnabled'>>;
+    const baseCreate: StoredUser = {
+      id: create.id,
+      email: create.email,
+      passwordHash: create.passwordHash,
+      isActive: create.isActive,
+      passwordVersion: create.passwordVersion ?? 0,
+      mfaEnabled: create.mfaEnabled ?? false,
+    };
     const next: StoredUser = existing
-      ? { ...existing, ...args.update }
-      : { ...args.create };
+      ? {
+          ...existing,
+          ...(args.update as Partial<StoredUser>),
+        }
+      : baseCreate;
     userStore.set(args.where.id, next);
     return Promise.resolve(next);
   };
 
   const userUpdate = (args: {
     where: { id: string };
-    data: Partial<StoredUser>;
+    data: Partial<StoredUser> & {
+      passwordVersion?: { increment: number };
+    };
   }): Promise<StoredUser> => {
     const existing = userStore.get(args.where.id);
     if (!existing) {
       throw new Error('record not found');
     }
-    const next: StoredUser = { ...existing, ...args.data };
+    let passwordVersion = existing.passwordVersion ?? 0;
+    const incr = args.data.passwordVersion?.increment;
+    if (incr !== undefined) {
+      passwordVersion += incr;
+    }
+    const { passwordVersion: _ignore, ...rest } = args.data;
+    void _ignore;
+    const next: StoredUser = {
+      ...existing,
+      ...rest,
+      passwordVersion:
+        incr !== undefined ? passwordVersion : existing.passwordVersion ?? 0,
+    };
     userStore.set(args.where.id, next);
     return Promise.resolve(next);
   };
