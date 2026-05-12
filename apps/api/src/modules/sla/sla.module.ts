@@ -1,4 +1,4 @@
-import { BullModule, InjectQueue } from '@nestjs/bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Module, OnModuleInit, Provider } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { AuditModule } from '../audit/audit.module';
@@ -15,7 +15,7 @@ const workerProviders: Provider[] =
   process.env.NODE_ENV === 'test' ? [] : [SlaMonitorProcessor];
 
 @Module({
-  imports: [BullModule.registerQueue({ name: QUEUE_SLA_MONITOR }), AuditModule],
+  imports: [AuditModule],
   providers: [SlaService, ...workerProviders],
   controllers: [SlaController],
   exports: [SlaService],

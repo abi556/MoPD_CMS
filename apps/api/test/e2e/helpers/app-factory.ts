@@ -13,7 +13,13 @@ import { createPrismaMock } from './prisma-mock';
 
 // BullMQ queue provider token — equivalent to getQueueToken('sla-monitor')
 const SLA_QUEUE_TOKEN = 'BullQueue_sla-monitor';
-const mockQueue = { add: jest.fn().mockResolvedValue(undefined) };
+const mockQueue = {
+  add: jest.fn().mockResolvedValue(undefined),
+  // RedisHealthService awaits `queue.client` then calls `.ping()` on it
+  client: Promise.resolve({
+    ping: jest.fn().mockResolvedValue('PONG'),
+  }),
+};
 
 function applyTestBootstrap(targetApp: INestApplication): void {
   targetApp.setGlobalPrefix('api/v1');

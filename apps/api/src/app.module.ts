@@ -11,11 +11,13 @@ import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { SlaModule } from './modules/sla/sla.module';
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { BullBoardAdminModule } from './queue/bull-board.module';
 import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
     QueueModule,
+    BullBoardAdminModule,
     AuthModule,
     AdminModule,
     ComplaintsModule,
