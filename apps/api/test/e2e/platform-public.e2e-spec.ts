@@ -133,4 +133,3 @@ describe('Platform/Public (e2e)', () => {
     await app.close();
   });
 });
-

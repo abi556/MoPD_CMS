@@ -1,4 +1,10 @@
-import { Injectable, TooManyRequestsException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+
+class TooManyRequestsException extends HttpException {
+  constructor(message: string) {
+    super(message, HttpStatus.TOO_MANY_REQUESTS);
+  }
+}
 import { createHash } from 'crypto';
 import Redis from 'ioredis';
 
@@ -62,7 +68,10 @@ export class LoginAttemptService {
   private readonly useInMemoryStore =
     process.env.NODE_ENV === 'test' || Boolean(process.env.JEST_WORKER_ID);
 
-  private readonly failCounts = new Map<string, { count: number; resetAt: number }>();
+  private readonly failCounts = new Map<
+    string,
+    { count: number; resetAt: number }
+  >();
   private readonly lockedUntil = new Map<string, number>();
 
   private readonly redis = this.useInMemoryStore
@@ -109,7 +118,10 @@ export class LoginAttemptService {
     if (this.useInMemoryStore) {
       const fail = this.failCounts.get(h);
       if (!fail || fail.resetAt <= now) {
-        this.failCounts.set(h, { count: 1, resetAt: now + this.attemptWindowMs });
+        this.failCounts.set(h, {
+          count: 1,
+          resetAt: now + this.attemptWindowMs,
+        });
       } else {
         fail.count += 1;
       }

@@ -14,12 +14,12 @@ export class MfaService {
   }
 
   /** Future: lookup user.mfaEnabled and role policies. */
-  async isEnrollmentRequired(): Promise<boolean> {
-    return false;
+  isEnrollmentRequired(): Promise<boolean> {
+    return Promise.resolve(false);
   }
 
   /** Future: verify TOTP backup codes. Always false until MFA module ships. */
-  async verifyTotpChallenge(): Promise<boolean> {
-    return false;
+  verifyTotpChallenge(): Promise<boolean> {
+    return Promise.resolve(false);
   }
 }

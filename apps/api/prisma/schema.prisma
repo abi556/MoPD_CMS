@@ -32,11 +32,27 @@ enum ComplaintLocale {
   am
 }
 
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum SlaStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  BREACHED
+}
+
 model Complaint {
-  id              String          @id @default(cuid())
+  id              String          @id @default(uuid())
   sequenceNo      Int             @unique @default(autoincrement())
   referenceNo     String          @unique
   status          ComplaintStatus @default(SUBMITTED)
+  priority        Priority        @default(NORMAL)
+  categoryId      String?
   channel         ComplaintChannel
   subject         String
   description     String
@@ -54,6 +70,7 @@ model Complaint {
   lastTransitionAt DateTime?
   lastTransitionReason String?
   history         ComplaintHistory[]
+  sla             ComplaintSla?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -62,7 +79,7 @@ model Complaint {
 }
 
 model ComplaintHistory {
-  id            String          @id @default(cuid())
+  id            String          @id @default(uuid())
   complaintId   String
   action        String
   fromStatus    ComplaintStatus?
@@ -76,7 +93,7 @@ model ComplaintHistory {
 }
 
 model User {
-  id              String     @id
+  id              String     @id @default(uuid())
   email           String     @unique
   passwordHash    String
   passwordVersion Int        @default(0)
@@ -128,7 +145,7 @@ model UserRole {
 }
 
 model AuditLog {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   eventType     String
   actorUserId   String?
   entityType    String?
@@ -140,4 +157,41 @@ model AuditLog {
   @@index([eventType, createdAt])
   @@index([actorUserId, createdAt])
   @@index([entityType, entityId, createdAt])
+}
+
+model SlaConfig {
+  id                   String         @id @default(uuid())
+  name                 String
+  priority             Priority
+  categoryId           String?
+  targetHours          Int
+  warningThresholdPct  Int            @default(80)
+  escalationRoleId     String?
+  isActive             Boolean        @default(true)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  trackers             ComplaintSla[]
+
+  @@unique([priority, categoryId])
+  @@index([priority, isActive])
+}
+
+model ComplaintSla {
+  id            String    @id @default(uuid())
+  complaintId   String    @unique
+  slaConfigId   String
+  startedAt     DateTime  @default(now())
+  targetAt      DateTime
+  warningAt     DateTime
+  warnedAt      DateTime?
+  breachedAt    DateTime?
+  completedAt   DateTime?
+  status        SlaStatus @default(ACTIVE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  complaint     Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  slaConfig     SlaConfig @relation(fields: [slaConfigId], references: [id])
+
+  @@index([status])
+  @@index([targetAt])
 }

@@ -11,6 +11,10 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { ensureE2eAuthSeedEnv } from './auth-seed';
 import { createPrismaMock } from './prisma-mock';
 
+// BullMQ queue provider token — equivalent to getQueueToken('sla-monitor')
+const SLA_QUEUE_TOKEN = 'BullQueue_sla-monitor';
+const mockQueue = { add: jest.fn().mockResolvedValue(undefined) };
+
 function applyTestBootstrap(targetApp: INestApplication): void {
   targetApp.setGlobalPrefix('api/v1');
   targetApp.use(helmet());
@@ -45,6 +49,8 @@ export async function createTestApp(): Promise<INestApplication<Server>> {
   })
     .overrideProvider(PrismaService)
     .useValue(createPrismaMock())
+    .overrideProvider(SLA_QUEUE_TOKEN)
+    .useValue(mockQueue)
     .compile();
 
   const nestApp: INestApplication = moduleFixture.createNestApplication();

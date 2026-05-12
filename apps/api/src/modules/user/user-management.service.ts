@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -131,7 +132,7 @@ export class UserManagementService {
 
     const created = await this.prisma.user.create({
       data: {
-        id: `user-${Date.now()}`,
+        id: randomUUID(),
         email: input.email,
         passwordHash: bcrypt.hashSync(input.password, getBcryptCostFactor()),
         isActive: true,
@@ -203,9 +204,7 @@ export class UserManagementService {
     return this.getUserById(id);
   }
 
-  async deactivateUser(
-    id: string,
-  ): Promise<{
+  async deactivateUser(id: string): Promise<{
     id: string;
     email: string;
     roles: string[];

@@ -14,7 +14,14 @@ export const AUDIT_EVENT = {
   COMPLAINT_CREATED: 'complaint.created',
   COMPLAINT_ASSIGNED: 'complaint.assigned',
   COMPLAINT_TRANSITIONED: 'complaint.transitioned',
+  COMPLAINT_ESCALATED: 'complaint.escalated',
   ADMIN_PING: 'admin.ping',
+  SLA_TRACKER_STARTED: 'sla.tracker.started',
+  SLA_WARNING_EMITTED: 'sla.warning_emitted',
+  SLA_BREACHED: 'sla.breached',
+  SLA_TRACKER_COMPLETED: 'sla.tracker.completed',
+  SLA_CONFIG_CREATED: 'sla.config.created',
+  SLA_CONFIG_UPDATED: 'sla.config.updated',
 } as const;
 
 export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];

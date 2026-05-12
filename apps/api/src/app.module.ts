@@ -8,14 +8,18 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
+import { SlaModule } from './modules/sla/sla.module';
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
+    QueueModule,
     AuthModule,
     AdminModule,
     ComplaintsModule,
+    SlaModule,
     UserModule,
     PrismaModule,
     ThrottlerModule.forRoot({

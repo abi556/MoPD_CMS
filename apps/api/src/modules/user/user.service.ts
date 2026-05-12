@@ -202,6 +202,17 @@ export class UserService {
         code: 'role:manage',
         description: 'Manage roles and permission mappings.',
       },
+      {
+        id: 'perm-complaint-escalate',
+        code: 'complaint:escalate',
+        description: 'Escalate a complaint to higher priority handling.',
+      },
+      {
+        id: 'perm-config-manage',
+        code: 'config:manage',
+        description:
+          'Manage system configuration (SLA, categories, org units).',
+      },
     ];
     for (const permission of seedPermissions) {
       await this.db.permission.upsert({
@@ -222,6 +233,7 @@ export class UserService {
         'perm-complaints-history',
         'perm-complaints-assign',
         'perm-complaints-transition',
+        'perm-complaint-escalate',
       ],
     };
     for (const [roleId, permissionIds] of Object.entries(rolePermissionMap)) {

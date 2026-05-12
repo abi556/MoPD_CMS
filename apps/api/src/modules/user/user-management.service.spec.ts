@@ -39,12 +39,12 @@ describe('UserManagementService', () => {
       if (typeof group === 'object' && group !== null) {
         Object.values(group).forEach((fn) => {
           if (typeof fn === 'function' && 'mockReset' in fn) {
-            (fn as jest.Mock).mockReset();
+            fn.mockReset();
           }
         });
       }
     });
-    (prisma.$transaction as jest.Mock).mockImplementation(async (callback) =>
+    prisma.$transaction.mockImplementation(async (callback) =>
       callback(prisma),
     );
     service = new UserManagementService(prisma as never);

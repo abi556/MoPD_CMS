@@ -61,6 +61,10 @@ describe('ComplaintsService', () => {
       {
         logEvent,
       } as never,
+      {
+        startTrackerForComplaint: jest.fn().mockResolvedValue(undefined),
+        completeTracker: jest.fn().mockResolvedValue(undefined),
+      } as never,
     );
   });
 

@@ -175,9 +175,7 @@ export class UserManagementController {
   @ApiOperation({ summary: 'Create role' })
   @ApiCreatedResponse({ type: RoleListResponseDto })
   @Throttle({ default: { limit: 60, ttl: 60000 } })
-  async createRole(
-    @Body() body: CreateRoleDto,
-  ): Promise<{
+  async createRole(@Body() body: CreateRoleDto): Promise<{
     data: Awaited<ReturnType<UserManagementService['createRole']>>;
   }> {
     return {

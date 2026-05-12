@@ -21,7 +21,9 @@ function parseCsv(value: string | undefined): string[] {
 }
 
 function hasStrongSecret(value: string | undefined): boolean {
-  return Boolean(value && value.length >= 64 && !value.includes('replace-with'));
+  return Boolean(
+    value && value.length >= 64 && !value.includes('replace-with'),
+  );
 }
 
 function runChecks(): CheckResult[] {
@@ -93,7 +95,7 @@ function main(): void {
 
   for (const check of checks) {
     const prefix = check.ok ? 'PASS' : 'FAIL';
-    // eslint-disable-next-line no-console
+
     console.log(`[${prefix}] ${check.message}`);
     if (!check.ok) {
       hasFailure = true;
@@ -104,7 +106,7 @@ function main(): void {
     process.exitCode = 1;
     return;
   }
-  // eslint-disable-next-line no-console
+
   console.log('Security check passed.');
 }
 

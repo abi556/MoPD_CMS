@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
@@ -18,6 +20,7 @@ import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
+import { SlaService } from '../sla/sla.service';
 
 export interface ComplaintRecord {
   id: string;
@@ -95,6 +98,8 @@ export class ComplaintsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    @Inject(forwardRef(() => SlaService))
+    private readonly slaService: SlaService,
   ) {}
 
   async create(
@@ -129,6 +134,20 @@ export class ComplaintsService {
     });
 
     const record = this.toComplaintRecord(created);
+
+    // Start SLA tracker after complaint is persisted (best-effort — never block intake)
+    await this.slaService
+      .startTrackerForComplaint(
+        record.id,
+        created.priority,
+        created.categoryId ?? null,
+        correlationId,
+      )
+      .catch((err: unknown) => {
+        // Log but do not fail the request if SLA setup fails
+        void err;
+      });
+
     await this.auditService.logEvent({
       eventType: AUDIT_EVENT.COMPLAINT_CREATED,
       entityType: 'complaint',
@@ -277,6 +296,16 @@ export class ComplaintsService {
     });
 
     const record = this.toComplaintRecord(updated);
+
+    // Complete SLA tracker when complaint reaches CLOSED
+    if (toStatus === ComplaintStatusValue.CLOSED) {
+      await this.slaService
+        .completeTracker(id, reason, correlationId)
+        .catch((err: unknown) => {
+          void err;
+        });
+    }
+
     await this.auditService.logEvent({
       eventType: AUDIT_EVENT.COMPLAINT_TRANSITIONED,
       actorUserId: transitionedByUserId,

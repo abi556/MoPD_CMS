@@ -1,11 +1,16 @@
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import type { ComplaintStatusLiteral } from './types';
 
+type PriorityLiteral = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+type SlaStatusLiteral = 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'BREACHED';
+
 interface StoredComplaint {
   id: string;
   sequenceNo: number;
   referenceNo: string;
   status: ComplaintStatusLiteral;
+  priority: PriorityLiteral;
+  categoryId: string | null;
   channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
   subject: string;
   description: string;
@@ -66,6 +71,34 @@ interface StoredAuditLog {
   createdAt: Date;
 }
 
+interface StoredSlaConfig {
+  id: string;
+  name: string;
+  priority: PriorityLiteral;
+  categoryId: string | null;
+  targetHours: number;
+  warningThresholdPct: number;
+  escalationRoleId: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface StoredComplaintSla {
+  id: string;
+  complaintId: string;
+  slaConfigId: string;
+  startedAt: Date;
+  targetAt: Date;
+  warningAt: Date;
+  warnedAt: Date | null;
+  breachedAt: Date | null;
+  completedAt: Date | null;
+  status: SlaStatusLiteral;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
@@ -75,16 +108,24 @@ export function createPrismaMock(): PrismaService {
   const auditLogStore: StoredAuditLog[] = [];
   const userRoleStore = new Set<string>();
   const rolePermissionStore = new Set<string>();
+  const slaConfigStore = new Map<string, StoredSlaConfig>();
+  const complaintSlaStore = new Map<string, StoredComplaintSla>();
   let sequence = 0;
   let historySequence = 0;
   let auditSequence = 0;
+  let slaSeq = 0;
 
+  // ---------------------------------------------------------------------------
+  // Complaint
+  // ---------------------------------------------------------------------------
   const create = (args: {
     data: Omit<
       StoredComplaint,
       | 'id'
       | 'sequenceNo'
       | 'submittedAt'
+      | 'priority'
+      | 'categoryId'
       | 'assignedToUserId'
       | 'assignedByUserId'
       | 'assignedAt'
@@ -93,6 +134,8 @@ export function createPrismaMock(): PrismaService {
       | 'lastTransitionAt'
       | 'lastTransitionReason'
     > & {
+      priority?: PriorityLiteral;
+      categoryId?: string | null;
       assignedToUserId?: string | null;
       assignedByUserId?: string | null;
       assignedAt?: Date | null;
@@ -109,6 +152,8 @@ export function createPrismaMock(): PrismaService {
       sequenceNo: sequence,
       referenceNo: args.data.referenceNo,
       status: args.data.status,
+      priority: args.data.priority ?? 'NORMAL',
+      categoryId: args.data.categoryId ?? null,
       channel: args.data.channel,
       subject: args.data.subject,
       description: args.data.description,
@@ -170,23 +215,14 @@ export function createPrismaMock(): PrismaService {
     if (!where) {
       return input;
     }
-
     return input.filter((item) => {
-      if (where.status && item.status !== where.status) {
+      if (where.status && item.status !== where.status) return false;
+      if (where.channel && item.channel !== where.channel) return false;
+      if (where.locale && item.locale !== where.locale) return false;
+      if (where.submittedAt?.gte && item.submittedAt < where.submittedAt.gte)
         return false;
-      }
-      if (where.channel && item.channel !== where.channel) {
+      if (where.submittedAt?.lte && item.submittedAt > where.submittedAt.lte)
         return false;
-      }
-      if (where.locale && item.locale !== where.locale) {
-        return false;
-      }
-      if (where.submittedAt?.gte && item.submittedAt < where.submittedAt.gte) {
-        return false;
-      }
-      if (where.submittedAt?.lte && item.submittedAt > where.submittedAt.lte) {
-        return false;
-      }
       return true;
     });
   };
@@ -217,6 +253,9 @@ export function createPrismaMock(): PrismaService {
     };
   }): number => applyWhere(Array.from(store.values()), args.where).length;
 
+  // ---------------------------------------------------------------------------
+  // ComplaintHistory
+  // ---------------------------------------------------------------------------
   const historyCreate = (args: {
     data: Omit<StoredComplaintHistory, 'id' | 'createdAt'>;
   }): StoredComplaintHistory => {
@@ -235,6 +274,9 @@ export function createPrismaMock(): PrismaService {
       .filter((item) => item.complaintId === args.where.complaintId)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
+  // ---------------------------------------------------------------------------
+  // Role / Permission / User seeds
+  // ---------------------------------------------------------------------------
   const roleUpsert = (args: {
     where: { id: string };
     create: StoredRole;
@@ -265,10 +307,7 @@ export function createPrismaMock(): PrismaService {
       mfaEnabled: create.mfaEnabled ?? false,
     };
     const next: StoredUser = existing
-      ? {
-          ...existing,
-          ...(args.update as Partial<StoredUser>),
-        }
+      ? { ...existing, ...args.update }
       : baseCreate;
     userStore.set(args.where.id, next);
     return Promise.resolve(next);
@@ -281,21 +320,17 @@ export function createPrismaMock(): PrismaService {
     };
   }): Promise<StoredUser> => {
     const existing = userStore.get(args.where.id);
-    if (!existing) {
-      throw new Error('record not found');
-    }
+    if (!existing) throw new Error('record not found');
     let passwordVersion = existing.passwordVersion ?? 0;
     const incr = args.data.passwordVersion?.increment;
-    if (incr !== undefined) {
-      passwordVersion += incr;
-    }
+    if (incr !== undefined) passwordVersion += incr;
     const { passwordVersion: _ignore, ...rest } = args.data;
     void _ignore;
     const next: StoredUser = {
       ...existing,
       ...rest,
       passwordVersion:
-        incr !== undefined ? passwordVersion : existing.passwordVersion ?? 0,
+        incr !== undefined ? passwordVersion : (existing.passwordVersion ?? 0),
     };
     userStore.set(args.where.id, next);
     return Promise.resolve(next);
@@ -352,9 +387,7 @@ export function createPrismaMock(): PrismaService {
       : undefined;
     const byId = args.where.id ? userStore.get(args.where.id) : undefined;
     const user = byEmail ?? byId;
-    if (!user) {
-      return Promise.resolve(null);
-    }
+    if (!user) return Promise.resolve(null);
 
     const userRoles = Array.from(userRoleStore)
       .map((entry) => entry.split(':'))
@@ -376,6 +409,9 @@ export function createPrismaMock(): PrismaService {
     return Promise.resolve({ ...user, userRoles });
   };
 
+  // ---------------------------------------------------------------------------
+  // AuditLog
+  // ---------------------------------------------------------------------------
   const auditLogCreate = (args: {
     data: Omit<StoredAuditLog, 'id' | 'createdAt'>;
   }): Promise<StoredAuditLog> => {
@@ -389,16 +425,223 @@ export function createPrismaMock(): PrismaService {
     return Promise.resolve(entry);
   };
 
+  // ---------------------------------------------------------------------------
+  // SlaConfig
+  // ---------------------------------------------------------------------------
+  const slaConfigCreate = (args: {
+    data: Omit<StoredSlaConfig, 'id' | 'createdAt' | 'updatedAt'>;
+  }): Promise<StoredSlaConfig> => {
+    slaSeq += 1;
+    const now = new Date();
+    const entry: StoredSlaConfig = {
+      id: `sla_cfg_${slaSeq}`,
+      createdAt: now,
+      updatedAt: now,
+      ...args.data,
+    };
+    slaConfigStore.set(entry.id, entry);
+    return Promise.resolve(entry);
+  };
+
+  const slaConfigFindFirst = (args: {
+    where: {
+      priority?: PriorityLiteral;
+      categoryId?: string | null;
+      isActive?: boolean;
+    };
+    orderBy?: { categoryId?: 'asc' | 'desc' | null };
+  }): Promise<StoredSlaConfig | null> => {
+    let candidates = Array.from(slaConfigStore.values());
+    if (args.where.priority !== undefined)
+      candidates = candidates.filter((c) => c.priority === args.where.priority);
+    if (args.where.isActive !== undefined)
+      candidates = candidates.filter((c) => c.isActive === args.where.isActive);
+    if ('categoryId' in args.where)
+      candidates = candidates.filter(
+        (c) => c.categoryId === args.where.categoryId,
+      );
+    return Promise.resolve(candidates[0] ?? null);
+  };
+
+  const slaConfigFindMany = (args?: {
+    where?: { isActive?: boolean; priority?: PriorityLiteral };
+    orderBy?: unknown;
+  }): Promise<StoredSlaConfig[]> => {
+    let all = Array.from(slaConfigStore.values());
+    if (args?.where?.isActive !== undefined)
+      all = all.filter((c) => c.isActive === args.where!.isActive);
+    if (args?.where?.priority !== undefined)
+      all = all.filter((c) => c.priority === args.where!.priority);
+    return Promise.resolve(all);
+  };
+
+  const slaConfigUpsert = (args: {
+    where: {
+      priority_categoryId: {
+        priority: PriorityLiteral;
+        categoryId: string | null;
+      };
+    };
+    create: Omit<StoredSlaConfig, 'id' | 'createdAt' | 'updatedAt'>;
+    update: Partial<Omit<StoredSlaConfig, 'id' | 'createdAt'>>;
+  }): Promise<StoredSlaConfig> => {
+    const existing = Array.from(slaConfigStore.values()).find(
+      (c) =>
+        c.priority === args.where.priority_categoryId.priority &&
+        c.categoryId === args.where.priority_categoryId.categoryId,
+    );
+    if (existing) {
+      const updated: StoredSlaConfig = {
+        ...existing,
+        ...args.update,
+        updatedAt: new Date(),
+      };
+      slaConfigStore.set(existing.id, updated);
+      return Promise.resolve(updated);
+    }
+    return slaConfigCreate({ data: args.create });
+  };
+
+  const slaConfigUpdate = (args: {
+    where: { id: string };
+    data: Partial<Omit<StoredSlaConfig, 'id' | 'createdAt'>>;
+  }): Promise<StoredSlaConfig> => {
+    const existing = slaConfigStore.get(args.where.id);
+    if (!existing) throw new Error('SlaConfig not found');
+    const updated: StoredSlaConfig = {
+      ...existing,
+      ...args.data,
+      updatedAt: new Date(),
+    };
+    slaConfigStore.set(existing.id, updated);
+    return Promise.resolve(updated);
+  };
+
+  const slaConfigFindUniqueOrThrow = (args: {
+    where: { id: string };
+  }): Promise<StoredSlaConfig> => {
+    const found = slaConfigStore.get(args.where.id);
+    if (!found) throw new Error('SlaConfig not found');
+    return Promise.resolve(found);
+  };
+
+  // ---------------------------------------------------------------------------
+  // ComplaintSla
+  // ---------------------------------------------------------------------------
+  const complaintSlaCreate = (args: {
+    data: Omit<StoredComplaintSla, 'id' | 'createdAt' | 'updatedAt'>;
+  }): Promise<StoredComplaintSla> => {
+    const now = new Date();
+    const entry: StoredComplaintSla = {
+      id: `csla_${complaintSlaStore.size + 1}`,
+      createdAt: now,
+      updatedAt: now,
+      ...args.data,
+      warnedAt: args.data.warnedAt ?? null,
+      breachedAt: args.data.breachedAt ?? null,
+      completedAt: args.data.completedAt ?? null,
+    };
+    complaintSlaStore.set(entry.complaintId, entry);
+    return Promise.resolve(entry);
+  };
+
+  const complaintSlaFindUnique = (args: {
+    where: { complaintId?: string; id?: string };
+    include?: { slaConfig?: boolean };
+  }): Promise<
+    (StoredComplaintSla & { slaConfig?: StoredSlaConfig }) | null
+  > => {
+    let found: StoredComplaintSla | undefined;
+    if (args.where.complaintId)
+      found = complaintSlaStore.get(args.where.complaintId);
+    else if (args.where.id)
+      found = Array.from(complaintSlaStore.values()).find(
+        (s) => s.id === args.where.id,
+      );
+    if (!found) return Promise.resolve(null);
+    if (args.include?.slaConfig) {
+      const slaConfig = slaConfigStore.get(found.slaConfigId);
+      return Promise.resolve({ ...found, slaConfig });
+    }
+    return Promise.resolve(found);
+  };
+
+  const complaintSlaFindMany = (args: {
+    where?: { status?: SlaStatusLiteral };
+    include?: { slaConfig?: boolean };
+  }): Promise<(StoredComplaintSla & { slaConfig?: StoredSlaConfig })[]> => {
+    let all = Array.from(complaintSlaStore.values());
+    if (args.where?.status)
+      all = all.filter((s) => s.status === args.where!.status);
+    if (args.include?.slaConfig) {
+      return Promise.resolve(
+        all.map((s) => ({
+          ...s,
+          slaConfig: slaConfigStore.get(s.slaConfigId),
+        })),
+      );
+    }
+    return Promise.resolve(all);
+  };
+
+  const complaintSlaUpdateMany = (args: {
+    where: {
+      id?: string;
+      complaintId?: string;
+      warnedAt?: null;
+      breachedAt?: null;
+    };
+    data: Partial<Omit<StoredComplaintSla, 'id' | 'createdAt'>>;
+  }): Promise<{ count: number }> => {
+    let count = 0;
+    for (const [key, entry] of complaintSlaStore.entries()) {
+      const idMatch = args.where.id ? entry.id === args.where.id : true;
+      const cidMatch = args.where.complaintId
+        ? entry.complaintId === args.where.complaintId
+        : true;
+      const warnedMatch =
+        args.where.warnedAt === null ? entry.warnedAt === null : true;
+      const breachedMatch =
+        args.where.breachedAt === null ? entry.breachedAt === null : true;
+      if (idMatch && cidMatch && warnedMatch && breachedMatch) {
+        complaintSlaStore.set(key, {
+          ...entry,
+          ...args.data,
+          updatedAt: new Date(),
+        });
+        count++;
+      }
+    }
+    return Promise.resolve({ count });
+  };
+
+  const complaintSlaUpdate = (args: {
+    where: { complaintId?: string; id?: string };
+    data: Partial<Omit<StoredComplaintSla, 'id' | 'createdAt'>>;
+  }): Promise<StoredComplaintSla> => {
+    let found: StoredComplaintSla | undefined;
+    if (args.where.complaintId)
+      found = complaintSlaStore.get(args.where.complaintId);
+    else if (args.where.id)
+      found = Array.from(complaintSlaStore.values()).find(
+        (s) => s.id === args.where.id,
+      );
+    if (!found) throw new Error('ComplaintSla not found');
+    const updated: StoredComplaintSla = {
+      ...found,
+      ...args.data,
+      updatedAt: new Date(),
+    };
+    complaintSlaStore.set(found.complaintId, updated);
+    return Promise.resolve(updated);
+  };
+
+  // ---------------------------------------------------------------------------
+  // Assembled mock
+  // ---------------------------------------------------------------------------
   const prismaLike = {
-    complaint: {
-      count,
-      findMany,
-      findUnique,
-      update,
-    },
-    complaintHistory: {
-      findMany: historyFindMany,
-    },
+    complaint: { count, findMany, findUnique, update },
+    complaintHistory: { findMany: historyFindMany },
     role: { upsert: roleUpsert },
     permission: { upsert: permissionUpsert },
     rolePermission: { upsert: rolePermissionUpsert },
@@ -409,6 +652,21 @@ export function createPrismaMock(): PrismaService {
     },
     userRole: { upsert: userRoleUpsert },
     auditLog: { create: auditLogCreate },
+    slaConfig: {
+      create: slaConfigCreate,
+      findFirst: slaConfigFindFirst,
+      findMany: slaConfigFindMany,
+      upsert: slaConfigUpsert,
+      update: slaConfigUpdate,
+      findUniqueOrThrow: slaConfigFindUniqueOrThrow,
+    },
+    complaintSla: {
+      create: complaintSlaCreate,
+      findUnique: complaintSlaFindUnique,
+      findMany: complaintSlaFindMany,
+      update: complaintSlaUpdate,
+      updateMany: complaintSlaUpdateMany,
+    },
     $transaction: async <T>(
       callback: (tx: {
         complaint: {
