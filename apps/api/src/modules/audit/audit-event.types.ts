@@ -22,6 +22,10 @@ export const AUDIT_EVENT = {
   SLA_TRACKER_COMPLETED: 'sla.tracker.completed',
   SLA_CONFIG_CREATED: 'sla.config.created',
   SLA_CONFIG_UPDATED: 'sla.config.updated',
+  CATEGORY_CREATED: 'admin.category.created',
+  CATEGORY_UPDATED: 'admin.category.updated',
+  ORG_UNIT_CREATED: 'admin.org_unit.created',
+  ORG_UNIT_UPDATED: 'admin.org_unit.updated',
 } as const;
 
 export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];

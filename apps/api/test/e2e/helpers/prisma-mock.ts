@@ -71,6 +71,30 @@ interface StoredAuditLog {
   createdAt: Date;
 }
 
+interface StoredComplaintCategory {
+  id: string;
+  code: string;
+  nameEn: string;
+  nameAm: string | null;
+  parentId: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface StoredOrgUnit {
+  id: string;
+  code: string;
+  nameEn: string;
+  nameAm: string | null;
+  parentId: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 interface StoredSlaConfig {
   id: string;
   name: string;
@@ -108,12 +132,16 @@ export function createPrismaMock(): PrismaService {
   const auditLogStore: StoredAuditLog[] = [];
   const userRoleStore = new Set<string>();
   const rolePermissionStore = new Set<string>();
+  const categoryStore = new Map<string, StoredComplaintCategory>();
+  const orgUnitStore = new Map<string, StoredOrgUnit>();
   const slaConfigStore = new Map<string, StoredSlaConfig>();
   const complaintSlaStore = new Map<string, StoredComplaintSla>();
   let sequence = 0;
   let historySequence = 0;
   let auditSequence = 0;
   let slaSeq = 0;
+  let catSeq = 0;
+  let orgSeq = 0;
 
   // ---------------------------------------------------------------------------
   // Complaint
@@ -637,6 +665,156 @@ export function createPrismaMock(): PrismaService {
   };
 
   // ---------------------------------------------------------------------------
+  // ComplaintCategory
+  // ---------------------------------------------------------------------------
+  const categoryCreate = (args: {
+    data: Omit<StoredComplaintCategory, 'id' | 'createdAt' | 'updatedAt'>;
+  }): Promise<StoredComplaintCategory> => {
+    const dup = Array.from(categoryStore.values()).find(
+      (c) => c.code === args.data.code,
+    );
+    if (dup) {
+      const err = new Error('Unique constraint failed') as Error & {
+        code: string;
+      };
+      err.code = 'P2002';
+      throw err;
+    }
+    catSeq += 1;
+    const now = new Date();
+    const entry: StoredComplaintCategory = {
+      id: `cat_${catSeq}`,
+      createdAt: now,
+      updatedAt: now,
+      ...args.data,
+    };
+    categoryStore.set(entry.id, entry);
+    return Promise.resolve(entry);
+  };
+
+  const categoryFindUnique = (args: {
+    where: { id?: string; code?: string };
+  }): Promise<StoredComplaintCategory | null> => {
+    if (args.where.id) return Promise.resolve(categoryStore.get(args.where.id) ?? null);
+    if (args.where.code) {
+      const found = Array.from(categoryStore.values()).find(
+        (c) => c.code === args.where.code,
+      );
+      return Promise.resolve(found ?? null);
+    }
+    return Promise.resolve(null);
+  };
+
+  const categoryFindUniqueOrThrow = (args: {
+    where: { id: string };
+  }): Promise<StoredComplaintCategory> => {
+    const found = categoryStore.get(args.where.id);
+    if (!found) throw new Error('ComplaintCategory not found');
+    return Promise.resolve(found);
+  };
+
+  const categoryFindMany = (args?: {
+    where?: { isActive?: boolean };
+    orderBy?: unknown;
+  }): Promise<StoredComplaintCategory[]> => {
+    let all = Array.from(categoryStore.values());
+    if (args?.where?.isActive !== undefined)
+      all = all.filter((c) => c.isActive === args.where!.isActive);
+    all.sort((a, b) => a.sortOrder - b.sortOrder || a.nameEn.localeCompare(b.nameEn));
+    return Promise.resolve(all);
+  };
+
+  const categoryUpdate = (args: {
+    where: { id: string };
+    data: Partial<Omit<StoredComplaintCategory, 'id' | 'createdAt'>>;
+  }): Promise<StoredComplaintCategory> => {
+    const existing = categoryStore.get(args.where.id);
+    if (!existing) throw new Error('ComplaintCategory not found');
+    const updated: StoredComplaintCategory = {
+      ...existing,
+      ...args.data,
+      updatedAt: new Date(),
+    };
+    categoryStore.set(existing.id, updated);
+    return Promise.resolve(updated);
+  };
+
+  // ---------------------------------------------------------------------------
+  // OrgUnit
+  // ---------------------------------------------------------------------------
+  const orgUnitCreate = (args: {
+    data: Omit<StoredOrgUnit, 'id' | 'createdAt' | 'updatedAt'>;
+  }): Promise<StoredOrgUnit> => {
+    const dup = Array.from(orgUnitStore.values()).find(
+      (u) => u.code === args.data.code,
+    );
+    if (dup) {
+      const err = new Error('Unique constraint failed') as Error & {
+        code: string;
+      };
+      err.code = 'P2002';
+      throw err;
+    }
+    orgSeq += 1;
+    const now = new Date();
+    const entry: StoredOrgUnit = {
+      id: `org_${orgSeq}`,
+      createdAt: now,
+      updatedAt: now,
+      ...args.data,
+    };
+    orgUnitStore.set(entry.id, entry);
+    return Promise.resolve(entry);
+  };
+
+  const orgUnitFindUnique = (args: {
+    where: { id?: string; code?: string };
+  }): Promise<StoredOrgUnit | null> => {
+    if (args.where.id) return Promise.resolve(orgUnitStore.get(args.where.id) ?? null);
+    if (args.where.code) {
+      const found = Array.from(orgUnitStore.values()).find(
+        (u) => u.code === args.where.code,
+      );
+      return Promise.resolve(found ?? null);
+    }
+    return Promise.resolve(null);
+  };
+
+  const orgUnitFindUniqueOrThrow = (args: {
+    where: { id: string };
+  }): Promise<StoredOrgUnit> => {
+    const found = orgUnitStore.get(args.where.id);
+    if (!found) throw new Error('OrgUnit not found');
+    return Promise.resolve(found);
+  };
+
+  const orgUnitFindMany = (args?: {
+    where?: { isActive?: boolean };
+    orderBy?: unknown;
+  }): Promise<StoredOrgUnit[]> => {
+    let all = Array.from(orgUnitStore.values());
+    if (args?.where?.isActive !== undefined)
+      all = all.filter((u) => u.isActive === args.where!.isActive);
+    all.sort((a, b) => a.sortOrder - b.sortOrder || a.nameEn.localeCompare(b.nameEn));
+    return Promise.resolve(all);
+  };
+
+  const orgUnitUpdate = (args: {
+    where: { id: string };
+    data: Partial<Omit<StoredOrgUnit, 'id' | 'createdAt'>>;
+  }): Promise<StoredOrgUnit> => {
+    const existing = orgUnitStore.get(args.where.id);
+    if (!existing) throw new Error('OrgUnit not found');
+    const updated: StoredOrgUnit = {
+      ...existing,
+      ...args.data,
+      updatedAt: new Date(),
+    };
+    orgUnitStore.set(existing.id, updated);
+    return Promise.resolve(updated);
+  };
+
+  // ---------------------------------------------------------------------------
   // Assembled mock
   // ---------------------------------------------------------------------------
   const prismaLike = {
@@ -652,6 +830,20 @@ export function createPrismaMock(): PrismaService {
     },
     userRole: { upsert: userRoleUpsert },
     auditLog: { create: auditLogCreate },
+    complaintCategory: {
+      create: categoryCreate,
+      findUnique: categoryFindUnique,
+      findUniqueOrThrow: categoryFindUniqueOrThrow,
+      findMany: categoryFindMany,
+      update: categoryUpdate,
+    },
+    orgUnit: {
+      create: orgUnitCreate,
+      findUnique: orgUnitFindUnique,
+      findUniqueOrThrow: orgUnitFindUniqueOrThrow,
+      findMany: orgUnitFindMany,
+      update: orgUnitUpdate,
+    },
     slaConfig: {
       create: slaConfigCreate,
       findFirst: slaConfigFindFirst,

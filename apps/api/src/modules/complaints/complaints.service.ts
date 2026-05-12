@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -106,6 +107,17 @@ export class ComplaintsService {
     payload: CreateComplaintDto,
     correlationId?: string,
   ): Promise<ComplaintRecord> {
+    if (payload.categoryId) {
+      const cat = await this.prisma.complaintCategory.findUnique({
+        where: { id: payload.categoryId },
+      });
+      if (!cat || !cat.isActive) {
+        throw new BadRequestException(
+          `Category "${payload.categoryId}" does not exist or is inactive`,
+        );
+      }
+    }
+
     const created = await this.prisma.$transaction(async (tx) => {
       const inserted = await tx.complaint.create({
         data: {
@@ -119,6 +131,7 @@ export class ComplaintsService {
           complainantName: payload.complainantName,
           complainantEmail: payload.complainantEmail,
           complainantPhone: payload.complainantPhone,
+          categoryId: payload.categoryId ?? null,
         },
       });
 

@@ -46,17 +46,53 @@ enum SlaStatus {
   BREACHED
 }
 
+model ComplaintCategory {
+  id         String              @id @default(uuid())
+  code       String              @unique
+  nameEn     String
+  nameAm     String?
+  parentId   String?
+  isActive   Boolean             @default(true)
+  sortOrder  Int                 @default(0)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  parent     ComplaintCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children   ComplaintCategory[] @relation("CategoryHierarchy")
+  complaints Complaint[]
+  slaConfigs SlaConfig[]
+
+  @@index([parentId])
+  @@index([isActive, sortOrder])
+}
+
+model OrgUnit {
+  id        String    @id @default(uuid())
+  code      String    @unique
+  nameEn    String
+  nameAm    String?
+  parentId  String?
+  isActive  Boolean   @default(true)
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  parent    OrgUnit?  @relation("OrgUnitHierarchy", fields: [parentId], references: [id])
+  children  OrgUnit[] @relation("OrgUnitHierarchy")
+
+  @@index([parentId])
+  @@index([isActive, sortOrder])
+}
+
 model Complaint {
-  id              String          @id @default(uuid())
-  sequenceNo      Int             @unique @default(autoincrement())
-  referenceNo     String          @unique
-  status          ComplaintStatus @default(SUBMITTED)
-  priority        Priority        @default(NORMAL)
+  id              String              @id @default(uuid())
+  sequenceNo      Int                 @unique @default(autoincrement())
+  referenceNo     String              @unique
+  status          ComplaintStatus     @default(SUBMITTED)
+  priority        Priority            @default(NORMAL)
   categoryId      String?
   channel         ComplaintChannel
   subject         String
   description     String
-  submittedAt     DateTime        @default(now())
+  submittedAt     DateTime            @default(now())
   locale          ComplaintLocale
   consentGiven    Boolean
   complainantName String?
@@ -71,11 +107,13 @@ model Complaint {
   lastTransitionReason String?
   history         ComplaintHistory[]
   sla             ComplaintSla?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  category        ComplaintCategory?  @relation(fields: [categoryId], references: [id])
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
 
   @@index([referenceNo])
   @@index([submittedAt])
+  @@index([categoryId])
 }
 
 model ComplaintHistory {
@@ -165,17 +203,18 @@ model AuditLog {
 // distinct in unique indexes by default, which would allow two generic configs
 // (categoryId IS NULL) with the same priority — see PROJ_LEARNING_NOTES §28.
 model SlaConfig {
-  id                   String         @id @default(uuid())
+  id                   String             @id @default(uuid())
   name                 String
   priority             Priority
   categoryId           String?
   targetHours          Int
-  warningThresholdPct  Int            @default(80)
+  warningThresholdPct  Int                @default(80)
   escalationRoleId     String?
-  isActive             Boolean        @default(true)
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
+  isActive             Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
   trackers             ComplaintSla[]
+  category             ComplaintCategory? @relation(fields: [categoryId], references: [id])
 
   @@index([priority, isActive])
 }

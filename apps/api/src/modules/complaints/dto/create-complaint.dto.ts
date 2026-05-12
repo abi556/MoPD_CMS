@@ -81,6 +81,13 @@ export class CreateComplaintDto {
   @Matches(/^\+[1-9]\d{7,14}$/)
   complainantPhone?: string;
 
+  @ApiPropertyOptional({
+    description: 'Complaint category ID. Must match an active ComplaintCategory.',
+  })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
   @ApiProperty({
     example: true,
     description: 'Must be true to acknowledge data processing consent.',

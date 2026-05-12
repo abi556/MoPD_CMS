@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { SlaModule } from './modules/sla/sla.module';
 import { UserModule } from './modules/user/user.module';
+import { ReferenceDataModule } from './modules/reference-data/reference-data.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { BullBoardAdminModule } from './queue/bull-board.module';
 import { QueueModule } from './queue/queue.module';
@@ -22,6 +23,7 @@ import { QueueModule } from './queue/queue.module';
     AdminModule,
     ComplaintsModule,
     SlaModule,
+    ReferenceDataModule,
     UserModule,
     PrismaModule,
     ThrottlerModule.forRoot({
