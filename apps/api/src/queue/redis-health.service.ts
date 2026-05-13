@@ -34,7 +34,7 @@ export class RedisHealthService {
         return {
           status: 'degraded',
           latencyMs,
-          error: `Unexpected reply: ${reply}`,
+          error: `Unexpected reply: ${String(reply)}`,
         };
       }
       return { status: 'ok', latencyMs };

@@ -1,0 +1,52 @@
+# Placeholder deploy workflow — manual only until hosting and secrets are decided.
+#
+# Extension points (after supervisor / infra sign-off):
+# - Add push to main (and optional paths: apps/web/**, apps/api/**) alongside workflow_dispatch.
+# - Web (Next.js): Vercel (vercel/action), Azure Static Web Apps, or upload static output.
+# - API (NestJS): Docker build + push (GHCR, ACR, ECR), then restart on VM/K8s/Container Apps.
+# - Migrations: run prisma migrate deploy against the target DB (often a dedicated step with secrets).
+# - Secrets: store in GitHub → Settings → Secrets and variables → Actions (never commit values).
+# - Optional: GitHub Environments (production) with required reviewers; use `environment:` on the job.
+
+name: Deploy (build verification)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Logical environment label (for future use; e.g. staging, production)'
+        required: false
+        default: 'manual-verify'
+
+jobs:
+  build-verify:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @mopd-cms/api run prisma:generate
+
+      - name: Build all packages and apps
+        run: pnpm turbo run build
+
+      - name: Selected environment (informational)
+        run: echo "workflow_dispatch environment input=${{ github.event.inputs.environment }}"

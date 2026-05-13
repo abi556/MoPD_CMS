@@ -1,0 +1,55 @@
+# Continuous integration: lint, unit tests, and build for the Turborepo monorepo.
+# E2E (pnpm --filter @mopd-cms/api run test:e2e) is intentionally omitted until
+# the suite is stable on clean runners; add a job or step when ready.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      # Required by prisma.config.ts for prisma generate; no live DB connection needed.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @mopd-cms/api run prisma:generate
+
+      - name: Lint (API, non-mutating)
+        run: pnpm --filter @mopd-cms/api run lint:ci
+
+      - name: Lint (web and shared)
+        run: pnpm turbo run lint --filter=@mopd-cms/web --filter=@mopd-cms/shared
+
+      - name: Unit tests
+        run: pnpm turbo run test
+
+      - name: Build
+        run: pnpm turbo run build
