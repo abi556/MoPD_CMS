@@ -11,6 +11,7 @@ interface StoredComplaint {
   status: ComplaintStatusLiteral;
   priority: PriorityLiteral;
   categoryId: string | null;
+  orgUnitId: string | null;
   channel: 'WEB' | 'ASSISTED' | 'EMAIL' | 'SMS' | 'USSD';
   subject: string;
   description: string;
@@ -154,6 +155,7 @@ export function createPrismaMock(): PrismaService {
       | 'submittedAt'
       | 'priority'
       | 'categoryId'
+      | 'orgUnitId'
       | 'assignedToUserId'
       | 'assignedByUserId'
       | 'assignedAt'
@@ -164,6 +166,7 @@ export function createPrismaMock(): PrismaService {
     > & {
       priority?: PriorityLiteral;
       categoryId?: string | null;
+      orgUnitId?: string | null;
       assignedToUserId?: string | null;
       assignedByUserId?: string | null;
       assignedAt?: Date | null;
@@ -182,6 +185,7 @@ export function createPrismaMock(): PrismaService {
       status: args.data.status,
       priority: args.data.priority ?? 'NORMAL',
       categoryId: args.data.categoryId ?? null,
+      orgUnitId: args.data.orgUnitId ?? null,
       channel: args.data.channel,
       subject: args.data.subject,
       description: args.data.description,
@@ -695,7 +699,8 @@ export function createPrismaMock(): PrismaService {
   const categoryFindUnique = (args: {
     where: { id?: string; code?: string };
   }): Promise<StoredComplaintCategory | null> => {
-    if (args.where.id) return Promise.resolve(categoryStore.get(args.where.id) ?? null);
+    if (args.where.id)
+      return Promise.resolve(categoryStore.get(args.where.id) ?? null);
     if (args.where.code) {
       const found = Array.from(categoryStore.values()).find(
         (c) => c.code === args.where.code,
@@ -720,7 +725,9 @@ export function createPrismaMock(): PrismaService {
     let all = Array.from(categoryStore.values());
     if (args?.where?.isActive !== undefined)
       all = all.filter((c) => c.isActive === args.where!.isActive);
-    all.sort((a, b) => a.sortOrder - b.sortOrder || a.nameEn.localeCompare(b.nameEn));
+    all.sort(
+      (a, b) => a.sortOrder - b.sortOrder || a.nameEn.localeCompare(b.nameEn),
+    );
     return Promise.resolve(all);
   };
 
@@ -770,7 +777,8 @@ export function createPrismaMock(): PrismaService {
   const orgUnitFindUnique = (args: {
     where: { id?: string; code?: string };
   }): Promise<StoredOrgUnit | null> => {
-    if (args.where.id) return Promise.resolve(orgUnitStore.get(args.where.id) ?? null);
+    if (args.where.id)
+      return Promise.resolve(orgUnitStore.get(args.where.id) ?? null);
     if (args.where.code) {
       const found = Array.from(orgUnitStore.values()).find(
         (u) => u.code === args.where.code,
@@ -795,7 +803,9 @@ export function createPrismaMock(): PrismaService {
     let all = Array.from(orgUnitStore.values());
     if (args?.where?.isActive !== undefined)
       all = all.filter((u) => u.isActive === args.where!.isActive);
-    all.sort((a, b) => a.sortOrder - b.sortOrder || a.nameEn.localeCompare(b.nameEn));
+    all.sort(
+      (a, b) => a.sortOrder - b.sortOrder || a.nameEn.localeCompare(b.nameEn),
+    );
     return Promise.resolve(all);
   };
 

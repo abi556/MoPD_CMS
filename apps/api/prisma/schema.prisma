@@ -66,17 +66,18 @@ model ComplaintCategory {
 }
 
 model OrgUnit {
-  id        String    @id @default(uuid())
-  code      String    @unique
+  id        String      @id @default(uuid())
+  code      String      @unique
   nameEn    String
   nameAm    String?
   parentId  String?
-  isActive  Boolean   @default(true)
-  sortOrder Int       @default(0)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  parent    OrgUnit?  @relation("OrgUnitHierarchy", fields: [parentId], references: [id])
-  children  OrgUnit[] @relation("OrgUnitHierarchy")
+  isActive  Boolean     @default(true)
+  sortOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  parent    OrgUnit?    @relation("OrgUnitHierarchy", fields: [parentId], references: [id])
+  children  OrgUnit[]   @relation("OrgUnitHierarchy")
+  complaints Complaint[]
 
   @@index([parentId])
   @@index([isActive, sortOrder])
@@ -89,6 +90,7 @@ model Complaint {
   status          ComplaintStatus     @default(SUBMITTED)
   priority        Priority            @default(NORMAL)
   categoryId      String?
+  orgUnitId       String?
   channel         ComplaintChannel
   subject         String
   description     String
@@ -108,12 +110,14 @@ model Complaint {
   history         ComplaintHistory[]
   sla             ComplaintSla?
   category        ComplaintCategory?  @relation(fields: [categoryId], references: [id])
+  orgUnit         OrgUnit?            @relation(fields: [orgUnitId], references: [id])
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 
   @@index([referenceNo])
   @@index([submittedAt])
   @@index([categoryId])
+  @@index([orgUnitId])
 }
 
 model ComplaintHistory {

@@ -49,7 +49,35 @@ import { AssignComplaintDto } from './dto/assign-complaint.dto';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
 import { TransitionComplaintDto } from './dto/transition-complaint.dto';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
-import { ComplaintsService } from './complaints.service';
+import { ComplaintsService, type ComplaintRecord } from './complaints.service';
+
+function toComplaintDetailData(
+  complaint: ComplaintRecord,
+): ComplaintDetailDataDto {
+  return {
+    id: complaint.id,
+    referenceNo: complaint.referenceNo,
+    status: complaint.status,
+    channel: complaint.channel,
+    subject: complaint.subject,
+    description: complaint.description,
+    submittedAt: complaint.submittedAt,
+    locale: complaint.locale,
+    consentGiven: complaint.consentGiven,
+    categoryId: complaint.categoryId ?? null,
+    orgUnitId: complaint.orgUnitId ?? null,
+    complainantName: complaint.complainantName ?? null,
+    complainantEmail: complaint.complainantEmail ?? null,
+    complainantPhone: complaint.complainantPhone ?? null,
+    assignedToUserId: complaint.assignedToUserId ?? null,
+    assignedByUserId: complaint.assignedByUserId ?? null,
+    assignedAt: complaint.assignedAt ?? null,
+    assignmentReason: complaint.assignmentReason ?? null,
+    lastTransitionByUserId: complaint.lastTransitionByUserId ?? null,
+    lastTransitionAt: complaint.lastTransitionAt ?? null,
+    lastTransitionReason: complaint.lastTransitionReason ?? null,
+  };
+}
 
 @ApiTags('complaints')
 @Controller('complaints')
@@ -98,6 +126,8 @@ export class ComplaintsController {
         subject: item.subject,
         submittedAt: item.submittedAt,
         locale: item.locale,
+        categoryId: item.categoryId ?? null,
+        orgUnitId: item.orgUnitId ?? null,
       })),
       meta: result.meta,
     };
@@ -140,27 +170,7 @@ export class ComplaintsController {
     const complaint = await this.complaintsService.getByIdForStaff(id);
 
     return {
-      data: {
-        id: complaint.id,
-        referenceNo: complaint.referenceNo,
-        status: complaint.status,
-        channel: complaint.channel,
-        subject: complaint.subject,
-        description: complaint.description,
-        submittedAt: complaint.submittedAt,
-        locale: complaint.locale,
-        consentGiven: complaint.consentGiven,
-        complainantName: complaint.complainantName ?? null,
-        complainantEmail: complaint.complainantEmail ?? null,
-        complainantPhone: complaint.complainantPhone ?? null,
-        assignedToUserId: complaint.assignedToUserId ?? null,
-        assignedByUserId: complaint.assignedByUserId ?? null,
-        assignedAt: complaint.assignedAt ?? null,
-        assignmentReason: complaint.assignmentReason ?? null,
-        lastTransitionByUserId: complaint.lastTransitionByUserId ?? null,
-        lastTransitionAt: complaint.lastTransitionAt ?? null,
-        lastTransitionReason: complaint.lastTransitionReason ?? null,
-      },
+      data: toComplaintDetailData(complaint),
     };
   }
 
@@ -266,27 +276,7 @@ export class ComplaintsController {
     );
 
     return {
-      data: {
-        id: complaint.id,
-        referenceNo: complaint.referenceNo,
-        status: complaint.status,
-        channel: complaint.channel,
-        subject: complaint.subject,
-        description: complaint.description,
-        submittedAt: complaint.submittedAt,
-        locale: complaint.locale,
-        consentGiven: complaint.consentGiven,
-        complainantName: complaint.complainantName ?? null,
-        complainantEmail: complaint.complainantEmail ?? null,
-        complainantPhone: complaint.complainantPhone ?? null,
-        assignedToUserId: complaint.assignedToUserId ?? null,
-        assignedByUserId: complaint.assignedByUserId ?? null,
-        assignedAt: complaint.assignedAt ?? null,
-        assignmentReason: complaint.assignmentReason ?? null,
-        lastTransitionByUserId: complaint.lastTransitionByUserId ?? null,
-        lastTransitionAt: complaint.lastTransitionAt ?? null,
-        lastTransitionReason: complaint.lastTransitionReason ?? null,
-      },
+      data: toComplaintDetailData(complaint),
     };
   }
 
@@ -342,27 +332,7 @@ export class ComplaintsController {
     );
 
     return {
-      data: {
-        id: complaint.id,
-        referenceNo: complaint.referenceNo,
-        status: complaint.status,
-        channel: complaint.channel,
-        subject: complaint.subject,
-        description: complaint.description,
-        submittedAt: complaint.submittedAt,
-        locale: complaint.locale,
-        consentGiven: complaint.consentGiven,
-        complainantName: complaint.complainantName ?? null,
-        complainantEmail: complaint.complainantEmail ?? null,
-        complainantPhone: complaint.complainantPhone ?? null,
-        assignedToUserId: complaint.assignedToUserId ?? null,
-        assignedByUserId: complaint.assignedByUserId ?? null,
-        assignedAt: complaint.assignedAt ?? null,
-        assignmentReason: complaint.assignmentReason ?? null,
-        lastTransitionByUserId: complaint.lastTransitionByUserId ?? null,
-        lastTransitionAt: complaint.lastTransitionAt ?? null,
-        lastTransitionReason: complaint.lastTransitionReason ?? null,
-      },
+      data: toComplaintDetailData(complaint),
     };
   }
 
@@ -400,6 +370,8 @@ export class ComplaintsController {
         submittedAt: created.submittedAt,
         locale: created.locale,
         consentGiven: created.consentGiven,
+        categoryId: created.categoryId ?? null,
+        orgUnitId: created.orgUnitId ?? null,
       },
     };
   }

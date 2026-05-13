@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ComplaintChannel, ComplaintLocale } from './create-complaint.dto';
 import { ComplaintStatusValue } from './complaint-status.enum';
 
@@ -53,6 +53,18 @@ export class ComplaintCreatedDataDto {
     description: 'Consent acknowledgement flag.',
   })
   consentGiven!: boolean;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Selected complaint category id when provided at intake.',
+  })
+  categoryId?: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Selected organizational unit id when provided at intake.',
+  })
+  orgUnitId?: string | null;
 }
 
 export class ComplaintCreatedEnvelopeDto {
@@ -141,6 +153,18 @@ export class ComplaintListItemDto {
     description: 'Preferred language.',
   })
   locale!: ComplaintLocale;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Complaint category id.',
+  })
+  categoryId?: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Organizational unit id.',
+  })
+  orgUnitId?: string | null;
 }
 
 export class ComplaintListMetaDto {
@@ -239,6 +263,18 @@ export class ComplaintDetailDataDto {
     description: 'Consent acknowledgement flag.',
   })
   consentGiven!: boolean;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Complaint category id.',
+  })
+  categoryId?: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Organizational unit id.',
+  })
+  orgUnitId?: string | null;
 
   @ApiProperty({
     example: 'Abebe Kebede',

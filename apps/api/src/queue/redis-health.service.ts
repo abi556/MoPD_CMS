@@ -31,7 +31,11 @@ export class RedisHealthService {
       const reply = await client.ping();
       const latencyMs = Date.now() - started;
       if (reply !== 'PONG') {
-        return { status: 'degraded', latencyMs, error: `Unexpected reply: ${reply}` };
+        return {
+          status: 'degraded',
+          latencyMs,
+          error: `Unexpected reply: ${reply}`,
+        };
       }
       return { status: 'ok', latencyMs };
     } catch (err) {

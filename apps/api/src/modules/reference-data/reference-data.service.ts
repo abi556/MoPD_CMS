@@ -122,9 +122,7 @@ export class ReferenceDataService {
     return this.toCategoryDto(updated);
   }
 
-  async listCategories(
-    activeOnly = false,
-  ): Promise<CategoryResponseDto[]> {
+  async listCategories(activeOnly = false): Promise<CategoryResponseDto[]> {
     const where = activeOnly ? { isActive: true } : {};
     const rows = await this.prisma.complaintCategory.findMany({
       where,
@@ -260,15 +258,55 @@ export class ReferenceDataService {
       nameAm: string;
       sortOrder: number;
     }> = [
-      { code: 'ROAD_INFRA', nameEn: 'Road Infrastructure', nameAm: 'የመንገድ መሠረተ ልማት', sortOrder: 1 },
-      { code: 'WATER_SUPPLY', nameEn: 'Water Supply', nameAm: 'የውሃ አቅርቦት', sortOrder: 2 },
-      { code: 'ELECTRICITY', nameEn: 'Electricity', nameAm: 'ኤሌክትሪክ', sortOrder: 3 },
-      { code: 'PUBLIC_HEALTH', nameEn: 'Public Health', nameAm: 'የህብረተሰብ ጤና', sortOrder: 4 },
+      {
+        code: 'ROAD_INFRA',
+        nameEn: 'Road Infrastructure',
+        nameAm: 'የመንገድ መሠረተ ልማት',
+        sortOrder: 1,
+      },
+      {
+        code: 'WATER_SUPPLY',
+        nameEn: 'Water Supply',
+        nameAm: 'የውሃ አቅርቦት',
+        sortOrder: 2,
+      },
+      {
+        code: 'ELECTRICITY',
+        nameEn: 'Electricity',
+        nameAm: 'ኤሌክትሪክ',
+        sortOrder: 3,
+      },
+      {
+        code: 'PUBLIC_HEALTH',
+        nameEn: 'Public Health',
+        nameAm: 'የህብረተሰብ ጤና',
+        sortOrder: 4,
+      },
       { code: 'EDUCATION', nameEn: 'Education', nameAm: 'ትምህርት', sortOrder: 5 },
-      { code: 'PUBLIC_SAFETY', nameEn: 'Public Safety', nameAm: 'የህዝብ ደህንነት', sortOrder: 6 },
-      { code: 'LAND_HOUSING', nameEn: 'Land & Housing', nameAm: 'መሬት እና ቤት', sortOrder: 7 },
-      { code: 'GOVT_SERVICE', nameEn: 'Government Service Delivery', nameAm: 'የመንግስት አገልግሎት አሰጣጥ', sortOrder: 8 },
-      { code: 'CORRUPTION', nameEn: 'Corruption & Misconduct', nameAm: 'ሙስና እና ብልሹ ተግባር', sortOrder: 9 },
+      {
+        code: 'PUBLIC_SAFETY',
+        nameEn: 'Public Safety',
+        nameAm: 'የህዝብ ደህንነት',
+        sortOrder: 6,
+      },
+      {
+        code: 'LAND_HOUSING',
+        nameEn: 'Land & Housing',
+        nameAm: 'መሬት እና ቤት',
+        sortOrder: 7,
+      },
+      {
+        code: 'GOVT_SERVICE',
+        nameEn: 'Government Service Delivery',
+        nameAm: 'የመንግስት አገልግሎት አሰጣጥ',
+        sortOrder: 8,
+      },
+      {
+        code: 'CORRUPTION',
+        nameEn: 'Corruption & Misconduct',
+        nameAm: 'ሙስና እና ብልሹ ተግባር',
+        sortOrder: 9,
+      },
       { code: 'OTHER', nameEn: 'Other', nameAm: 'ሌላ', sortOrder: 99 },
     ];
 
@@ -298,11 +336,36 @@ export class ReferenceDataService {
       nameAm: string;
       sortOrder: number;
     }> = [
-      { code: 'MOPD_HQ', nameEn: 'MoPD Headquarters', nameAm: 'ብልፅግና ዋና መስሪያ ቤት', sortOrder: 1 },
-      { code: 'DIR_COMPLAINTS', nameEn: 'Complaints Directorate', nameAm: 'የቅሬታ ዳይሬክቶሬት', sortOrder: 2 },
-      { code: 'DIR_MONITORING', nameEn: 'Monitoring & Evaluation', nameAm: 'ክትትል እና ግምገማ', sortOrder: 3 },
-      { code: 'DIR_LEGAL', nameEn: 'Legal Affairs', nameAm: 'የሕግ ጉዳዮች', sortOrder: 4 },
-      { code: 'DIR_ICT', nameEn: 'ICT Directorate', nameAm: 'የአይሲቲ ዳይሬክቶሬት', sortOrder: 5 },
+      {
+        code: 'MOPD_HQ',
+        nameEn: 'MoPD Headquarters',
+        nameAm: 'ብልፅግና ዋና መስሪያ ቤት',
+        sortOrder: 1,
+      },
+      {
+        code: 'DIR_COMPLAINTS',
+        nameEn: 'Complaints Directorate',
+        nameAm: 'የቅሬታ ዳይሬክቶሬት',
+        sortOrder: 2,
+      },
+      {
+        code: 'DIR_MONITORING',
+        nameEn: 'Monitoring & Evaluation',
+        nameAm: 'ክትትል እና ግምገማ',
+        sortOrder: 3,
+      },
+      {
+        code: 'DIR_LEGAL',
+        nameEn: 'Legal Affairs',
+        nameAm: 'የሕግ ጉዳዮች',
+        sortOrder: 4,
+      },
+      {
+        code: 'DIR_ICT',
+        nameEn: 'ICT Directorate',
+        nameAm: 'የአይሲቲ ዳይሬክቶሬት',
+        sortOrder: 5,
+      },
     ];
 
     for (const unit of defaults) {

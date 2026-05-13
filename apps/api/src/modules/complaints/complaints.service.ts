@@ -33,6 +33,8 @@ export interface ComplaintRecord {
   submittedAt: string;
   locale: ComplaintLocale;
   consentGiven: boolean;
+  categoryId?: string;
+  orgUnitId?: string;
   complainantName?: string;
   complainantEmail?: string;
   complainantPhone?: string;
@@ -118,6 +120,17 @@ export class ComplaintsService {
       }
     }
 
+    if (payload.orgUnitId) {
+      const unit = await this.prisma.orgUnit.findUnique({
+        where: { id: payload.orgUnitId },
+      });
+      if (!unit || !unit.isActive) {
+        throw new BadRequestException(
+          `Org unit "${payload.orgUnitId}" does not exist or is inactive`,
+        );
+      }
+    }
+
     const created = await this.prisma.$transaction(async (tx) => {
       const inserted = await tx.complaint.create({
         data: {
@@ -132,6 +145,7 @@ export class ComplaintsService {
           complainantEmail: payload.complainantEmail,
           complainantPhone: payload.complainantPhone,
           categoryId: payload.categoryId ?? null,
+          orgUnitId: payload.orgUnitId ?? null,
         },
       });
 
@@ -170,6 +184,8 @@ export class ComplaintsService {
         referenceNo: record.referenceNo,
         channel: record.channel,
         locale: record.locale,
+        categoryId: record.categoryId,
+        orgUnitId: record.orgUnitId,
       },
     });
     return record;
@@ -407,6 +423,8 @@ export class ComplaintsService {
       submittedAt: complaint.submittedAt.toISOString(),
       locale: complaint.locale as ComplaintLocale,
       consentGiven: complaint.consentGiven,
+      categoryId: complaint.categoryId ?? undefined,
+      orgUnitId: complaint.orgUnitId ?? undefined,
       complainantName: complaint.complainantName ?? undefined,
       complainantEmail: complaint.complainantEmail ?? undefined,
       complainantPhone: complaint.complainantPhone ?? undefined,

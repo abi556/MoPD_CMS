@@ -11,33 +11,48 @@ import {
 } from 'class-validator';
 
 export class CreateCategoryDto {
-  @ApiProperty({ example: 'ROAD_INFRA', description: 'Unique machine-readable code (uppercase, snake_case).' })
+  @ApiProperty({
+    example: 'ROAD_INFRA',
+    description: 'Unique machine-readable code (uppercase, snake_case).',
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(50)
   @Matches(/^[A-Z][A-Z0-9_]*$/, {
-    message: 'code must be uppercase letters, digits, and underscores (e.g. ROAD_INFRA)',
+    message:
+      'code must be uppercase letters, digits, and underscores (e.g. ROAD_INFRA)',
   })
   code!: string;
 
-  @ApiProperty({ example: 'Road Infrastructure', description: 'English display name.' })
+  @ApiProperty({
+    example: 'Road Infrastructure',
+    description: 'English display name.',
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(200)
   nameEn!: string;
 
-  @ApiPropertyOptional({ example: 'የመንገድ መሠረተ ልማት', description: 'Amharic display name.' })
+  @ApiPropertyOptional({
+    example: 'የመንገድ መሠረተ ልማት',
+    description: 'Amharic display name.',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   nameAm?: string;
 
-  @ApiPropertyOptional({ description: 'Parent category ID for hierarchical nesting.' })
+  @ApiPropertyOptional({
+    description: 'Parent category ID for hierarchical nesting.',
+  })
   @IsOptional()
   @IsString()
   parentId?: string;
 
-  @ApiPropertyOptional({ example: 0, description: 'Sort order within siblings.' })
+  @ApiPropertyOptional({
+    example: 0,
+    description: 'Sort order within siblings.',
+  })
   @IsOptional()
   @IsInt()
   @Min(0)

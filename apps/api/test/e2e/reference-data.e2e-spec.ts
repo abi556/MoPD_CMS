@@ -283,7 +283,8 @@ describe('Reference Data (e2e)', () => {
         .post('/api/v1/complaints')
         .send({
           subject: 'Power outage in zone 4',
-          description: 'Electricity has been off for 48 hours in the central zone.',
+          description:
+            'Electricity has been off for 48 hours in the central zone.',
           channel: 'WEB',
           consentGiven: true,
           locale: 'en',
@@ -295,12 +296,56 @@ describe('Reference Data (e2e)', () => {
       expect(cmpRes.body.data.referenceNo).toBeDefined();
     });
 
+    it('creates complaint with valid orgUnitId', async () => {
+      const unitRes = await request(asSupertestApp(app))
+        .post('/api/v1/admin/org-units')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          code: 'UNIT_SLA_TEST',
+          nameEn: 'SLA Routing Unit',
+          sortOrder: 50,
+        })
+        .expect(201);
+      const unit = getBody<OrgUnitResponse>(unitRes);
+
+      const cmpRes = await request(asSupertestApp(app))
+        .post('/api/v1/complaints')
+        .send({
+          subject: 'Org unit routing complaint title for validation',
+          description:
+            'This complaint carries an org unit id to verify optional FK wiring on public intake.',
+          channel: 'WEB',
+          consentGiven: true,
+          locale: 'en',
+          orgUnitId: unit.id,
+        })
+        .expect(201);
+
+      expect(cmpRes.body.data.orgUnitId).toBe(unit.id);
+    });
+
+    it('rejects complaint with non-existent orgUnitId', async () => {
+      const res = await request(asSupertestApp(app))
+        .post('/api/v1/complaints')
+        .send({
+          subject: 'Bad org unit test complaint submission title',
+          description:
+            'This has a fake org unit ID that should fail validation at intake.',
+          channel: 'WEB',
+          consentGiven: true,
+          locale: 'en',
+          orgUnitId: 'non-existent-org-unit-id',
+        });
+      expect([400, 422]).toContain(res.status);
+    });
+
     it('rejects complaint with non-existent categoryId', async () => {
       const res = await request(asSupertestApp(app))
         .post('/api/v1/complaints')
         .send({
           subject: 'Bad category test complaint submission',
-          description: 'This has a fake category ID that should fail validation.',
+          description:
+            'This has a fake category ID that should fail validation.',
           channel: 'WEB',
           consentGiven: true,
           locale: 'en',

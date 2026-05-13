@@ -11,7 +11,10 @@ import {
 } from 'class-validator';
 
 export class CreateOrgUnitDto {
-  @ApiProperty({ example: 'DIR_ROADS', description: 'Unique machine-readable code.' })
+  @ApiProperty({
+    example: 'DIR_ROADS',
+    description: 'Unique machine-readable code.',
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(50)
@@ -20,13 +23,19 @@ export class CreateOrgUnitDto {
   })
   code!: string;
 
-  @ApiProperty({ example: 'Directorate of Roads', description: 'English display name.' })
+  @ApiProperty({
+    example: 'Directorate of Roads',
+    description: 'English display name.',
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(200)
   nameEn!: string;
 
-  @ApiPropertyOptional({ example: 'የመንገድ ዳይሬክቶሬት', description: 'Amharic display name.' })
+  @ApiPropertyOptional({
+    example: 'የመንገድ ዳይሬክቶሬት',
+    description: 'Amharic display name.',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(200)

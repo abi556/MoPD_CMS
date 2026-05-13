@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ComplaintChannel, ComplaintLocale } from './dto/create-complaint.dto';
 import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ComplaintsService } from './complaints.service';
@@ -16,6 +16,8 @@ describe('ComplaintsService', () => {
   const complaintFindMany = jest.fn();
   const complaintCount = jest.fn();
   const transaction = jest.fn();
+  const complaintCategoryFindUnique = jest.fn();
+  const orgUnitFindUnique = jest.fn();
 
   beforeEach(() => {
     complaintCreate.mockReset();
@@ -26,6 +28,8 @@ describe('ComplaintsService', () => {
     complaintFindMany.mockReset();
     complaintCount.mockReset();
     transaction.mockReset();
+    complaintCategoryFindUnique.mockReset();
+    orgUnitFindUnique.mockReset();
     logEvent.mockReset();
     logEvent.mockResolvedValue(undefined);
 
@@ -52,6 +56,12 @@ describe('ComplaintsService', () => {
           findMany: complaintFindMany,
           findUnique: complaintFindUnique,
           update: complaintUpdate,
+        },
+        complaintCategory: {
+          findUnique: complaintCategoryFindUnique,
+        },
+        orgUnit: {
+          findUnique: orgUnitFindUnique,
         },
         complaintHistory: {
           findMany: complaintHistoryFindMany,
@@ -405,5 +415,127 @@ describe('ComplaintsService', () => {
     expect(history).toHaveLength(2);
     expect(history[0]?.action).toBe('ASSIGNED');
     expect(history[1]?.toStatus).toBe(ComplaintStatusValue.IN_INVESTIGATION);
+  });
+
+  describe('create with categoryId / orgUnitId', () => {
+    const basePayload = {
+      subject: 'Road project delay in zone 3',
+      description:
+        'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
+      channel: ComplaintChannel.WEB,
+      consentGiven: true,
+      locale: ComplaintLocale.EN,
+    };
+
+    it('rejects when categoryId references no row', async () => {
+      complaintCategoryFindUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create({ ...basePayload, categoryId: 'missing-cat' }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects when category exists but is inactive', async () => {
+      complaintCategoryFindUnique.mockResolvedValue({
+        id: 'cat-1',
+        isActive: false,
+      });
+
+      await expect(
+        service.create({ ...basePayload, categoryId: 'cat-1' }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects when orgUnitId references no row', async () => {
+      orgUnitFindUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create({ ...basePayload, orgUnitId: 'missing-org' }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects when org unit exists but is inactive', async () => {
+      orgUnitFindUnique.mockResolvedValue({
+        id: 'org-1',
+        isActive: false,
+      });
+
+      await expect(
+        service.create({ ...basePayload, orgUnitId: 'org-1' }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('creates when category and org unit are active', async () => {
+      complaintCategoryFindUnique.mockResolvedValue({
+        id: 'cat-active',
+        isActive: true,
+      });
+      orgUnitFindUnique.mockResolvedValue({
+        id: 'org-active',
+        isActive: true,
+      });
+
+      complaintCreate.mockResolvedValue({
+        id: 'cmp_cat_org',
+        sequenceNo: 99,
+        submittedAt: new Date('2026-04-28T10:00:00.000Z'),
+        status: 'SUBMITTED',
+        priority: 'NORMAL',
+        channel: ComplaintChannel.WEB,
+        subject: basePayload.subject,
+        locale: ComplaintLocale.EN,
+        consentGiven: true,
+        categoryId: 'cat-active',
+        orgUnitId: 'org-active',
+      });
+      complaintUpdate.mockResolvedValue({
+        id: 'cmp_cat_org',
+        referenceNo: 'CMS-2026-000099',
+        status: 'SUBMITTED',
+        priority: 'NORMAL',
+        channel: ComplaintChannel.WEB,
+        subject: basePayload.subject,
+        description: basePayload.description,
+        submittedAt: new Date('2026-04-28T10:00:00.000Z'),
+        locale: ComplaintLocale.EN,
+        consentGiven: true,
+        complainantName: null,
+        complainantEmail: null,
+        complainantPhone: null,
+        categoryId: 'cat-active',
+        orgUnitId: 'org-active',
+      });
+
+      const created = await service.create({
+        ...basePayload,
+        categoryId: 'cat-active',
+        orgUnitId: 'org-active',
+      });
+
+      expect(created.categoryId).toBe('cat-active');
+      expect(created.orgUnitId).toBe('org-active');
+      expect(complaintCategoryFindUnique).toHaveBeenCalledWith({
+        where: { id: 'cat-active' },
+      });
+      expect(orgUnitFindUnique).toHaveBeenCalledWith({
+        where: { id: 'org-active' },
+      });
+      expect(complaintCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            categoryId: 'cat-active',
+            orgUnitId: 'org-active',
+          }),
+        }),
+      );
+    });
   });
 });

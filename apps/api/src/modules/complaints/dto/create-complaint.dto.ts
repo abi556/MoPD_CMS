@@ -82,11 +82,20 @@ export class CreateComplaintDto {
   complainantPhone?: string;
 
   @ApiPropertyOptional({
-    description: 'Complaint category ID. Must match an active ComplaintCategory.',
+    description:
+      'Complaint category ID. Must match an active ComplaintCategory.',
   })
   @IsOptional()
   @IsString()
   categoryId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Optional organizational unit ID. Must match an active OrgUnit.',
+  })
+  @IsOptional()
+  @IsString()
+  orgUnitId?: string;
 
   @ApiProperty({
     example: true,
