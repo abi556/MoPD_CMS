@@ -201,7 +201,7 @@ export class AuthController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Request password reset (email delivery not wired yet in MVP)',
+    summary: 'Request password reset (queues email via notifications module)',
   })
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   async forgotPassword(

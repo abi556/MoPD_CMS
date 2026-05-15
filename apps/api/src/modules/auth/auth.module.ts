@@ -8,6 +8,7 @@ import { AuditModule } from '../audit/audit.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LoginAttemptService } from './login-attempt.service';
 import { MfaService } from './mfa.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 function getJwtSecret(): string {
   if (process.env.JWT_ACCESS_SECRET) {
@@ -24,6 +25,7 @@ function getJwtSecret(): string {
 @Module({
   imports: [
     AuditModule,
+    NotificationsModule,
     UserModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({

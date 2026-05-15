@@ -26,6 +26,9 @@ export const AUDIT_EVENT = {
   CATEGORY_UPDATED: 'admin.category.updated',
   ORG_UNIT_CREATED: 'admin.org_unit.created',
   ORG_UNIT_UPDATED: 'admin.org_unit.updated',
+  NOTIFICATION_QUEUED: 'notification.queued',
+  NOTIFICATION_SENT: 'notification.sent',
+  NOTIFICATION_FAILED: 'notification.failed',
 } as const;
 
 export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];

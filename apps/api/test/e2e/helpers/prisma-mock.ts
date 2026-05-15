@@ -124,6 +124,33 @@ interface StoredComplaintSla {
   updatedAt: Date;
 }
 
+interface StoredNotificationTemplate {
+  id: string;
+  key: string;
+  locale: 'en' | 'am';
+  channel: 'email' | 'sms';
+  subject: string;
+  bodyHtml: string;
+  bodyText: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface StoredNotificationDelivery {
+  id: string;
+  templateKey: string;
+  to: string;
+  channel: 'email' | 'sms';
+  status: 'queued' | 'sent' | 'failed';
+  retries: number;
+  lastError: string | null;
+  sentAt: Date | null;
+  correlationId: string | null;
+  payload: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
@@ -137,12 +164,69 @@ export function createPrismaMock(): PrismaService {
   const orgUnitStore = new Map<string, StoredOrgUnit>();
   const slaConfigStore = new Map<string, StoredSlaConfig>();
   const complaintSlaStore = new Map<string, StoredComplaintSla>();
+  const notificationTemplateStore = new Map<
+    string,
+    StoredNotificationTemplate
+  >();
+  const notificationDeliveryStore = new Map<
+    string,
+    StoredNotificationDelivery
+  >();
   let sequence = 0;
   let historySequence = 0;
   let auditSequence = 0;
   let slaSeq = 0;
   let catSeq = 0;
   let orgSeq = 0;
+  let notifTemplateSeq = 0;
+  let notifDeliverySeq = 0;
+
+  const seedNotificationTemplates = (): void => {
+    const seeds = [
+      {
+        key: 'password_reset',
+        locale: 'en' as const,
+        channel: 'email' as const,
+        subject: 'Reset your MoPD CMS password',
+        bodyHtml:
+          '<p><a href="{{resetUrl}}">Reset your password</a></p><p>Expires in {{expiresInMinutes}} minutes.</p>',
+        bodyText: 'Reset: {{resetUrl}}',
+      },
+      {
+        key: 'complaint_submitted_ack',
+        locale: 'en' as const,
+        channel: 'email' as const,
+        subject: 'Complaint received — {{referenceNo}}',
+        bodyHtml: '<p>Reference {{referenceNo}}</p>',
+        bodyText: 'Reference {{referenceNo}}',
+      },
+      {
+        key: 'complaint_transition',
+        locale: 'en' as const,
+        channel: 'email' as const,
+        subject: 'Status {{status}}',
+        bodyHtml: '<p>{{referenceNo}} — {{status}}</p>',
+        bodyText: '{{referenceNo}} — {{status}}',
+      },
+    ];
+    for (const seed of seeds) {
+      notifTemplateSeq += 1;
+      const id = `ntpl_${notifTemplateSeq}`;
+      const now = new Date();
+      const row: StoredNotificationTemplate = {
+        id,
+        ...seed,
+        bodyText: seed.bodyText,
+        createdAt: now,
+        updatedAt: now,
+      };
+      notificationTemplateStore.set(
+        `${seed.key}:${seed.locale}:${seed.channel}`,
+        row,
+      );
+    }
+  };
+  seedNotificationTemplates();
 
   // ---------------------------------------------------------------------------
   // Complaint
@@ -824,6 +908,107 @@ export function createPrismaMock(): PrismaService {
     return Promise.resolve(updated);
   };
 
+  const notificationTemplateUpsert = (args: {
+    where: {
+      key_locale_channel: { key: string; locale: string; channel: string };
+    };
+    create: Omit<StoredNotificationTemplate, 'id' | 'createdAt' | 'updatedAt'>;
+    update: Partial<
+      Omit<StoredNotificationTemplate, 'id' | 'key' | 'locale' | 'channel'>
+    >;
+  }): Promise<StoredNotificationTemplate> => {
+    const mapKey = `${args.where.key_locale_channel.key}:${args.where.key_locale_channel.locale}:${args.where.key_locale_channel.channel}`;
+    const existing = notificationTemplateStore.get(mapKey);
+    const now = new Date();
+    if (existing) {
+      const updated: StoredNotificationTemplate = {
+        ...existing,
+        ...args.update,
+        updatedAt: now,
+      };
+      notificationTemplateStore.set(mapKey, updated);
+      return Promise.resolve(updated);
+    }
+    notifTemplateSeq += 1;
+    const created: StoredNotificationTemplate = {
+      id: `ntpl_${notifTemplateSeq}`,
+      key: args.create.key,
+      locale: args.create.locale,
+      channel: args.create.channel,
+      subject: args.create.subject,
+      bodyHtml: args.create.bodyHtml,
+      bodyText: args.create.bodyText ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    notificationTemplateStore.set(mapKey, created);
+    return Promise.resolve(created);
+  };
+
+  const notificationTemplateFindUnique = (args: {
+    where: {
+      key_locale_channel: { key: string; locale: string; channel: string };
+    };
+  }): Promise<StoredNotificationTemplate | null> => {
+    const mapKey = `${args.where.key_locale_channel.key}:${args.where.key_locale_channel.locale}:${args.where.key_locale_channel.channel}`;
+    return Promise.resolve(notificationTemplateStore.get(mapKey) ?? null);
+  };
+
+  const notificationDeliveryCreate = (args: {
+    data: Omit<
+      StoredNotificationDelivery,
+      'id' | 'createdAt' | 'updatedAt' | 'retries' | 'lastError' | 'sentAt'
+    > & {
+      retries?: number;
+      lastError?: string | null;
+      sentAt?: Date | null;
+    };
+  }): Promise<StoredNotificationDelivery> => {
+    notifDeliverySeq += 1;
+    const now = new Date();
+    const row: StoredNotificationDelivery = {
+      id: `ndlv_${notifDeliverySeq}`,
+      templateKey: args.data.templateKey,
+      to: args.data.to,
+      channel: args.data.channel,
+      status: args.data.status,
+      retries: args.data.retries ?? 0,
+      lastError: args.data.lastError ?? null,
+      sentAt: args.data.sentAt ?? null,
+      correlationId: args.data.correlationId ?? null,
+      payload: args.data.payload,
+      createdAt: now,
+      updatedAt: now,
+    };
+    notificationDeliveryStore.set(row.id, row);
+    return Promise.resolve(row);
+  };
+
+  const notificationDeliveryFindUnique = (args: {
+    where: { id: string };
+  }): Promise<StoredNotificationDelivery | null> =>
+    Promise.resolve(notificationDeliveryStore.get(args.where.id) ?? null);
+
+  const notificationDeliveryUpdate = (args: {
+    where: { id: string };
+    data: Partial<
+      Omit<
+        StoredNotificationDelivery,
+        'id' | 'createdAt' | 'templateKey' | 'to'
+      >
+    >;
+  }): Promise<StoredNotificationDelivery> => {
+    const existing = notificationDeliveryStore.get(args.where.id);
+    if (!existing) throw new Error('NotificationDelivery not found');
+    const updated: StoredNotificationDelivery = {
+      ...existing,
+      ...args.data,
+      updatedAt: new Date(),
+    };
+    notificationDeliveryStore.set(existing.id, updated);
+    return Promise.resolve(updated);
+  };
+
   // ---------------------------------------------------------------------------
   // Assembled mock
   // ---------------------------------------------------------------------------
@@ -868,6 +1053,15 @@ export function createPrismaMock(): PrismaService {
       findMany: complaintSlaFindMany,
       update: complaintSlaUpdate,
       updateMany: complaintSlaUpdateMany,
+    },
+    notificationTemplate: {
+      upsert: notificationTemplateUpsert,
+      findUnique: notificationTemplateFindUnique,
+    },
+    notificationDelivery: {
+      create: notificationDeliveryCreate,
+      findUnique: notificationDeliveryFindUnique,
+      update: notificationDeliveryUpdate,
     },
     $transaction: async <T>(
       callback: (tx: {

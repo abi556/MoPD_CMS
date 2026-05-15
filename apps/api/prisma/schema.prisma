@@ -242,3 +242,47 @@ model ComplaintSla {
   @@index([status])
   @@index([targetAt])
 }
+
+enum NotificationChannel {
+  email
+  sms
+}
+
+enum NotificationDeliveryStatus {
+  queued
+  sent
+  failed
+}
+
+model NotificationTemplate {
+  id        String              @id @default(uuid())
+  key       String
+  locale    ComplaintLocale
+  channel   NotificationChannel
+  subject   String
+  bodyHtml  String
+  bodyText  String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@unique([key, locale, channel])
+}
+
+model NotificationDelivery {
+  id             String                     @id @default(uuid())
+  templateKey    String
+  to             String
+  channel        NotificationChannel
+  status         NotificationDeliveryStatus @default(queued)
+  retries        Int                        @default(0)
+  lastError      String?
+  sentAt         DateTime?
+  correlationId  String?
+  payload        Json?
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  @@index([status, createdAt])
+  @@index([to, createdAt])
+  @@index([correlationId])
+}

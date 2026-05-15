@@ -21,6 +21,7 @@ import { UserService } from '../user/user.service';
 import { JwtPayload, JwtUser } from './interfaces/jwt-user.interface';
 import { LoginAttemptService } from './login-attempt.service';
 import { MfaService } from './mfa.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 export interface TokenPair {
   accessToken: string;
@@ -141,6 +142,7 @@ export class AuthService implements OnModuleInit {
     private readonly auditService: AuditService,
     private readonly loginAttemptService: LoginAttemptService,
     private readonly mfaService: MfaService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -590,6 +592,20 @@ export class AuthService implements OnModuleInit {
       correlationId,
       metadata: { email: norm },
     });
+
+    try {
+      await this.notificationsService.queuePasswordResetEmail(
+        norm,
+        tokenPlain,
+        correlationId,
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(
+        `Failed to queue password reset email for ${norm}: ${message}`,
+      );
+    }
+
     if (
       process.env.NODE_ENV !== 'production' &&
       process.env.AUTH_PASSWORD_RESET_LOG_TOKEN === 'true'

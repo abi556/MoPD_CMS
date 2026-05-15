@@ -1,4 +1,10 @@
 services:
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+
   api:
     profiles: ["app"]
     build: ../../apps/api
@@ -8,12 +14,19 @@ services:
       - postgres
       - redis
       - minio
+      - mailpit
     environment:
       PORT: ${API_PORT:-3001}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:${REDIS_PORT:-6379}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
       MINIO_PORT: "${MINIO_PORT:-9000}"
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-smtp}
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_SECURE: "false"
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost:3000}
 
   web:
     profiles: ["app"]

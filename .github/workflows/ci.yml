@@ -20,6 +20,8 @@ jobs:
     env:
       # Required by prisma.config.ts for prisma generate; no live DB connection needed.
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      EMAIL_PROVIDER: console
+      APP_PUBLIC_URL: http://localhost:3000
 
     steps:
       - name: Checkout

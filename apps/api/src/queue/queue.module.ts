@@ -1,7 +1,10 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module } from '@nestjs/common';
 import type { Redis } from 'ioredis';
-import { QUEUE_SLA_MONITOR } from './queue.constants';
+import {
+  QUEUE_NOTIFICATION_DISPATCH,
+  QUEUE_SLA_MONITOR,
+} from './queue.constants';
 import { RedisHealthService } from './redis-health.service';
 
 type RedisCtor = new (...args: unknown[]) => Redis;
@@ -50,6 +53,7 @@ function buildConnection(): Redis | Record<string, unknown> {
       connection: buildConnection(),
     }),
     BullModule.registerQueue({ name: QUEUE_SLA_MONITOR }),
+    BullModule.registerQueue({ name: QUEUE_NOTIFICATION_DISPATCH }),
   ],
   providers: [RedisHealthService],
   exports: [BullModule, RedisHealthService],

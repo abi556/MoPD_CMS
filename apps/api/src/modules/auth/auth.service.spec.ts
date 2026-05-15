@@ -86,6 +86,7 @@ describe('AuthService', () => {
   const mfaStub = {
     isGloballyRequired: jest.fn().mockReturnValue(false),
   };
+  const queuePasswordResetEmail = jest.fn().mockResolvedValue(undefined);
   let service: AuthService;
 
   beforeEach(async () => {
@@ -113,6 +114,9 @@ describe('AuthService', () => {
       } as never,
       loginAttemptStub as never,
       mfaStub as never,
+      {
+        queuePasswordResetEmail,
+      } as never,
     );
     await service.onModuleInit();
   });
