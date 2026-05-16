@@ -816,6 +816,8 @@ export function createPrismaMock(): PrismaService {
       createdAt: now,
       updatedAt: now,
       ...args.data,
+      isActive: args.data.isActive ?? true,
+      sortOrder: args.data.sortOrder ?? 0,
     };
     categoryStore.set(entry.id, entry);
     return Promise.resolve(entry);
@@ -894,6 +896,8 @@ export function createPrismaMock(): PrismaService {
       createdAt: now,
       updatedAt: now,
       ...args.data,
+      isActive: args.data.isActive ?? true,
+      sortOrder: args.data.sortOrder ?? 0,
     };
     orgUnitStore.set(entry.id, entry);
     return Promise.resolve(entry);

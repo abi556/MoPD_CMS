@@ -40,13 +40,17 @@ describe('Reference Data (e2e)', () => {
 
     const adminLogin = await request(asSupertestApp(app))
       .post('/api/v1/auth/login')
-      .send({ email: 'admin@mopd.local', password: 'AdminPass123!' });
+      .send({ email: 'admin@mopd.local', password: 'AdminPass123!' })
+      .expect(200);
     adminToken = getBody<LoginResponse>(adminLogin).data.accessToken;
+    expect(adminToken).toBeTruthy();
 
     const officerLogin = await request(asSupertestApp(app))
       .post('/api/v1/auth/login')
-      .send({ email: 'officer@mopd.local', password: 'OfficerPass123!' });
+      .send({ email: 'officer@mopd.local', password: 'OfficerPass123!' })
+      .expect(200);
     officerToken = getBody<LoginResponse>(officerLogin).data.accessToken;
+    expect(officerToken).toBeTruthy();
   });
 
   afterAll(async () => {
