@@ -46,6 +46,18 @@ enum SlaStatus {
   BREACHED
 }
 
+enum CaseNoteVisibility {
+  INTERNAL
+  RESTRICTED
+}
+
+enum CaseTaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
 model ComplaintCategory {
   id         String              @id @default(uuid())
   code       String              @unique
@@ -108,6 +120,8 @@ model Complaint {
   lastTransitionAt DateTime?
   lastTransitionReason String?
   history         ComplaintHistory[]
+  notes           CaseNote[]
+  tasks           CaseTask[]
   sla             ComplaintSla?
   category        ComplaintCategory?  @relation(fields: [categoryId], references: [id])
   orgUnit         OrgUnit?            @relation(fields: [orgUnitId], references: [id])
@@ -132,6 +146,34 @@ model ComplaintHistory {
   complaint     Complaint       @relation(fields: [complaintId], references: [id], onDelete: Cascade)
 
   @@index([complaintId, createdAt])
+}
+
+model CaseNote {
+  id          String             @id @default(uuid())
+  complaintId String
+  authorId    String
+  body        String
+  visibility  CaseNoteVisibility @default(INTERNAL)
+  createdAt   DateTime           @default(now())
+  complaint   Complaint          @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+
+  @@index([complaintId, createdAt])
+}
+
+model CaseTask {
+  id          String         @id @default(uuid())
+  complaintId String
+  assigneeId  String
+  createdById String
+  title       String
+  status      CaseTaskStatus @default(OPEN)
+  dueAt       DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  complaint   Complaint      @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+
+  @@index([complaintId, status])
+  @@index([complaintId, dueAt])
 }
 
 model User {

@@ -29,6 +29,9 @@ export const AUDIT_EVENT = {
   NOTIFICATION_QUEUED: 'notification.queued',
   NOTIFICATION_SENT: 'notification.sent',
   NOTIFICATION_FAILED: 'notification.failed',
+  CASE_NOTE_CREATED: 'case.note.created',
+  CASE_TASK_CREATED: 'case.task.created',
+  CASE_TASK_UPDATED: 'case.task.updated',
 } as const;
 
 export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];

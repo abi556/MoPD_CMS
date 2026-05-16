@@ -151,6 +151,27 @@ interface StoredNotificationDelivery {
   updatedAt: Date;
 }
 
+interface StoredCaseNote {
+  id: string;
+  complaintId: string;
+  authorId: string;
+  body: string;
+  visibility: 'INTERNAL' | 'RESTRICTED';
+  createdAt: Date;
+}
+
+interface StoredCaseTask {
+  id: string;
+  complaintId: string;
+  assigneeId: string;
+  createdById: string;
+  title: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
+  dueAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
@@ -172,6 +193,8 @@ export function createPrismaMock(): PrismaService {
     string,
     StoredNotificationDelivery
   >();
+  const caseNoteStore = new Map<string, StoredCaseNote>();
+  const caseTaskStore = new Map<string, StoredCaseTask>();
   let sequence = 0;
   let historySequence = 0;
   let auditSequence = 0;
@@ -180,6 +203,8 @@ export function createPrismaMock(): PrismaService {
   let orgSeq = 0;
   let notifTemplateSeq = 0;
   let notifDeliverySeq = 0;
+  let caseNoteSeq = 0;
+  let caseTaskSeq = 0;
 
   const seedNotificationTemplates = (): void => {
     const seeds = [
@@ -1157,6 +1182,121 @@ export function createPrismaMock(): PrismaService {
   };
 
   // ---------------------------------------------------------------------------
+  // CaseNote / CaseTask
+  // ---------------------------------------------------------------------------
+  const caseNoteCreate = (args: {
+    data: Omit<StoredCaseNote, 'id' | 'createdAt'>;
+  }): Promise<StoredCaseNote> => {
+    caseNoteSeq += 1;
+    const row: StoredCaseNote = {
+      id: `case_note_${caseNoteSeq}`,
+      createdAt: new Date(),
+      visibility: args.data.visibility ?? 'INTERNAL',
+      ...args.data,
+    };
+    caseNoteStore.set(row.id, row);
+    return Promise.resolve(row);
+  };
+
+  const caseNoteFindMany = (args: {
+    where: { complaintId: string };
+    orderBy?: { createdAt: 'asc' | 'desc' };
+    take?: number;
+  }): Promise<StoredCaseNote[]> => {
+    let rows = [...caseNoteStore.values()].filter(
+      (r) => r.complaintId === args.where.complaintId,
+    );
+    if (args.orderBy?.createdAt === 'desc') {
+      rows = rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    } else if (args.orderBy?.createdAt === 'asc') {
+      rows = rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    }
+    if (args.take !== undefined) {
+      rows = rows.slice(0, args.take);
+    }
+    return Promise.resolve(rows);
+  };
+
+  const caseTaskCreate = (args: {
+    data: Omit<StoredCaseTask, 'id' | 'createdAt' | 'updatedAt' | 'status'> & {
+      status?: StoredCaseTask['status'];
+    };
+  }): Promise<StoredCaseTask> => {
+    caseTaskSeq += 1;
+    const now = new Date();
+    const row: StoredCaseTask = {
+      id: `case_task_${caseTaskSeq}`,
+      status: args.data.status ?? 'OPEN',
+      createdAt: now,
+      updatedAt: now,
+      dueAt: args.data.dueAt ?? null,
+      complaintId: args.data.complaintId,
+      assigneeId: args.data.assigneeId,
+      createdById: args.data.createdById,
+      title: args.data.title,
+    };
+    caseTaskStore.set(row.id, row);
+    return Promise.resolve(row);
+  };
+
+  const caseTaskFindMany = (args: {
+    where: { complaintId: string };
+    orderBy?: Array<{ status: 'asc' | 'desc' } | { dueAt: 'asc' | 'desc' }>;
+    take?: number;
+  }): Promise<StoredCaseTask[]> => {
+    let rows = [...caseTaskStore.values()].filter(
+      (r) => r.complaintId === args.where.complaintId,
+    );
+    if (args.orderBy) {
+      for (const clause of [...args.orderBy].reverse()) {
+        if ('status' in clause) {
+          const dir = clause.status === 'desc' ? -1 : 1;
+          rows = rows.sort((a, b) => (a.status < b.status ? -dir : dir));
+        }
+        if ('dueAt' in clause) {
+          const dir = clause.dueAt === 'desc' ? -1 : 1;
+          rows = rows.sort((a, b) => {
+            const at = a.dueAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+            const bt = b.dueAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+            return (at - bt) * dir;
+          });
+        }
+      }
+    }
+    if (args.take !== undefined) {
+      rows = rows.slice(0, args.take);
+    }
+    return Promise.resolve(rows);
+  };
+
+  const caseTaskFindFirst = (args: {
+    where: { id: string; complaintId: string };
+  }): Promise<StoredCaseTask | null> => {
+    const row = caseTaskStore.get(args.where.id);
+    if (!row || row.complaintId !== args.where.complaintId) {
+      return Promise.resolve(null);
+    }
+    return Promise.resolve(row);
+  };
+
+  const caseTaskUpdate = (args: {
+    where: { id: string };
+    data: Partial<
+      Pick<StoredCaseTask, 'status' | 'title' | 'assigneeId' | 'dueAt'>
+    >;
+  }): Promise<StoredCaseTask> => {
+    const existing = caseTaskStore.get(args.where.id);
+    if (!existing) throw new Error('record not found');
+    const updated: StoredCaseTask = {
+      ...existing,
+      ...args.data,
+      updatedAt: new Date(),
+    };
+    caseTaskStore.set(updated.id, updated);
+    return Promise.resolve(updated);
+  };
+
+  // ---------------------------------------------------------------------------
   // Assembled mock
   // ---------------------------------------------------------------------------
   const prismaLike = {
@@ -1215,6 +1355,16 @@ export function createPrismaMock(): PrismaService {
       update: notificationDeliveryUpdate,
       findMany: notificationDeliveryFindMany,
       count: notificationDeliveryCount,
+    },
+    caseNote: {
+      create: caseNoteCreate,
+      findMany: caseNoteFindMany,
+    },
+    caseTask: {
+      create: caseTaskCreate,
+      findMany: caseTaskFindMany,
+      findFirst: caseTaskFindFirst,
+      update: caseTaskUpdate,
     },
     $transaction: async <T>(
       callback: (tx: {

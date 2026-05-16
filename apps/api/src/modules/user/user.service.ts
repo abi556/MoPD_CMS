@@ -213,6 +213,16 @@ export class UserService {
         description:
           'Manage system configuration (SLA, categories, org units).',
       },
+      {
+        id: 'perm-case-read',
+        code: 'case:read',
+        description: 'List case notes and tasks on complaints.',
+      },
+      {
+        id: 'perm-case-write',
+        code: 'case:write',
+        description: 'Create and update case notes and tasks on complaints.',
+      },
     ];
     for (const permission of seedPermissions) {
       await this.db.permission.upsert({
@@ -234,6 +244,8 @@ export class UserService {
         'perm-complaints-assign',
         'perm-complaints-transition',
         'perm-complaint-escalate',
+        'perm-case-read',
+        'perm-case-write',
       ],
     };
     for (const [roleId, permissionIds] of Object.entries(rolePermissionMap)) {

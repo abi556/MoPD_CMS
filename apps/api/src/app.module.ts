@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CaseModule } from './modules/case/case.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { SlaModule } from './modules/sla/sla.module';
 import { UserModule } from './modules/user/user.module';
@@ -23,6 +24,7 @@ import { QueueModule } from './queue/queue.module';
     AuthModule,
     AdminModule,
     ComplaintsModule,
+    CaseModule,
     SlaModule,
     ReferenceDataModule,
     NotificationsModule,
