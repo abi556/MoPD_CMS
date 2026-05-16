@@ -1,3 +1,4 @@
+import { NOTIFICATION_TEMPLATE_SEEDS } from '../../../src/modules/notifications/notification-seed';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import type { ComplaintStatusLiteral } from './types';
 
@@ -207,50 +208,7 @@ export function createPrismaMock(): PrismaService {
   let caseTaskSeq = 0;
 
   const seedNotificationTemplates = (): void => {
-    const seeds = [
-      {
-        key: 'password_reset',
-        locale: 'en' as const,
-        channel: 'email' as const,
-        subject: 'Reset your MoPD CMS password',
-        bodyHtml:
-          '<p><a href="{{resetUrl}}">Reset your password</a></p><p>Expires in {{expiresInMinutes}} minutes.</p>',
-        bodyText: 'Reset: {{resetUrl}}',
-      },
-      {
-        key: 'complaint_submitted_ack',
-        locale: 'en' as const,
-        channel: 'email' as const,
-        subject: 'Complaint received — {{referenceNo}}',
-        bodyHtml: '<p>Reference {{referenceNo}}</p>',
-        bodyText: 'Reference {{referenceNo}}',
-      },
-      {
-        key: 'complaint_transition',
-        locale: 'en' as const,
-        channel: 'email' as const,
-        subject: 'Status {{status}}',
-        bodyHtml: '<p>{{referenceNo}} — {{status}}</p>',
-        bodyText: '{{referenceNo}} — {{status}}',
-      },
-      {
-        key: 'complaint_submitted_ack',
-        locale: 'am' as const,
-        channel: 'email' as const,
-        subject: 'ቅሬታ ተቀብለናል — {{referenceNo}}',
-        bodyHtml: '<p>{{referenceNo}}</p>',
-        bodyText: '{{referenceNo}}',
-      },
-      {
-        key: 'complaint_transition',
-        locale: 'am' as const,
-        channel: 'email' as const,
-        subject: 'ሁኔታ {{status}}',
-        bodyHtml: '<p>{{referenceNo}} — {{status}}</p>',
-        bodyText: '{{referenceNo}} — {{status}}',
-      },
-    ];
-    for (const seed of seeds) {
+    for (const seed of NOTIFICATION_TEMPLATE_SEEDS) {
       notifTemplateSeq += 1;
       const id = `ntpl_${notifTemplateSeq}`;
       const now = new Date();

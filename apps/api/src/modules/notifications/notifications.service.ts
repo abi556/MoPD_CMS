@@ -21,6 +21,12 @@ import { QUEUE_NOTIFICATION_DISPATCH } from '../../queue/queue.constants';
 import { EmailProviderFactory } from './providers/email-provider.factory';
 import { NOTIFICATION_TEMPLATE_SEEDS } from './notification-seed';
 import {
+  composeBilingualEmail,
+  composeBilingualSubject,
+  createLocaleTemplateLoader,
+  loadLocaleTemplates,
+} from './templates/bilingual-email';
+import {
   renderTemplate,
   type TemplateVariables,
 } from './templates/template-renderer';
@@ -208,10 +214,11 @@ export class NotificationsService implements OnModuleInit {
     if (!notify.has(toStatus)) {
       return;
     }
+    const trackUrl = buildPublicTrackUrl(referenceNo);
     await this.queueEmail('complaint_transition', to, {
       locale,
       correlationId,
-      variables: { referenceNo, status: toStatus },
+      variables: { referenceNo, status: toStatus, trackUrl },
     });
   }
 
@@ -298,38 +305,57 @@ export class NotificationsService implements OnModuleInit {
 
     const rawPayload =
       (delivery.payload as Record<string, unknown> | null) ?? {};
-    const localeFromPayload = rawPayload.__locale;
-    const templateLocale: ComplaintLocale =
-      localeFromPayload === 'am' || localeFromPayload === 'en'
-        ? localeFromPayload
-        : 'en';
     const variables = { ...rawPayload } as TemplateVariables;
     delete (variables as Record<string, unknown>).__locale;
 
-    const template = await this.prisma.notificationTemplate.findUnique({
-      where: {
-        key_locale_channel: {
-          key: delivery.templateKey,
-          locale: templateLocale,
-          channel: 'email',
-        },
-      },
-    });
+    const loadLocale = createLocaleTemplateLoader(
+      (args) => this.prisma.notificationTemplate.findUnique(args),
+      delivery.templateKey,
+      'email',
+    );
 
-    if (!template) {
+    let enTemplate;
+    let amTemplate: Awaited<ReturnType<typeof loadLocaleTemplates>>['am'];
+    try {
+      const pair = await loadLocaleTemplates(loadLocale, () => {
+        this.logger.warn(
+          `Amharic template missing for ${delivery.templateKey}; sending English only in Amharic section`,
+        );
+      });
+      enTemplate = pair.en;
+      amTemplate = pair.am;
+    } catch {
       await this.markFailed(
         delivery.id,
-        `Template not found: ${delivery.templateKey}`,
+        `Template not found: ${delivery.templateKey} (en)`,
         delivery,
       );
       return;
     }
 
-    const subject = renderTemplate(template.subject, variables);
-    const html = renderTemplate(template.bodyHtml, variables);
-    const text = template.bodyText
-      ? renderTemplate(template.bodyText, variables)
+    const enSubject = renderTemplate(enTemplate.subject, variables);
+    const enHtml = renderTemplate(enTemplate.bodyHtml, variables);
+    const enText = enTemplate.bodyText
+      ? renderTemplate(enTemplate.bodyText, variables)
       : undefined;
+
+    const amSubject = amTemplate
+      ? renderTemplate(amTemplate.subject, variables)
+      : '';
+    const amHtml = amTemplate
+      ? renderTemplate(amTemplate.bodyHtml, variables)
+      : '';
+    const amText = amTemplate?.bodyText
+      ? renderTemplate(amTemplate.bodyText, variables)
+      : undefined;
+
+    const subject = composeBilingualSubject(enSubject, amSubject);
+    const { html, text } = composeBilingualEmail({
+      enHtml,
+      amHtml,
+      enText,
+      amText,
+    });
 
     try {
       const provider = this.emailProviderFactory.getProvider();

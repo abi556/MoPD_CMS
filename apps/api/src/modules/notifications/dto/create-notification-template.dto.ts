@@ -15,7 +15,12 @@ export class CreateNotificationTemplateDto {
   @MaxLength(120)
   key!: string;
 
-  @ApiProperty({ enum: ComplaintLocale, example: ComplaintLocale.en })
+  @ApiProperty({
+    enum: ComplaintLocale,
+    example: ComplaintLocale.en,
+    description:
+      'Language block for this row (en or am). Outbound emails always combine English first, then Amharic, at send time.',
+  })
   @IsEnum(ComplaintLocale)
   locale!: ComplaintLocale;
 

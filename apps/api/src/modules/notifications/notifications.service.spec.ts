@@ -27,16 +27,29 @@ describe('NotificationsService', () => {
     notificationTemplateFindUnique.mockImplementation(
       (args: { where: Record<string, unknown> }) => {
         const w = args.where as {
-          key_locale_channel?: { key: string };
+          key_locale_channel?: { key: string; locale: string };
         };
         const key = w.key_locale_channel?.key ?? 'password_reset';
+        const locale = w.key_locale_channel?.locale ?? 'en';
+        if (locale === 'am') {
+          return Promise.resolve({
+            key,
+            locale: 'am',
+            channel: 'email',
+            subject: 'AM subject {{referenceNo}}',
+            bodyHtml:
+              '<p>AM body <a href="{{resetUrl}}">የይለፍ ቃል</a> <a href="{{trackUrl}}">track</a></p>',
+            bodyText: 'AM {{resetUrl}}',
+          });
+        }
         return Promise.resolve({
           key,
           locale: 'en',
           channel: 'email',
-          subject: 'Reset {{resetUrl}}',
-          bodyHtml: '<p>{{resetUrl}} {{referenceNo}} {{trackUrl}}</p>',
-          bodyText: '{{resetUrl}}',
+          subject: 'EN subject {{referenceNo}}',
+          bodyHtml:
+            '<p>EN body <a href="{{resetUrl}}">Reset</a> <a href="{{trackUrl}}">Track</a></p>',
+          bodyText: 'EN {{resetUrl}}',
         });
       },
     );
@@ -57,7 +70,7 @@ describe('NotificationsService', () => {
       status: 'queued',
       retries: 0,
       correlationId: 'corr-1',
-      payload: { resetUrl: 'https://app/reset', expiresInMinutes: 60 },
+      payload: { resetUrl: 'https://x', expiresInMinutes: 60 },
     });
     notificationDeliveryUpdate.mockResolvedValue({});
     emailSend.mockResolvedValue({ messageId: 'test' });
@@ -123,7 +136,16 @@ describe('NotificationsService', () => {
     expect(logEvent).toHaveBeenCalledWith(
       expect.objectContaining({ eventType: AUDIT_EVENT.NOTIFICATION_QUEUED }),
     );
-    expect(emailSend).toHaveBeenCalled();
+    expect(emailSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: 'EN subject / AM subject',
+        html: expect.stringMatching(/lang="en"/),
+        text: expect.stringContaining('EN https://x'),
+      }),
+    );
+    const sentHtml = emailSend.mock.calls[0][0].html as string;
+    expect(sentHtml).toContain('lang="am"');
+    expect(sentHtml).toContain('<a href="https://x">');
     expect(logEvent).toHaveBeenCalledWith(
       expect.objectContaining({ eventType: AUDIT_EVENT.NOTIFICATION_SENT }),
     );
