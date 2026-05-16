@@ -1,6 +1,18 @@
 import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ComplaintLocale, NotificationChannel } from '@prisma/client';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
+import {
+  ComplaintLocale,
+  NotificationChannel,
+  NotificationDeliveryStatus,
+  type NotificationDelivery,
+  type NotificationTemplate,
+} from '@prisma/client';
 import type { Queue } from 'bullmq';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
@@ -24,6 +36,31 @@ export interface QueueEmailOptions {
 function getAppPublicUrl(): string {
   const base = process.env.APP_PUBLIC_URL ?? 'http://localhost:3000';
   return base.replace(/\/$/, '');
+}
+
+/** Default: notify citizens on these desk outcomes only (comma list overridable via env). */
+export const DEFAULT_NOTIFY_TRANSITION_STATUSES =
+  'CLOSED,RESPONSE_ISSUED,AWAITING_FEEDBACK';
+
+export function parseNotifyTransitionStatuses(): Set<string> {
+  const raw =
+    process.env.NOTIFY_TRANSITION_STATUSES?.trim() ||
+    DEFAULT_NOTIFY_TRANSITION_STATUSES;
+  return new Set(
+    raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
+}
+
+export function buildPublicTrackUrl(referenceNo: string): string {
+  const prefix = process.env.APP_PUBLIC_TRACK_URL_PREFIX?.replace(/\/$/, '');
+  const encodedRef = encodeURIComponent(referenceNo);
+  if (prefix) {
+    return `${prefix}/${encodedRef}`;
+  }
+  return `${getAppPublicUrl()}/track/${encodedRef}`;
 }
 
 function getPasswordResetTtlMinutes(): number {
@@ -143,6 +180,109 @@ export class NotificationsService implements OnModuleInit {
     });
   }
 
+  async queueComplaintSubmittedAck(
+    to: string,
+    referenceNo: string,
+    locale: ComplaintLocale,
+    correlationId?: string,
+  ): Promise<void> {
+    const trackUrl = buildPublicTrackUrl(referenceNo);
+    await this.queueEmail('complaint_submitted_ack', to, {
+      locale,
+      correlationId,
+      variables: { referenceNo, trackUrl },
+    });
+  }
+
+  /**
+   * Sends `complaint_transition` when {@link NOTIFY_TRANSITION_STATUSES} includes the target status.
+   */
+  async queueComplaintTransitionIfApplicable(
+    to: string,
+    referenceNo: string,
+    toStatus: string,
+    locale: ComplaintLocale,
+    correlationId?: string,
+  ): Promise<void> {
+    const notify = parseNotifyTransitionStatuses();
+    if (!notify.has(toStatus)) {
+      return;
+    }
+    await this.queueEmail('complaint_transition', to, {
+      locale,
+      correlationId,
+      variables: { referenceNo, status: toStatus },
+    });
+  }
+
+  async listDeliveries(params: {
+    status?: NotificationDeliveryStatus;
+    to?: string;
+    templateKey?: string;
+    page: number;
+    pageSize: number;
+  }): Promise<{
+    data: NotificationDelivery[];
+    meta: { page: number; pageSize: number; total: number; totalPages: number };
+  }> {
+    const { page, pageSize, status, to: toFilter, templateKey } = params;
+    const where = {
+      ...(status ? { status } : {}),
+      ...(toFilter ? { to: toFilter } : {}),
+      ...(templateKey ? { templateKey } : {}),
+    };
+    const skip = (page - 1) * pageSize;
+    const [data, total] = await Promise.all([
+      this.prisma.notificationDelivery.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.notificationDelivery.count({ where }),
+    ]);
+    return {
+      data,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: total === 0 ? 0 : Math.ceil(total / pageSize),
+      },
+    };
+  }
+
+  /**
+   * Clone a completed or failed delivery into a new queued job. Rejects if status is still `queued`.
+   */
+  async resendDelivery(deliveryId: string): Promise<string> {
+    const orig = await this.prisma.notificationDelivery.findUnique({
+      where: { id: deliveryId },
+    });
+    if (!orig) {
+      throw new NotFoundException('Notification delivery not found');
+    }
+    if (orig.status === 'queued') {
+      throw new ConflictException(
+        'Delivery is still queued; wait for send or failure before resending',
+      );
+    }
+    const rawPayload = (orig.payload as Record<string, unknown> | null) ?? {};
+    const localeFromPayload = rawPayload.__locale;
+    const locale: ComplaintLocale =
+      localeFromPayload === 'am' || localeFromPayload === 'en'
+        ? localeFromPayload
+        : 'en';
+    const variables = { ...rawPayload } as TemplateVariables;
+    delete (variables as Record<string, unknown>).__locale;
+
+    return this.queueEmail(orig.templateKey, orig.to, {
+      locale,
+      correlationId: orig.correlationId ?? undefined,
+      variables,
+    });
+  }
+
   async processDelivery(deliveryId: string): Promise<void> {
     const delivery = await this.prisma.notificationDelivery.findUnique({
       where: { id: deliveryId },
@@ -234,6 +374,95 @@ export class NotificationsService implements OnModuleInit {
       });
       throw err;
     }
+  }
+
+  async listTemplates(params: { page: number; pageSize: number }): Promise<{
+    data: NotificationTemplate[];
+    meta: { page: number; pageSize: number; total: number; totalPages: number };
+  }> {
+    const { page, pageSize } = params;
+    const skip = (page - 1) * pageSize;
+    const [data, total] = await Promise.all([
+      this.prisma.notificationTemplate.findMany({
+        orderBy: [{ key: 'asc' }, { locale: 'asc' }],
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.notificationTemplate.count(),
+    ]);
+    return {
+      data,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: total === 0 ? 0 : Math.ceil(total / pageSize),
+      },
+    };
+  }
+
+  async getTemplateById(id: string) {
+    const row = await this.prisma.notificationTemplate.findUnique({
+      where: { id },
+    });
+    if (!row) {
+      throw new NotFoundException('Notification template not found');
+    }
+    return row;
+  }
+
+  async createTemplate(data: {
+    key: string;
+    locale: ComplaintLocale;
+    channel: NotificationChannel;
+    subject: string;
+    bodyHtml: string;
+    bodyText?: string | null;
+  }) {
+    try {
+      return await this.prisma.notificationTemplate.create({ data });
+    } catch (err: unknown) {
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'code' in err &&
+        (err as { code: string }).code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'A template already exists for this key, locale, and channel',
+        );
+      }
+      throw err;
+    }
+  }
+
+  async updateTemplate(
+    id: string,
+    data: {
+      subject?: string;
+      bodyHtml?: string;
+      bodyText?: string | null;
+    },
+  ) {
+    await this.getTemplateById(id);
+    const patch: {
+      subject?: string;
+      bodyHtml?: string;
+      bodyText?: string | null;
+    } = {};
+    if (data.subject !== undefined) {
+      patch.subject = data.subject;
+    }
+    if (data.bodyHtml !== undefined) {
+      patch.bodyHtml = data.bodyHtml;
+    }
+    if (data.bodyText !== undefined) {
+      patch.bodyText = data.bodyText;
+    }
+    return this.prisma.notificationTemplate.update({
+      where: { id },
+      data: patch,
+    });
   }
 
   private async markFailed(

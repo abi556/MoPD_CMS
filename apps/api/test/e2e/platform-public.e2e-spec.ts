@@ -5,6 +5,7 @@ import {
   ComplaintCreateResponse,
   ComplaintTrackResponse,
   ErrorEnvelope,
+  LoginResponse,
   asSupertestApp,
   createTestApp,
   getBody,
@@ -127,6 +128,45 @@ describe('Platform/Public (e2e)', () => {
       .expect(404);
     const body = getBody<ErrorEnvelope>(response);
     expect(body.error.code).toBe('NOT_FOUND');
+  });
+
+  it('queues complaint_submitted_ack delivery when complainant email is present', async () => {
+    await request(asSupertestApp(app))
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Road project delay in zone 3',
+        description:
+          'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
+        channel: 'WEB',
+        complainantEmail: 'citizen@example.com',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+
+    const adminLogin = await request(asSupertestApp(app))
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'admin@mopd.local',
+        password: 'AdminPass123!',
+      })
+      .expect(200);
+    const auth = getBody<LoginResponse>(adminLogin);
+
+    const list = await request(asSupertestApp(app))
+      .get('/api/v1/notifications')
+      .query({ templateKey: 'complaint_submitted_ack', pageSize: 50 })
+      .set('Authorization', `Bearer ${auth.data.accessToken}`)
+      .expect(200);
+
+    const envelopes = getBody<{
+      data: Array<{ templateKey: string; to: string }>;
+      meta: { total: number };
+    }>(list);
+    expect(envelopes.data.length).toBeGreaterThanOrEqual(1);
+    expect(envelopes.data.some((d) => d.to === 'citizen@example.com')).toBe(
+      true,
+    );
   });
 
   afterEach(async () => {

@@ -18,6 +18,10 @@ describe('ComplaintsService', () => {
   const transaction = jest.fn();
   const complaintCategoryFindUnique = jest.fn();
   const orgUnitFindUnique = jest.fn();
+  const queueComplaintSubmittedAck = jest.fn().mockResolvedValue(undefined);
+  const queueComplaintTransitionIfApplicable = jest
+    .fn()
+    .mockResolvedValue(undefined);
 
   beforeEach(() => {
     complaintCreate.mockReset();
@@ -32,6 +36,10 @@ describe('ComplaintsService', () => {
     orgUnitFindUnique.mockReset();
     logEvent.mockReset();
     logEvent.mockResolvedValue(undefined);
+    queueComplaintSubmittedAck.mockReset();
+    queueComplaintSubmittedAck.mockResolvedValue(undefined);
+    queueComplaintTransitionIfApplicable.mockReset();
+    queueComplaintTransitionIfApplicable.mockResolvedValue(undefined);
 
     transaction.mockImplementation(
       async <T>(callback: (tx: unknown) => Promise<T>) => {
@@ -74,6 +82,10 @@ describe('ComplaintsService', () => {
       {
         startTrackerForComplaint: jest.fn().mockResolvedValue(undefined),
         completeTracker: jest.fn().mockResolvedValue(undefined),
+      } as never,
+      {
+        queueComplaintSubmittedAck,
+        queueComplaintTransitionIfApplicable,
       } as never,
     );
   });
@@ -120,6 +132,53 @@ describe('ComplaintsService', () => {
     expect(created.channel).toBe(ComplaintChannel.WEB);
     expect(complaintCreate).toHaveBeenCalledTimes(1);
     expect(complaintUpdate).toHaveBeenCalledTimes(1);
+    expect(queueComplaintSubmittedAck).not.toHaveBeenCalled();
+  });
+
+  it('queues submission acknowledgement when complainant email is provided', async () => {
+    complaintCreate.mockResolvedValue({
+      id: 'cmp_001',
+      sequenceNo: 12,
+      submittedAt: new Date('2026-04-28T10:00:00.000Z'),
+      status: 'SUBMITTED',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road project delay in zone 3',
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+    });
+    complaintUpdate.mockResolvedValue({
+      id: 'cmp_001',
+      referenceNo: 'CMS-2026-000012',
+      status: 'SUBMITTED',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road project delay in zone 3',
+      description:
+        'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
+      submittedAt: new Date('2026-04-28T10:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: 'Abebe',
+      complainantEmail: 'abebe@example.com',
+      complainantPhone: null,
+    });
+
+    await service.create({
+      subject: 'Road project delay in zone 3',
+      description:
+        'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
+      channel: ComplaintChannel.WEB,
+      consentGiven: true,
+      locale: ComplaintLocale.EN,
+      complainantEmail: 'abebe@example.com',
+    });
+
+    expect(queueComplaintSubmittedAck).toHaveBeenCalledTimes(1);
+    expect(queueComplaintSubmittedAck).toHaveBeenCalledWith(
+      'abebe@example.com',
+      'CMS-2026-000012',
+      'en',
+      undefined,
+    );
   });
 
   it('returns complaint by reference number', async () => {
@@ -355,6 +414,70 @@ describe('ComplaintsService', () => {
       'Field verification started by assigned officer.',
     );
     expect(complaintHistoryCreate).toHaveBeenCalledTimes(1);
+    expect(queueComplaintTransitionIfApplicable).not.toHaveBeenCalled();
+  });
+
+  it('queues transition email when notify list includes target status', async () => {
+    const prev = process.env.NOTIFY_TRANSITION_STATUSES;
+    process.env.NOTIFY_TRANSITION_STATUSES = 'IN_INVESTIGATION';
+
+    complaintFindUnique.mockResolvedValue({
+      id: 'cmp_020',
+      referenceNo: 'CMS-2026-000020',
+      status: 'ASSIGNED',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road grading incomplete',
+      description: 'Road grading activity stopped mid-way.',
+      submittedAt: new Date('2026-04-29T09:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: 'Hanna',
+      complainantEmail: 'hanna@example.com',
+      complainantPhone: null,
+      assignedToUserId: 'user-officer-0001',
+      assignedByUserId: 'user-admin-0001',
+      assignedAt: new Date('2026-04-29T12:00:00.000Z'),
+      assignmentReason: 'Routing based on transport infrastructure expertise.',
+    });
+    complaintUpdate.mockResolvedValue({
+      id: 'cmp_020',
+      referenceNo: 'CMS-2026-000020',
+      status: 'IN_INVESTIGATION',
+      channel: ComplaintChannel.WEB,
+      subject: 'Road grading incomplete',
+      description: 'Road grading activity stopped mid-way.',
+      submittedAt: new Date('2026-04-29T09:00:00.000Z'),
+      locale: ComplaintLocale.EN,
+      consentGiven: true,
+      complainantName: 'Hanna',
+      complainantEmail: 'hanna@example.com',
+      complainantPhone: null,
+      assignedToUserId: 'user-officer-0001',
+      assignedByUserId: 'user-admin-0001',
+      assignedAt: new Date('2026-04-29T12:00:00.000Z'),
+      assignmentReason: 'Routing based on transport infrastructure expertise.',
+      lastTransitionByUserId: 'user-officer-0001',
+      lastTransitionAt: new Date('2026-04-29T13:00:00.000Z'),
+      lastTransitionReason: 'Field verification started by assigned officer.',
+    });
+
+    await service.transitionComplaint(
+      'cmp_020',
+      ComplaintStatusValue.IN_INVESTIGATION,
+      'user-officer-0001',
+      'Field verification started by assigned officer.',
+      'corr-tx',
+    );
+
+    expect(queueComplaintTransitionIfApplicable).toHaveBeenCalledWith(
+      'hanna@example.com',
+      'CMS-2026-000020',
+      'IN_INVESTIGATION',
+      'en',
+      'corr-tx',
+    );
+
+    process.env.NOTIFY_TRANSITION_STATUSES = prev;
   });
 
   it('rejects invalid workflow transition with unprocessable error', async () => {

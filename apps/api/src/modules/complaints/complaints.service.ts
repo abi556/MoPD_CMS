@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import type {
   Complaint as ComplaintEntity,
   ComplaintHistory as ComplaintHistoryEntity,
+  ComplaintLocale as PrismaComplaintLocale,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -21,6 +22,7 @@ import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { SlaService } from '../sla/sla.service';
 
 export interface ComplaintRecord {
@@ -103,6 +105,7 @@ export class ComplaintsService {
     private readonly auditService: AuditService,
     @Inject(forwardRef(() => SlaService))
     private readonly slaService: SlaService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(
@@ -188,6 +191,16 @@ export class ComplaintsService {
         orgUnitId: record.orgUnitId,
       },
     });
+    if (payload.complainantEmail) {
+      void this.notificationsService
+        .queueComplaintSubmittedAck(
+          payload.complainantEmail,
+          record.referenceNo,
+          payload.locale as PrismaComplaintLocale,
+          correlationId,
+        )
+        .catch(() => undefined);
+    }
     return record;
   }
 
@@ -346,6 +359,17 @@ export class ComplaintsService {
         reason,
       },
     });
+    if (record.complainantEmail) {
+      void this.notificationsService
+        .queueComplaintTransitionIfApplicable(
+          record.complainantEmail,
+          record.referenceNo,
+          toStatus,
+          record.locale as PrismaComplaintLocale,
+          correlationId,
+        )
+        .catch(() => undefined);
+    }
     return record;
   }
 

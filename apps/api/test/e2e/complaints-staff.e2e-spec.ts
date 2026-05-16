@@ -325,6 +325,73 @@ describe('Complaints Staff (e2e)', () => {
     expect(body.data[2]?.toStatus).toBe('IN_INVESTIGATION');
   });
 
+  it('queues complaint_transition when target status is in NOTIFY_TRANSITION_STATUSES', async () => {
+    const prev = process.env.NOTIFY_TRANSITION_STATUSES;
+    process.env.NOTIFY_TRANSITION_STATUSES = 'TRIAGE';
+    try {
+      const created = await request(asSupertestApp(app))
+        .post('/api/v1/complaints')
+        .send({
+          subject: 'Bridge construction delay',
+          description:
+            'Bridge construction has halted for several months without public update.',
+          channel: 'WEB',
+          complainantName: 'Hanna Bekele',
+          complainantEmail: 'hanna@example.com',
+          consentGiven: true,
+          locale: 'en',
+        })
+        .expect(201);
+      const createdBody = getBody<ComplaintCreateResponse>(created);
+
+      const officerLogin = await request(asSupertestApp(app))
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'officer@mopd.local',
+          password: 'OfficerPass123!',
+        })
+        .expect(200);
+      const officerLoginBody = getBody<LoginResponse>(officerLogin);
+
+      await request(asSupertestApp(app))
+        .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
+        .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+        .send({
+          toStatus: 'TRIAGE',
+          reason: 'Initial triage completed by complaints desk.',
+        })
+        .expect(200);
+
+      const adminLogin = await request(asSupertestApp(app))
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'admin@mopd.local',
+          password: 'AdminPass123!',
+        })
+        .expect(200);
+      const adminBody = getBody<LoginResponse>(adminLogin);
+
+      const list = await request(asSupertestApp(app))
+        .get('/api/v1/notifications')
+        .query({ templateKey: 'complaint_transition', pageSize: 50 })
+        .set('Authorization', `Bearer ${adminBody.data.accessToken}`)
+        .expect(200);
+
+      const envelopes = getBody<{
+        data: Array<{ templateKey: string; to: string }>;
+      }>(list);
+      expect(
+        envelopes.data.some(
+          (d) =>
+            d.templateKey === 'complaint_transition' &&
+            d.to === 'hanna@example.com',
+        ),
+      ).toBe(true);
+    } finally {
+      process.env.NOTIFY_TRANSITION_STATUSES = prev;
+    }
+  });
+
   afterEach(async () => {
     await app.close();
   });

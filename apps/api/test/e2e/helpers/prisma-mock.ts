@@ -208,6 +208,22 @@ export function createPrismaMock(): PrismaService {
         bodyHtml: '<p>{{referenceNo}} — {{status}}</p>',
         bodyText: '{{referenceNo}} — {{status}}',
       },
+      {
+        key: 'complaint_submitted_ack',
+        locale: 'am' as const,
+        channel: 'email' as const,
+        subject: 'ቅሬታ ተቀብለናል — {{referenceNo}}',
+        bodyHtml: '<p>{{referenceNo}}</p>',
+        bodyText: '{{referenceNo}}',
+      },
+      {
+        key: 'complaint_transition',
+        locale: 'am' as const,
+        channel: 'email' as const,
+        subject: 'ሁኔታ {{status}}',
+        bodyHtml: '<p>{{referenceNo}} — {{status}}</p>',
+        bodyText: '{{referenceNo}} — {{status}}',
+      },
     ];
     for (const seed of seeds) {
       notifTemplateSeq += 1;
@@ -946,13 +962,98 @@ export function createPrismaMock(): PrismaService {
   };
 
   const notificationTemplateFindUnique = (args: {
-    where: {
-      key_locale_channel: { key: string; locale: string; channel: string };
-    };
+    where:
+      | { id: string }
+      | {
+          key_locale_channel: {
+            key: string;
+            locale: string;
+            channel: string;
+          };
+        };
   }): Promise<StoredNotificationTemplate | null> => {
-    const mapKey = `${args.where.key_locale_channel.key}:${args.where.key_locale_channel.locale}:${args.where.key_locale_channel.channel}`;
+    if ('id' in args.where) {
+      for (const row of notificationTemplateStore.values()) {
+        if (row.id === args.where.id) {
+          return Promise.resolve(row);
+        }
+      }
+      return Promise.resolve(null);
+    }
+    const w = args.where.key_locale_channel;
+    const mapKey = `${w.key}:${w.locale}:${w.channel}`;
     return Promise.resolve(notificationTemplateStore.get(mapKey) ?? null);
   };
+
+  const notificationTemplateCreate = (args: {
+    data: Omit<StoredNotificationTemplate, 'id' | 'createdAt' | 'updatedAt'>;
+  }): Promise<StoredNotificationTemplate> => {
+    const mapKey = `${args.data.key}:${args.data.locale}:${args.data.channel}`;
+    if (notificationTemplateStore.has(mapKey)) {
+      return Promise.reject(
+        Object.assign(new Error('Unique violation'), { code: 'P2002' }),
+      );
+    }
+    notifTemplateSeq += 1;
+    const now = new Date();
+    const row: StoredNotificationTemplate = {
+      id: `ntpl_${notifTemplateSeq}`,
+      key: args.data.key,
+      locale: args.data.locale,
+      channel: args.data.channel,
+      subject: args.data.subject,
+      bodyHtml: args.data.bodyHtml,
+      bodyText: args.data.bodyText ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    notificationTemplateStore.set(mapKey, row);
+    return Promise.resolve(row);
+  };
+
+  const notificationTemplateUpdate = (args: {
+    where: { id: string };
+    data: Partial<
+      Pick<StoredNotificationTemplate, 'subject' | 'bodyHtml' | 'bodyText'>
+    >;
+  }): Promise<StoredNotificationTemplate> => {
+    let foundKey: string | undefined;
+    let found: StoredNotificationTemplate | undefined;
+    for (const [k, v] of notificationTemplateStore.entries()) {
+      if (v.id === args.where.id) {
+        foundKey = k;
+        found = v;
+        break;
+      }
+    }
+    if (!found || !foundKey) {
+      throw new Error('NotificationTemplate not found');
+    }
+    const updated: StoredNotificationTemplate = {
+      ...found,
+      ...args.data,
+      updatedAt: new Date(),
+    };
+    notificationTemplateStore.set(foundKey, updated);
+    return Promise.resolve(updated);
+  };
+
+  const notificationTemplateFindMany = (args: {
+    orderBy?: Array<Record<string, 'asc' | 'desc'>>;
+    skip?: number;
+    take?: number;
+  }): Promise<StoredNotificationTemplate[]> => {
+    const rows = [...notificationTemplateStore.values()].sort((a, b) => {
+      if (a.key !== b.key) return a.key.localeCompare(b.key);
+      return a.locale.localeCompare(b.locale);
+    });
+    const skip = args.skip ?? 0;
+    const take = args.take ?? rows.length;
+    return Promise.resolve(rows.slice(skip, skip + take));
+  };
+
+  const notificationTemplateCount = (): Promise<number> =>
+    Promise.resolve(notificationTemplateStore.size);
 
   const notificationDeliveryCreate = (args: {
     data: Omit<
@@ -1009,6 +1110,52 @@ export function createPrismaMock(): PrismaService {
     return Promise.resolve(updated);
   };
 
+  const notificationDeliveryFindMany = (args: {
+    where?: {
+      status?: StoredNotificationDelivery['status'];
+      to?: string;
+      templateKey?: string;
+    };
+    orderBy?: Array<Record<string, 'asc' | 'desc'>>;
+    skip?: number;
+    take?: number;
+  }): Promise<StoredNotificationDelivery[]> => {
+    let rows = [...notificationDeliveryStore.values()];
+    if (args.where?.status) {
+      rows = rows.filter((r) => r.status === args.where!.status);
+    }
+    if (args.where?.to) {
+      rows = rows.filter((r) => r.to === args.where!.to);
+    }
+    if (args.where?.templateKey) {
+      rows = rows.filter((r) => r.templateKey === args.where!.templateKey);
+    }
+    rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const skip = args.skip ?? 0;
+    const take = args.take ?? rows.length;
+    return Promise.resolve(rows.slice(skip, skip + take));
+  };
+
+  const notificationDeliveryCount = (args: {
+    where?: {
+      status?: StoredNotificationDelivery['status'];
+      to?: string;
+      templateKey?: string;
+    };
+  }): Promise<number> => {
+    let rows = [...notificationDeliveryStore.values()];
+    if (args.where?.status) {
+      rows = rows.filter((r) => r.status === args.where!.status);
+    }
+    if (args.where?.to) {
+      rows = rows.filter((r) => r.to === args.where!.to);
+    }
+    if (args.where?.templateKey) {
+      rows = rows.filter((r) => r.templateKey === args.where!.templateKey);
+    }
+    return Promise.resolve(rows.length);
+  };
+
   // ---------------------------------------------------------------------------
   // Assembled mock
   // ---------------------------------------------------------------------------
@@ -1057,11 +1204,17 @@ export function createPrismaMock(): PrismaService {
     notificationTemplate: {
       upsert: notificationTemplateUpsert,
       findUnique: notificationTemplateFindUnique,
+      findMany: notificationTemplateFindMany,
+      count: notificationTemplateCount,
+      create: notificationTemplateCreate,
+      update: notificationTemplateUpdate,
     },
     notificationDelivery: {
       create: notificationDeliveryCreate,
       findUnique: notificationDeliveryFindUnique,
       update: notificationDeliveryUpdate,
+      findMany: notificationDeliveryFindMany,
+      count: notificationDeliveryCount,
     },
     $transaction: async <T>(
       callback: (tx: {

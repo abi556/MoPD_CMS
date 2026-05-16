@@ -38,4 +38,22 @@ export const NOTIFICATION_TEMPLATE_SEEDS: NotificationTemplateSeed[] = [
       '<p>Your complaint <strong>{{referenceNo}}</strong> is now <strong>{{status}}</strong>.</p>',
     bodyText: 'Complaint {{referenceNo}} status: {{status}}',
   },
+  {
+    key: 'complaint_submitted_ack',
+    locale: 'am',
+    channel: 'email',
+    subject: 'ቅሬታ ተቀብለናል — {{referenceNo}}',
+    bodyHtml:
+      '<p>ቅሬታዎን <strong>{{referenceNo}}</strong> ተቀብለናል።</p><p>ሁኔታ በ {{trackUrl}}</p>',
+    bodyText: 'ቅሬታ {{referenceNo}} ተቀብለናል። መከታተያ: {{trackUrl}}',
+  },
+  {
+    key: 'complaint_transition',
+    locale: 'am',
+    channel: 'email',
+    subject: 'ቅሬታ {{referenceNo}} — ሁኔታ ዝመና',
+    bodyHtml:
+      '<p>ቅሬታዎ <strong>{{referenceNo}}</strong> አሁን <strong>{{status}}</strong> ነው።</p>',
+    bodyText: 'ቅሬታ {{referenceNo}} ሁኔታ: {{status}}',
+  },
 ];

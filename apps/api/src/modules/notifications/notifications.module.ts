@@ -6,6 +6,8 @@ import { EmailProviderFactory } from './providers/email-provider.factory';
 import { ResendEmailProvider } from './providers/resend-email.provider';
 import { SmtpEmailProvider } from './providers/smtp-email.provider';
 import { NotificationDispatchProcessor } from './notification-dispatch.processor';
+import { NotificationDeliveriesAdminController } from './notification-deliveries-admin.controller';
+import { NotificationTemplatesAdminController } from './notification-templates-admin.controller';
 import { NotificationsService } from './notifications.service';
 
 const workerProviders: Provider[] =
@@ -13,6 +15,10 @@ const workerProviders: Provider[] =
 
 @Module({
   imports: [PrismaModule, AuditModule],
+  controllers: [
+    NotificationDeliveriesAdminController,
+    NotificationTemplatesAdminController,
+  ],
   providers: [
     NotificationsService,
     ConsoleEmailProvider,
