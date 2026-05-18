@@ -12,6 +12,7 @@ import { DocumentStorageFactory } from './storage/document-storage.factory';
 import { MemoryDocumentStorage } from './storage/memory-document.storage';
 import { VirusScannerFactory } from './scanners/virus-scanner.factory';
 import { NoOpVirusScanner } from './scanners/noop-virus.scanner';
+import type { UploadedMulterFile } from './types/uploaded-file';
 
 describe('DocumentsService', () => {
   let service: DocumentsService;
@@ -37,37 +38,51 @@ describe('DocumentsService', () => {
           useValue: {
             complaint: { findUnique: complaintFindUnique },
             document: {
-              create: jest.fn(({ data }) => {
-                const row = {
-                  ...data,
-                  scanError: data.scanError ?? null,
-                  liveKey: data.liveKey ?? null,
-                  scannedAt: data.scannedAt ?? null,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                } as Document;
-                documents.set(row.id, row);
-                return Promise.resolve(row);
-              }),
-              findUnique: jest.fn(({ where: { id } }) =>
-                Promise.resolve(documents.get(id) ?? null),
+              create: jest.fn(
+                ({
+                  data,
+                }: {
+                  data: Omit<Document, 'createdAt' | 'updatedAt'>;
+                }) => {
+                  const row: Document = {
+                    ...data,
+                    scanError: data.scanError ?? null,
+                    liveKey: data.liveKey ?? null,
+                    scannedAt: data.scannedAt ?? null,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                  };
+                  documents.set(row.id, row);
+                  return Promise.resolve(row);
+                },
               ),
-              update: jest.fn(({ where: { id }, data }) => {
-                const existing = documents.get(id);
-                if (!existing) {
-                  throw new Error(`Document ${id} not found`);
-                }
-                const updated = {
-                  ...existing,
-                  ...data,
-                  updatedAt: new Date(),
-                } as Document;
-                documents.set(id, updated);
-                return Promise.resolve(updated);
-              }),
-              delete: jest.fn(({ where: { id } }) => {
-                documents.delete(id);
-                return Promise.resolve({ id });
+              findUnique: jest.fn(({ where }: { where: { id: string } }) =>
+                Promise.resolve(documents.get(where.id) ?? null),
+              ),
+              update: jest.fn(
+                ({
+                  where,
+                  data,
+                }: {
+                  where: { id: string };
+                  data: Partial<Document>;
+                }) => {
+                  const existing = documents.get(where.id);
+                  if (!existing) {
+                    throw new Error(`Document ${where.id} not found`);
+                  }
+                  const updated: Document = {
+                    ...existing,
+                    ...data,
+                    updatedAt: new Date(),
+                  };
+                  documents.set(updated.id, updated);
+                  return Promise.resolve(updated);
+                },
+              ),
+              delete: jest.fn(({ where }: { where: { id: string } }) => {
+                documents.delete(where.id);
+                return Promise.resolve({ id: where.id });
               }),
             },
           },
@@ -92,14 +107,21 @@ describe('DocumentsService', () => {
   });
 
   it('uploads to quarantine and scans synchronously in test', async () => {
-    const file = {
+    const file: UploadedMulterFile = {
+      fieldname: 'file',
       originalname: 'evidence.pdf',
+      encoding: '7bit',
       mimetype: 'application/pdf',
       size: 4,
       buffer: Buffer.from('%PDF'),
-    } as Express.Multer.File;
+    };
 
-    const record = await service.upload('cmp_1', 'user-officer-0001', file, 'c1');
+    const record = await service.upload(
+      'cmp_1',
+      'user-officer-0001',
+      file,
+      'c1',
+    );
 
     expect(record.scanStatus).toBe(DocumentScanStatus.CLEAN);
     expect(logEvent).toHaveBeenCalledWith(
@@ -149,9 +171,14 @@ describe('DocumentsService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    await memoryStorage.putObject(getLiveBucket(), liveKey, Buffer.from('%PDF'), {
-      contentType: 'application/pdf',
-    });
+    await memoryStorage.putObject(
+      getLiveBucket(),
+      liveKey,
+      Buffer.from('%PDF'),
+      {
+        contentType: 'application/pdf',
+      },
+    );
 
     const result = await service.getDownloadUrl(
       'doc_clean',
@@ -167,12 +194,14 @@ describe('DocumentsService', () => {
 
   it('throws when complaint missing', async () => {
     complaintFindUnique.mockResolvedValueOnce(null);
-    const file = {
+    const file: UploadedMulterFile = {
+      fieldname: 'file',
       originalname: 'evidence.pdf',
+      encoding: '7bit',
       mimetype: 'application/pdf',
       size: 4,
       buffer: Buffer.from('%PDF'),
-    } as Express.Multer.File;
+    };
     await expect(
       service.upload('missing', 'user-officer-0001', file),
     ).rejects.toThrow(NotFoundException);

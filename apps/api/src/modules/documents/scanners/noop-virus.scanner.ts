@@ -10,11 +10,14 @@ const EICAR =
 
 @Injectable()
 export class NoOpVirusScanner implements VirusScanner {
-  async scan(buffer: Buffer): Promise<VirusScanResult> {
+  scan(buffer: Buffer): Promise<VirusScanResult> {
     const text = buffer.toString('utf8');
     if (text.includes('EICAR-STANDARD-ANTIVIRUS-TEST-FILE') || text === EICAR) {
-      return { clean: false, signature: 'Eicar-Test-Signature' };
+      return Promise.resolve({
+        clean: false,
+        signature: 'Eicar-Test-Signature',
+      });
     }
-    return { clean: true };
+    return Promise.resolve({ clean: true });
   }
 }

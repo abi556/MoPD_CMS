@@ -3,8 +3,7 @@ import { sanitizePostgresText } from '../document.config';
 
 /** clamd INSTREAM replies are ASCII; responses may include NUL terminators. */
 export function parseClamAvResponse(raw: Buffer): VirusScanResult {
-  const text = sanitizePostgresText(raw.toString('latin1')) ?? '';
-  const cleaned = text.trim();
+  const cleaned = sanitizePostgresText(raw.toString('latin1')).trim();
   if (!cleaned) {
     throw new Error('Empty ClamAV response');
   }

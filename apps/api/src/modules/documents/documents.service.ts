@@ -26,6 +26,7 @@ import {
 } from './document.config';
 import { DocumentStorageFactory } from './storage/document-storage.factory';
 import { VirusScannerFactory } from './scanners/virus-scanner.factory';
+import type { UploadedMulterFile } from './types/uploaded-file';
 
 export const DOCUMENT_SCAN_JOB = 'scan';
 
@@ -73,7 +74,7 @@ export class DocumentsService implements OnModuleInit {
   async upload(
     complaintId: string,
     ownerUserId: string,
-    file: Express.Multer.File,
+    file: UploadedMulterFile,
     correlationId?: string,
   ): Promise<DocumentRecord> {
     await this.assertComplaintExists(complaintId);
@@ -222,10 +223,7 @@ export class DocumentsService implements OnModuleInit {
     });
   }
 
-  async processScan(
-    documentId: string,
-    correlationId?: string,
-  ): Promise<void> {
+  async processScan(documentId: string, correlationId?: string): Promise<void> {
     const row = await this.prisma.document.findUnique({
       where: { id: documentId },
     });
@@ -244,12 +242,19 @@ export class DocumentsService implements OnModuleInit {
     });
 
     if (!row.quarantineKey) {
-      await this.markFailed(documentId, 'Missing quarantine key', correlationId);
+      await this.markFailed(
+        documentId,
+        'Missing quarantine key',
+        correlationId,
+      );
       return;
     }
 
     try {
-      const buffer = await storage.getObject(quarantineBucket, row.quarantineKey);
+      const buffer = await storage.getObject(
+        quarantineBucket,
+        row.quarantineKey,
+      );
       const result = await scanner.scan(buffer);
 
       if (!result.clean) {
@@ -260,7 +265,8 @@ export class DocumentsService implements OnModuleInit {
             scanStatus: DocumentScanStatus.INFECTED,
             quarantineKey: null,
             scanError:
-              sanitizePostgresText(result.signature ?? 'infected') ?? 'infected',
+              sanitizePostgresText(result.signature ?? 'infected') ??
+              'infected',
             scannedAt: new Date(),
           },
         });
@@ -272,7 +278,9 @@ export class DocumentsService implements OnModuleInit {
           correlationId,
           metadata: {
             complaintId: row.complaintId,
-            signature: sanitizePostgresText(result.signature ?? undefined),
+            signature: result.signature
+              ? sanitizePostgresText(result.signature)
+              : null,
           },
         });
         return;
@@ -344,7 +352,7 @@ export class DocumentsService implements OnModuleInit {
     });
   }
 
-  private validateUpload(file: Express.Multer.File): void {
+  private validateUpload(file: UploadedMulterFile): void {
     if (!file?.buffer?.length) {
       throw new UnprocessableEntityException('File is required');
     }
@@ -361,9 +369,7 @@ export class DocumentsService implements OnModuleInit {
       );
     }
     if (isExtensionBlocked(file.originalname ?? '')) {
-      throw new UnprocessableEntityException(
-        'File extension is not allowed',
-      );
+      throw new UnprocessableEntityException('File extension is not allowed');
     }
   }
 

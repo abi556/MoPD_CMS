@@ -14,25 +14,27 @@ function objectKey(bucket: string, key: string): string {
 export class MemoryDocumentStorage implements DocumentStorage {
   private readonly store = new Map<string, Buffer>();
 
-  async ensureBuckets(): Promise<void> {
-    // no-op for in-memory storage
+  ensureBuckets(): Promise<void> {
+    return Promise.resolve();
   }
 
-  async putObject(
+  putObject(
     bucket: string,
     key: string,
     body: Buffer,
     _meta: PutObjectMeta,
   ): Promise<void> {
+    void _meta;
     this.store.set(objectKey(bucket, key), Buffer.from(body));
+    return Promise.resolve();
   }
 
-  async getObject(bucket: string, key: string): Promise<Buffer> {
+  getObject(bucket: string, key: string): Promise<Buffer> {
     const found = this.store.get(objectKey(bucket, key));
     if (!found) {
-      throw new Error(`Object not found: ${bucket}/${key}`);
+      return Promise.reject(new Error(`Object not found: ${bucket}/${key}`));
     }
-    return Buffer.from(found);
+    return Promise.resolve(Buffer.from(found));
   }
 
   async copyObject(
@@ -47,23 +49,24 @@ export class MemoryDocumentStorage implements DocumentStorage {
     });
   }
 
-  async removeObject(bucket: string, key: string): Promise<void> {
+  removeObject(bucket: string, key: string): Promise<void> {
     this.store.delete(objectKey(bucket, key));
+    return Promise.resolve();
   }
 
-  async getSignedDownloadUrl(
+  getSignedDownloadUrl(
     bucket: string,
     key: string,
     ttlSec: number,
   ): Promise<SignedDownloadUrl> {
     if (!this.store.has(objectKey(bucket, key))) {
-      throw new Error(`Object not found: ${bucket}/${key}`);
+      return Promise.reject(new Error(`Object not found: ${bucket}/${key}`));
     }
     const expiresAt = new Date(Date.now() + ttlSec * 1000).toISOString();
-    return {
+    return Promise.resolve({
       url: `memory://${bucket}/${key}?expires=${encodeURIComponent(expiresAt)}`,
       expiresAt,
-    };
+    });
   }
 
   /** Test helper: seed buckets exist conceptually */

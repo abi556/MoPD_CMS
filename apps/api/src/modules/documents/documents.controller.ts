@@ -47,6 +47,7 @@ import {
   DocumentEnvelopeDto,
 } from './dto/document-response.dto';
 import { UploadDocumentDto } from './dto/upload-document.dto';
+import type { UploadedMulterFile } from './types/uploaded-file';
 
 function toDocumentDto(
   record: Awaited<ReturnType<DocumentsService['getMetadata']>>,
@@ -83,7 +84,9 @@ export class DocumentsController {
     }),
   )
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Upload a complaint attachment (quarantine + scan)' })
+  @ApiOperation({
+    summary: 'Upload a complaint attachment (quarantine + scan)',
+  })
   @ApiBody({
     schema: {
       type: 'object',
@@ -105,7 +108,7 @@ export class DocumentsController {
   @ApiUnprocessableEntityResponse({ type: ErrorResponseDto })
   @Throttle({ default: { limit: 60, ttl: 60000 } })
   async upload(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: UploadedMulterFile,
     @Body() body: UploadDocumentDto,
     @CurrentUser() user: JwtUser,
     @Req() request: RequestWithCorrelationId,

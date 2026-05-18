@@ -74,11 +74,16 @@ export function isExtensionBlocked(filename: string): boolean {
   return BLOCKED_EXTENSIONS.has(lower.slice(dot));
 }
 
-export function buildStorageKey(complaintId: string, documentId: string): string {
+export function buildStorageKey(
+  complaintId: string,
+  documentId: string,
+): string {
   return `complaints/${complaintId}/${documentId}`;
 }
 
 /** PostgreSQL text/JSON must not contain NUL (0x00) bytes. */
+export function sanitizePostgresText(value: string): string;
+export function sanitizePostgresText(value: null | undefined): null;
 export function sanitizePostgresText(
   value: string | null | undefined,
 ): string | null {

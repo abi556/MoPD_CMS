@@ -43,7 +43,8 @@ export class DocumentEnvelopeDto {
 
 export class DocumentDownloadDto {
   @ApiProperty({
-    example: 'http://localhost:9000/mopd-live/complaints/...?X-Amz-Signature=...',
+    example:
+      'http://localhost:9000/mopd-live/complaints/...?X-Amz-Signature=...',
   })
   url!: string;
 

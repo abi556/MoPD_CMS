@@ -46,7 +46,7 @@ export class ClamAvScanner implements VirusScanner {
         try {
           resolve(parseClamAvResponse(Buffer.concat(chunks)));
         } catch (err) {
-          reject(err);
+          reject(err instanceof Error ? err : new Error(String(err)));
         }
       });
     });
