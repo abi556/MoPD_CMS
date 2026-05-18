@@ -56,8 +56,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: NotificationTemplateSeed[] = [
     bodyHtml: `<p>ቅሬታዎን <strong>{{referenceNo}}</strong> ተቀብለናል።</p>
 <p><a href="{{trackUrl}}" style="word-break:break-all;overflow-wrap:anywhere;">ቅሬታዎን ይከታተሉ</a></p>
 <p style="${URL_LINE_STYLE}">{{trackUrl}}</p>`,
-    bodyText:
-      'ቅሬታዎን {{referenceNo}} ተቀብለናል።\nመከታተያ:\n{{trackUrl}}',
+    bodyText: 'ቅሬታዎን {{referenceNo}} ተቀብለናል።\nመከታተያ:\n{{trackUrl}}',
   },
   {
     key: 'complaint_transition',

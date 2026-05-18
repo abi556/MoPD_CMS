@@ -16,4 +16,7 @@ export function ensureE2eAuthSeedEnv(): void {
     process.env.AUTH_SEED_CASE_OFFICER_EMAIL ?? 'officer@mopd.local';
   process.env.AUTH_SEED_CASE_OFFICER_PASSWORD =
     process.env.AUTH_SEED_CASE_OFFICER_PASSWORD ?? 'OfficerPass123!';
+  process.env.DOCUMENT_STORAGE_DRIVER =
+    process.env.DOCUMENT_STORAGE_DRIVER ?? 'memory';
+  process.env.VIRUS_SCANNER = process.env.VIRUS_SCANNER ?? 'noop';
 }

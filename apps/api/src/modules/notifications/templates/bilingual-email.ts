@@ -10,8 +10,7 @@ export type LocaleTemplateLoader = (
   locale: ComplaintLocale,
 ) => Promise<LocaleTemplateContent | null>;
 
-const LINK_STYLE =
-  'word-break:break-all;overflow-wrap:anywhere;color:#0563c1;';
+const LINK_STYLE = 'word-break:break-all;overflow-wrap:anywhere;color:#0563c1;';
 
 const EMAIL_WRAPPER_STYLE =
   'font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#222222;';

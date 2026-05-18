@@ -23,23 +23,25 @@ Follow these steps to set up the API service locally.
 
 ### 2. Start Local Infrastructure
 
-From the root of the monorepo, start the required databases using Docker Compose:
+From the **monorepo root**, start Postgres, Redis, MinIO, ClamAV, and Mailpit:
 
 ```bash
-cd ../../infra/docker
-docker compose up -d
+cp .env.docker.example .env.docker   # first time only
+docker compose -f infra/docker/docker-compose.yml --env-file .env.docker up -d
 ```
+
+Containers: `mopd-cms-postgres`, `mopd-cms-redis`, `mopd-cms-minio`, `mopd-cms-clamav`, `mopd-cms-mailpit`. MinIO console: http://localhost:9001. ClamAV may take **2+ minutes** on first start.
 
 ### 3. Environment Variables
 
-The API requires specific environment variables to connect to the database and sign tokens.
+The API requires specific environment variables to connect to the database, object storage, and virus scanning.
 
 ```bash
 # Inside apps/api
 cp .env.example .env
 ```
 
-_(The default values in `.env.example` are pre-configured to work with the local Docker Compose setup)._
+When running the API on your **host** (`pnpm start:dev`), keep `MINIO_ENDPOINT=localhost`, `CLAMAV_HOST=localhost` in `.env` (see `.env.example` documents section). See [CMS SRS + SDS/MoPD_CMS_Prod_Environment_Notes.md](../../../CMS%20SRS%20+%20SDS/MoPD_CMS_Prod_Environment_Notes.md) for production differences.
 
 ### 4. Install Dependencies
 

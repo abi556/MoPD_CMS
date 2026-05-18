@@ -79,7 +79,9 @@ describe('seed templates integration', () => {
       enText: renderTemplate(en.bodyText!, vars),
       amText: renderTemplate(am.bodyText!, vars),
     });
-    expect(html).toContain('<a href="http://localhost:3000/track/CMS-2026-000006"');
+    expect(html).toContain(
+      '<a href="http://localhost:3000/track/CMS-2026-000006"',
+    );
     expect(html).toContain('Track complaint status');
     expect(html).toContain('ቅሬታዎን ይከታተሉ');
     expect(html.indexOf('lang="en"')).toBeLessThan(html.indexOf('lang="am"'));
@@ -91,9 +93,9 @@ describe('seed templates integration', () => {
 
 describe('loadLocaleTemplates', () => {
   it('requires English template', async () => {
-    await expect(
-      loadLocaleTemplates(async () => null),
-    ).rejects.toThrow('English notification template is required');
+    await expect(loadLocaleTemplates(async () => null)).rejects.toThrow(
+      'English notification template is required',
+    );
   });
 
   it('loads en and am and calls onMissingAm when am absent', async () => {

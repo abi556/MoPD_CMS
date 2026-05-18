@@ -223,6 +223,21 @@ export class UserService {
         code: 'case:write',
         description: 'Create and update case notes and tasks on complaints.',
       },
+      {
+        id: 'perm-document-upload',
+        code: 'document:upload',
+        description: 'Upload documents to complaints.',
+      },
+      {
+        id: 'perm-document-read',
+        code: 'document:read',
+        description: 'View document metadata and download clean files.',
+      },
+      {
+        id: 'perm-document-delete',
+        code: 'document:delete',
+        description: 'Delete documents from complaints.',
+      },
     ];
     for (const permission of seedPermissions) {
       await this.db.permission.upsert({
@@ -246,6 +261,9 @@ export class UserService {
         'perm-complaint-escalate',
         'perm-case-read',
         'perm-case-write',
+        'perm-document-upload',
+        'perm-document-read',
+        'perm-document-delete',
       ],
     };
     for (const [roleId, permissionIds] of Object.entries(rolePermissionMap)) {

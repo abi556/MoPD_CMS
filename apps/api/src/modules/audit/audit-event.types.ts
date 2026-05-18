@@ -32,6 +32,11 @@ export const AUDIT_EVENT = {
   CASE_NOTE_CREATED: 'case.note.created',
   CASE_TASK_CREATED: 'case.task.created',
   CASE_TASK_UPDATED: 'case.task.updated',
+  DOCUMENT_UPLOADED: 'document.uploaded',
+  DOCUMENT_SCAN_COMPLETED: 'document.scan.completed',
+  DOCUMENT_INFECTED: 'document.infected',
+  DOCUMENT_DOWNLOAD_REQUESTED: 'document.download.requested',
+  DOCUMENT_DELETED: 'document.deleted',
 } as const;
 
 export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];

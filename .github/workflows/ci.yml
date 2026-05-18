@@ -21,6 +21,8 @@ jobs:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
       EMAIL_PROVIDER: console
       APP_PUBLIC_URL: http://localhost:3000
+      DOCUMENT_STORAGE_DRIVER: memory
+      VIRUS_SCANNER: noop
 
     steps:
       - name: Checkout

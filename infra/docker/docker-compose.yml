@@ -1,26 +1,51 @@
+# Local dev infrastructure for MoPD CMS.
+# From repo root:
+#   docker compose -f infra/docker/docker-compose.yml --env-file .env.docker up -d
+# Infra only (postgres, redis, minio, clamav, mailpit): omit --profile app
+# Full stack (+ api, web): docker compose ... --profile app up -d
+
 services:
   mailpit:
     image: axllent/mailpit
+    container_name: mopd-cms-mailpit
     ports:
       - "${MAILPIT_UI_PORT:-8025}:8025"
       - "${MAILPIT_SMTP_PORT:-1025}:1025"
 
   api:
     profiles: ["app"]
+    container_name: mopd-cms-api
     build: ../../apps/api
     ports:
       - "${API_PORT:-3001}:3001"
     depends_on:
-      - postgres
-      - redis
-      - minio
-      - mailpit
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+      clamav:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
     environment:
       PORT: ${API_PORT:-3001}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:${REDIS_PORT:-6379}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
       MINIO_PORT: "${MINIO_PORT:-9000}"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
+      MINIO_BUCKET_QUARANTINE: ${MINIO_BUCKET_QUARANTINE:-mopd-quarantine}
+      MINIO_BUCKET_LIVE: ${MINIO_BUCKET_LIVE:-mopd-live}
+      MINIO_PRESIGN_TTL_SEC: ${MINIO_PRESIGN_TTL_SEC:-900}
+      DOCUMENT_STORAGE_DRIVER: ${DOCUMENT_STORAGE_DRIVER:-minio}
+      DOCUMENT_MAX_BYTES: ${DOCUMENT_MAX_BYTES:-26214400}
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: "3310"
+      VIRUS_SCANNER: ${VIRUS_SCANNER:-clamav}
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-smtp}
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
@@ -30,6 +55,7 @@ services:
 
   web:
     profiles: ["app"]
+    container_name: mopd-cms-web
     build: ../../apps/web
     ports:
       - "${WEB_PORT:-3000}:3000"
@@ -40,6 +66,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
+    container_name: mopd-cms-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -51,6 +78,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    container_name: mopd-cms-redis
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
@@ -58,6 +86,7 @@ services:
 
   minio:
     image: minio/minio:latest
+    container_name: mopd-cms-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -70,8 +99,17 @@ services:
 
   clamav:
     image: clamav/clamav:latest
+    container_name: mopd-cms-clamav
+    ports:
+      - "${CLAMAV_PORT:-3310}:3310"
     volumes:
       - clamdata:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
 
 volumes:
   pgdata:

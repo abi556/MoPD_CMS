@@ -173,6 +173,23 @@ interface StoredCaseTask {
   updatedAt: Date;
 }
 
+interface StoredDocument {
+  id: string;
+  complaintId: string;
+  ownerUserId: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  scanStatus: 'PENDING' | 'SCANNING' | 'CLEAN' | 'INFECTED' | 'FAILED';
+  storageKey: string;
+  quarantineKey: string | null;
+  liveKey: string | null;
+  scanError: string | null;
+  scannedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
@@ -196,6 +213,7 @@ export function createPrismaMock(): PrismaService {
   >();
   const caseNoteStore = new Map<string, StoredCaseNote>();
   const caseTaskStore = new Map<string, StoredCaseTask>();
+  const documentStore = new Map<string, StoredDocument>();
   let sequence = 0;
   let historySequence = 0;
   let auditSequence = 0;
@@ -1259,6 +1277,60 @@ export function createPrismaMock(): PrismaService {
   };
 
   // ---------------------------------------------------------------------------
+  // Document
+  // ---------------------------------------------------------------------------
+  const documentCreate = (args: {
+    data: Omit<StoredDocument, 'createdAt' | 'updatedAt'> & {
+      createdAt?: Date;
+      updatedAt?: Date;
+    };
+  }): Promise<StoredDocument> => {
+    const now = new Date();
+    const row: StoredDocument = {
+      ...args.data,
+      quarantineKey: args.data.quarantineKey ?? null,
+      liveKey: args.data.liveKey ?? null,
+      scanError: args.data.scanError ?? null,
+      scannedAt: args.data.scannedAt ?? null,
+      createdAt: args.data.createdAt ?? now,
+      updatedAt: args.data.updatedAt ?? now,
+    };
+    documentStore.set(row.id, row);
+    return Promise.resolve(row);
+  };
+
+  const documentFindUnique = (args: {
+    where: { id: string };
+  }): Promise<StoredDocument | null> =>
+    Promise.resolve(documentStore.get(args.where.id) ?? null);
+
+  const documentUpdate = (args: {
+    where: { id: string };
+    data: Partial<
+      Omit<StoredDocument, 'id' | 'complaintId' | 'ownerUserId' | 'createdAt'>
+    >;
+  }): Promise<StoredDocument> => {
+    const existing = documentStore.get(args.where.id);
+    if (!existing) throw new Error('Document not found');
+    const updated: StoredDocument = {
+      ...existing,
+      ...args.data,
+      updatedAt: new Date(),
+    };
+    documentStore.set(updated.id, updated);
+    return Promise.resolve(updated);
+  };
+
+  const documentDelete = (args: {
+    where: { id: string };
+  }): Promise<StoredDocument> => {
+    const existing = documentStore.get(args.where.id);
+    if (!existing) throw new Error('Document not found');
+    documentStore.delete(args.where.id);
+    return Promise.resolve(existing);
+  };
+
+  // ---------------------------------------------------------------------------
   // Assembled mock
   // ---------------------------------------------------------------------------
   const prismaLike = {
@@ -1327,6 +1399,12 @@ export function createPrismaMock(): PrismaService {
       findMany: caseTaskFindMany,
       findFirst: caseTaskFindFirst,
       update: caseTaskUpdate,
+    },
+    document: {
+      create: documentCreate,
+      findUnique: documentFindUnique,
+      update: documentUpdate,
+      delete: documentDelete,
     },
     $transaction: async <T>(
       callback: (tx: {

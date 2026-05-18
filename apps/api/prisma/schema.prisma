@@ -58,6 +58,14 @@ enum CaseTaskStatus {
   CANCELLED
 }
 
+enum DocumentScanStatus {
+  PENDING
+  SCANNING
+  CLEAN
+  INFECTED
+  FAILED
+}
+
 model ComplaintCategory {
   id         String              @id @default(uuid())
   code       String              @unique
@@ -122,6 +130,7 @@ model Complaint {
   history         ComplaintHistory[]
   notes           CaseNote[]
   tasks           CaseTask[]
+  documents       Document[]
   sla             ComplaintSla?
   category        ComplaintCategory?  @relation(fields: [categoryId], references: [id])
   orgUnit         OrgUnit?            @relation(fields: [orgUnitId], references: [id])
@@ -186,6 +195,29 @@ model User {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   userRoles       UserRole[]
+  documents       Document[]
+}
+
+model Document {
+  id            String             @id @default(uuid())
+  complaintId   String
+  ownerUserId   String
+  originalName  String
+  mimeType      String
+  sizeBytes     Int
+  scanStatus    DocumentScanStatus @default(PENDING)
+  storageKey    String
+  quarantineKey String?
+  liveKey       String?
+  scanError     String?
+  scannedAt     DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  complaint     Complaint          @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  owner         User               @relation(fields: [ownerUserId], references: [id])
+
+  @@index([complaintId, createdAt])
+  @@index([scanStatus])
 }
 
 model Role {
