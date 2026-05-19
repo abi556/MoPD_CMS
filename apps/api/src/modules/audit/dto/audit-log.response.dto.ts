@@ -19,7 +19,10 @@ export class AuditLogItemDto {
   @ApiPropertyOptional({ nullable: true })
   correlationId?: string | null;
 
-  @ApiPropertyOptional({ nullable: true, example: { referenceNo: 'CMS-2026-000001' } })
+  @ApiPropertyOptional({
+    nullable: true,
+    example: { referenceNo: 'CMS-2026-000001' },
+  })
   metadata?: unknown;
 
   @ApiProperty({ example: '2026-05-15T12:00:00.000Z' })

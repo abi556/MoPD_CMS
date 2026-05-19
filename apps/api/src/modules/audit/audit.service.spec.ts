@@ -71,7 +71,11 @@ describe('AuditService', () => {
     auditLogFindMany.mockResolvedValue([
       { id: 'a2', createdAt: t2, eventType: 'x' },
       { id: 'a1', createdAt: t1, eventType: 'x' },
-      { id: 'a0', createdAt: new Date('2026-05-15T10:00:00.000Z'), eventType: 'x' },
+      {
+        id: 'a0',
+        createdAt: new Date('2026-05-15T10:00:00.000Z'),
+        eventType: 'x',
+      },
     ]);
     const service = createService();
 

@@ -143,7 +143,7 @@ describe('Audit logs (e2e)', () => {
 
     expect(response.headers['content-type']).toMatch(/text\/csv/);
     expect(response.headers['content-disposition']).toMatch(/attachment/);
-    const text = response.text as string;
+    const text = response.text;
     expect(text).toContain('id,eventType,actorUserId');
     expect(text).toContain('auth.login.succeeded');
   });

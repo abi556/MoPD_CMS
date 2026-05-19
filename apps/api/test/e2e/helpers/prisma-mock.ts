@@ -588,13 +588,22 @@ export function createPrismaMock(): PrismaService {
           lte?: Date;
           lt?: Date;
         };
-        if (createdAt.gte && entry.createdAt.getTime() < createdAt.gte.getTime()) {
+        if (
+          createdAt.gte &&
+          entry.createdAt.getTime() < createdAt.gte.getTime()
+        ) {
           return false;
         }
-        if (createdAt.lte && entry.createdAt.getTime() > createdAt.lte.getTime()) {
+        if (
+          createdAt.lte &&
+          entry.createdAt.getTime() > createdAt.lte.getTime()
+        ) {
           return false;
         }
-        if (createdAt.lt && entry.createdAt.getTime() >= createdAt.lt.getTime()) {
+        if (
+          createdAt.lt &&
+          entry.createdAt.getTime() >= createdAt.lt.getTime()
+        ) {
           return false;
         }
       }
