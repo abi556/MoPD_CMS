@@ -558,6 +558,95 @@ export function createPrismaMock(): PrismaService {
     return Promise.resolve(entry);
   };
 
+  const matchesAuditLogWhere = (
+    entry: StoredAuditLog,
+    where: Record<string, unknown> | undefined,
+  ): boolean => {
+    if (!where || Object.keys(where).length === 0) {
+      return true;
+    }
+    const and = where.AND as Array<Record<string, unknown>> | undefined;
+    if (!and) {
+      return true;
+    }
+    return and.every((clause) => {
+      if ('eventType' in clause && clause.eventType !== entry.eventType) {
+        return false;
+      }
+      if ('actorUserId' in clause && clause.actorUserId !== entry.actorUserId) {
+        return false;
+      }
+      if ('entityType' in clause && clause.entityType !== entry.entityType) {
+        return false;
+      }
+      if ('entityId' in clause && clause.entityId !== entry.entityId) {
+        return false;
+      }
+      if ('createdAt' in clause) {
+        const createdAt = clause.createdAt as {
+          gte?: Date;
+          lte?: Date;
+          lt?: Date;
+        };
+        if (createdAt.gte && entry.createdAt.getTime() < createdAt.gte.getTime()) {
+          return false;
+        }
+        if (createdAt.lte && entry.createdAt.getTime() > createdAt.lte.getTime()) {
+          return false;
+        }
+        if (createdAt.lt && entry.createdAt.getTime() >= createdAt.lt.getTime()) {
+          return false;
+        }
+      }
+      if ('OR' in clause) {
+        const orClauses = clause.OR as Array<Record<string, unknown>>;
+        return orClauses.some((orClause) => {
+          const createdAt = orClause.createdAt as Date | { lt?: Date };
+          if (createdAt instanceof Date) {
+            return (
+              entry.createdAt.getTime() === createdAt.getTime() &&
+              typeof orClause.id === 'object' &&
+              orClause.id !== null &&
+              'lt' in orClause.id &&
+              entry.id < (orClause.id as { lt: string }).lt
+            );
+          }
+          if (
+            typeof createdAt === 'object' &&
+            createdAt !== null &&
+            'lt' in createdAt &&
+            createdAt.lt instanceof Date
+          ) {
+            return entry.createdAt.getTime() < createdAt.lt.getTime();
+          }
+          return false;
+        });
+      }
+      return true;
+    });
+  };
+
+  const auditLogFindMany = (args?: {
+    where?: Record<string, unknown>;
+    orderBy?: Array<{ createdAt?: 'asc' | 'desc'; id?: 'asc' | 'desc' }>;
+    take?: number;
+  }): Promise<StoredAuditLog[]> => {
+    let rows = auditLogStore.filter((entry) =>
+      matchesAuditLogWhere(entry, args?.where),
+    );
+    rows.sort((a, b) => {
+      const timeDiff = b.createdAt.getTime() - a.createdAt.getTime();
+      if (timeDiff !== 0) {
+        return timeDiff;
+      }
+      return b.id.localeCompare(a.id);
+    });
+    if (args?.take !== undefined) {
+      rows = rows.slice(0, args.take);
+    }
+    return Promise.resolve(rows.map((row) => ({ ...row })));
+  };
+
   // ---------------------------------------------------------------------------
   // SlaConfig
   // ---------------------------------------------------------------------------
@@ -1345,7 +1434,7 @@ export function createPrismaMock(): PrismaService {
       findUnique: userFindUnique,
     },
     userRole: { upsert: userRoleUpsert },
-    auditLog: { create: auditLogCreate },
+    auditLog: { create: auditLogCreate, findMany: auditLogFindMany },
     complaintCategory: {
       create: categoryCreate,
       findUnique: categoryFindUnique,

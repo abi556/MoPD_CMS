@@ -238,6 +238,11 @@ export class UserService {
         code: 'document:delete',
         description: 'Delete documents from complaints.',
       },
+      {
+        id: 'perm-audit-read',
+        code: 'audit:read',
+        description: 'Query and export audit logs.',
+      },
     ];
     for (const permission of seedPermissions) {
       await this.db.permission.upsert({

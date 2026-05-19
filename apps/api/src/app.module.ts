@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { AdminModule } from './modules/admin/admin.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CaseModule } from './modules/case/case.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
@@ -23,6 +24,7 @@ import { QueueModule } from './queue/queue.module';
     QueueModule,
     BullBoardAdminModule,
     AuthModule,
+    AuditModule,
     AdminModule,
     ComplaintsModule,
     CaseModule,

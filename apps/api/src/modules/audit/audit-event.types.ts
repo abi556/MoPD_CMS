@@ -37,6 +37,7 @@ export const AUDIT_EVENT = {
   DOCUMENT_INFECTED: 'document.infected',
   DOCUMENT_DOWNLOAD_REQUESTED: 'document.download.requested',
   DOCUMENT_DELETED: 'document.deleted',
+  AUDIT_EXPORT_REQUESTED: 'audit.export.requested',
 } as const;
 
 export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];
