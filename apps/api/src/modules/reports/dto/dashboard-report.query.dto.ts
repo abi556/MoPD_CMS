@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsDateString, IsIn, IsOptional, IsUUID } from 'class-validator';
+import { TransformOptionalUuid } from '../../../common/dto/transform-optional-uuid';
 
 export class DashboardReportQueryDto {
   @ApiProperty({ example: '2026-01-01' })
@@ -13,14 +15,25 @@ export class DashboardReportQueryDto {
   @ApiPropertyOptional({ enum: ['day', 'week', 'month'], default: 'day' })
   @IsOptional()
   @IsIn(['day', 'week', 'month'])
+  @Transform(({ value }) => (value === '' ? undefined : value))
   bucket?: 'day' | 'week' | 'month';
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Optional category filter. Omit this field (or leave blank) to include all categories.',
+  })
+  @TransformOptionalUuid()
   @IsOptional()
   @IsUUID()
   categoryId?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Optional org unit filter. Omit this field (or leave blank) to include all org units.',
+  })
+  @TransformOptionalUuid()
   @IsOptional()
   @IsUUID()
   orgUnitId?: string;
