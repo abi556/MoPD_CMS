@@ -4,6 +4,7 @@ import type { Redis } from 'ioredis';
 import {
   QUEUE_DOCUMENT_SCAN,
   QUEUE_NOTIFICATION_DISPATCH,
+  QUEUE_REPORT_EXPORT,
   QUEUE_SLA_MONITOR,
 } from './queue.constants';
 import { RedisHealthService } from './redis-health.service';
@@ -56,6 +57,7 @@ function buildConnection(): Redis | Record<string, unknown> {
     BullModule.registerQueue({ name: QUEUE_SLA_MONITOR }),
     BullModule.registerQueue({ name: QUEUE_NOTIFICATION_DISPATCH }),
     BullModule.registerQueue({ name: QUEUE_DOCUMENT_SCAN }),
+    BullModule.registerQueue({ name: QUEUE_REPORT_EXPORT }),
   ],
   providers: [RedisHealthService],
   exports: [BullModule, RedisHealthService],

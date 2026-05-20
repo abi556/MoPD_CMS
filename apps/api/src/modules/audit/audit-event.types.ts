@@ -38,6 +38,9 @@ export const AUDIT_EVENT = {
   DOCUMENT_DOWNLOAD_REQUESTED: 'document.download.requested',
   DOCUMENT_DELETED: 'document.deleted',
   AUDIT_EXPORT_REQUESTED: 'audit.export.requested',
+  REPORT_EXPORT_REQUESTED: 'report.export.requested',
+  REPORT_EXPORT_COMPLETED: 'report.export.completed',
+  REPORT_EXPORT_FAILED: 'report.export.failed',
 } as const;
 
 export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];

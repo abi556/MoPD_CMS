@@ -152,6 +152,10 @@ export class UserService {
         id: process.env.AUTH_SEED_CASE_OFFICER_ROLE_ID ?? 'role-case-officer',
         name: 'CaseOfficer',
       },
+      {
+        id: process.env.AUTH_SEED_AUDITOR_ROLE_ID ?? 'role-auditor',
+        name: 'Auditor',
+      },
     ];
     for (const role of seedRoles) {
       await this.db.role.upsert({
@@ -243,6 +247,16 @@ export class UserService {
         code: 'audit:read',
         description: 'Query and export audit logs.',
       },
+      {
+        id: 'perm-report-view',
+        code: 'report:view',
+        description: 'View analytics dashboards.',
+      },
+      {
+        id: 'perm-report-export',
+        code: 'report:export',
+        description: 'Generate and download report exports.',
+      },
     ];
     for (const permission of seedPermissions) {
       await this.db.permission.upsert({
@@ -269,6 +283,11 @@ export class UserService {
         'perm-document-upload',
         'perm-document-read',
         'perm-document-delete',
+      ],
+      'role-auditor': [
+        'perm-audit-read',
+        'perm-report-view',
+        'perm-report-export',
       ],
     };
     for (const [roleId, permissionIds] of Object.entries(rolePermissionMap)) {

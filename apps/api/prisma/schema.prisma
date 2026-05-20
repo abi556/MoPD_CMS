@@ -360,3 +360,34 @@ model NotificationDelivery {
   @@index([to, createdAt])
   @@index([correlationId])
 }
+
+enum ReportExportFormat {
+  csv
+  xlsx
+}
+
+enum ReportExportStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+  EXPIRED
+}
+
+model ReportExport {
+  id            String             @id @default(uuid())
+  requestedById String
+  format        ReportExportFormat
+  status        ReportExportStatus @default(PENDING)
+  filters       Json
+  storageKey    String?
+  mimeType      String?
+  rowCount      Int?
+  errorMessage  String?
+  expiresAt     DateTime?
+  createdAt     DateTime           @default(now())
+  completedAt   DateTime?
+
+  @@index([requestedById, createdAt])
+  @@index([status])
+}

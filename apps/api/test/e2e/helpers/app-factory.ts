@@ -14,6 +14,7 @@ import { createPrismaMock } from './prisma-mock';
 // BullMQ queue provider token — equivalent to getQueueToken('sla-monitor')
 const SLA_QUEUE_TOKEN = 'BullQueue_sla-monitor';
 const DOCUMENT_SCAN_QUEUE_TOKEN = 'BullQueue_document-scan';
+const REPORT_EXPORT_QUEUE_TOKEN = 'BullQueue_report-export';
 const mockQueue = {
   add: jest.fn().mockResolvedValue(undefined),
   // RedisHealthService awaits `queue.client` then calls `.ping()` on it
@@ -59,6 +60,8 @@ export async function createTestApp(): Promise<INestApplication<Server>> {
     .overrideProvider(SLA_QUEUE_TOKEN)
     .useValue(mockQueue)
     .overrideProvider(DOCUMENT_SCAN_QUEUE_TOKEN)
+    .useValue(mockQueue)
+    .overrideProvider(REPORT_EXPORT_QUEUE_TOKEN)
     .useValue(mockQueue)
     .compile();
 

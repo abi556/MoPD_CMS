@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { NOTIFICATION_TEMPLATE_SEEDS } from '../../../src/modules/notifications/notification-seed';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import type { ComplaintStatusLiteral } from './types';
@@ -29,6 +30,7 @@ interface StoredComplaint {
   lastTransitionByUserId: string | null;
   lastTransitionAt: Date | null;
   lastTransitionReason: string | null;
+  updatedAt: Date;
 }
 
 interface StoredComplaintHistory {
@@ -190,6 +192,21 @@ interface StoredDocument {
   updatedAt: Date;
 }
 
+interface StoredReportExport {
+  id: string;
+  requestedById: string;
+  format: 'csv' | 'xlsx';
+  status: 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED' | 'EXPIRED';
+  filters: unknown;
+  storageKey: string | null;
+  mimeType: string | null;
+  rowCount: number | null;
+  errorMessage: string | null;
+  expiresAt: Date | null;
+  createdAt: Date;
+  completedAt: Date | null;
+}
+
 export function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
@@ -214,6 +231,7 @@ export function createPrismaMock(): PrismaService {
   const caseNoteStore = new Map<string, StoredCaseNote>();
   const caseTaskStore = new Map<string, StoredCaseTask>();
   const documentStore = new Map<string, StoredDocument>();
+  const reportExportStore = new Map<string, StoredReportExport>();
   let sequence = 0;
   let historySequence = 0;
   let auditSequence = 0;
@@ -303,6 +321,7 @@ export function createPrismaMock(): PrismaService {
       lastTransitionByUserId: args.data.lastTransitionByUserId ?? null,
       lastTransitionAt: args.data.lastTransitionAt ?? null,
       lastTransitionReason: args.data.lastTransitionReason ?? null,
+      updatedAt: now,
     };
     store.set(created.id, created);
     return created;
@@ -336,22 +355,40 @@ export function createPrismaMock(): PrismaService {
     return null;
   };
 
+  type ComplaintWhere = {
+    status?: StoredComplaint['status'] | { not: StoredComplaint['status'] };
+    channel?: StoredComplaint['channel'];
+    locale?: StoredComplaint['locale'];
+    categoryId?: string;
+    orgUnitId?: string;
+    submittedAt?: { gte?: Date; lte?: Date };
+  };
+
   const applyWhere = (
     input: StoredComplaint[],
-    where?: {
-      status?: StoredComplaint['status'];
-      channel?: StoredComplaint['channel'];
-      locale?: StoredComplaint['locale'];
-      submittedAt?: { gte?: Date; lte?: Date };
-    },
+    where?: ComplaintWhere,
   ): StoredComplaint[] => {
     if (!where) {
       return input;
     }
     return input.filter((item) => {
-      if (where.status && item.status !== where.status) return false;
+      if (where.status) {
+        if (
+          typeof where.status === 'object' &&
+          'not' in where.status &&
+          item.status === where.status.not
+        ) {
+          return false;
+        }
+        if (typeof where.status === 'string' && item.status !== where.status) {
+          return false;
+        }
+      }
       if (where.channel && item.channel !== where.channel) return false;
       if (where.locale && item.locale !== where.locale) return false;
+      if (where.categoryId && item.categoryId !== where.categoryId)
+        return false;
+      if (where.orgUnitId && item.orgUnitId !== where.orgUnitId) return false;
       if (where.submittedAt?.gte && item.submittedAt < where.submittedAt.gte)
         return false;
       if (where.submittedAt?.lte && item.submittedAt > where.submittedAt.lte)
@@ -361,30 +398,63 @@ export function createPrismaMock(): PrismaService {
   };
 
   const findMany = (args: {
-    where?: {
-      status?: StoredComplaint['status'];
-      channel?: StoredComplaint['channel'];
-      locale?: StoredComplaint['locale'];
-      submittedAt?: { gte?: Date; lte?: Date };
-    };
+    where?: ComplaintWhere;
     skip?: number;
     take?: number;
-  }): StoredComplaint[] => {
+    orderBy?: { submittedAt?: 'asc' | 'desc' };
+    select?: Record<string, boolean>;
+  }): Promise<StoredComplaint[]> => {
     const filtered = applyWhere(Array.from(store.values()), args.where);
-    const sorted = filtered.sort((a, b) => b.sequenceNo - a.sequenceNo);
+    const sorted = filtered.sort((a, b) => {
+      if (args.orderBy?.submittedAt === 'asc') {
+        return a.submittedAt.getTime() - b.submittedAt.getTime();
+      }
+      return b.submittedAt.getTime() - a.submittedAt.getTime();
+    });
     const skip = args.skip ?? 0;
     const take = args.take ?? sorted.length;
-    return sorted.slice(skip, skip + take);
+    const slice = sorted.slice(skip, skip + take);
+    if (!args.select) {
+      return Promise.resolve(slice);
+    }
+    return Promise.resolve(
+      slice.map((row) => {
+        const out: Record<string, unknown> = {};
+        for (const key of Object.keys(args.select ?? {})) {
+          if (args.select?.[key]) {
+            out[key] = row[key as keyof StoredComplaint];
+          }
+        }
+        return out as StoredComplaint;
+      }),
+    );
   };
 
-  const count = (args: {
-    where?: {
-      status?: StoredComplaint['status'];
-      channel?: StoredComplaint['channel'];
-      locale?: StoredComplaint['locale'];
-      submittedAt?: { gte?: Date; lte?: Date };
-    };
-  }): number => applyWhere(Array.from(store.values()), args.where).length;
+  const complaintGroupBy = (args: {
+    by: ['channel'];
+    where?: ComplaintWhere;
+    _count: { _all: boolean };
+    orderBy?: { channel: 'asc' | 'desc' };
+  }): Promise<
+    Array<{ channel: StoredComplaint['channel']; _count: { _all: number } }>
+  > => {
+    const filtered = applyWhere(Array.from(store.values()), args.where);
+    const map = new Map<StoredComplaint['channel'], number>();
+    for (const row of filtered) {
+      map.set(row.channel, (map.get(row.channel) ?? 0) + 1);
+    }
+    let rows = [...map.entries()].map(([channel, count]) => ({
+      channel,
+      _count: { _all: count },
+    }));
+    if (args.orderBy?.channel === 'asc') {
+      rows = rows.sort((a, b) => a.channel.localeCompare(b.channel));
+    }
+    return Promise.resolve(rows);
+  };
+
+  const count = (args: { where?: ComplaintWhere }): Promise<number> =>
+    Promise.resolve(applyWhere(Array.from(store.values()), args.where).length);
 
   // ---------------------------------------------------------------------------
   // ComplaintHistory
@@ -402,10 +472,40 @@ export function createPrismaMock(): PrismaService {
     return entry;
   };
 
-  const historyFindMany = (args: { where: { complaintId: string } }) =>
-    historyStore
-      .filter((item) => item.complaintId === args.where.complaintId)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  const historyFindMany = (args: {
+    where: {
+      complaintId?: string | { in: string[] };
+      toStatus?: StoredComplaint['status'];
+    };
+    orderBy?: { createdAt: 'asc' | 'desc' };
+    select?: Record<string, boolean>;
+  }): Promise<StoredComplaintHistory[]> => {
+    let rows = [...historyStore];
+    const cid = args.where.complaintId;
+    if (typeof cid === 'string') {
+      rows = rows.filter((item) => item.complaintId === cid);
+    } else if (cid?.in) {
+      rows = rows.filter((item) => cid.in.includes(item.complaintId));
+    }
+    if (args.where.toStatus) {
+      rows = rows.filter((item) => item.toStatus === args.where.toStatus);
+    }
+    rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    if (!args.select) {
+      return Promise.resolve(rows);
+    }
+    return Promise.resolve(
+      rows.map((row) => {
+        const out: Record<string, unknown> = {};
+        for (const key of Object.keys(args.select ?? {})) {
+          if (args.select?.[key]) {
+            out[key] = row[key as keyof StoredComplaintHistory];
+          }
+        }
+        return out as StoredComplaintHistory;
+      }),
+    );
+  };
 
   // ---------------------------------------------------------------------------
   // Role / Permission / User seeds
@@ -798,12 +898,32 @@ export function createPrismaMock(): PrismaService {
   };
 
   const complaintSlaFindMany = (args: {
-    where?: { status?: SlaStatusLiteral };
+    where?: {
+      status?: SlaStatusLiteral;
+      startedAt?: { gte?: Date; lte?: Date };
+      complaint?: ComplaintWhere;
+    };
     include?: { slaConfig?: boolean };
+    select?: Record<string, boolean>;
   }): Promise<(StoredComplaintSla & { slaConfig?: StoredSlaConfig })[]> => {
     let all = Array.from(complaintSlaStore.values());
-    if (args.where?.status)
+    if (args.where?.status) {
       all = all.filter((s) => s.status === args.where!.status);
+    }
+    if (args.where?.startedAt?.gte) {
+      all = all.filter((s) => s.startedAt >= args.where!.startedAt!.gte!);
+    }
+    if (args.where?.startedAt?.lte) {
+      all = all.filter((s) => s.startedAt <= args.where!.startedAt!.lte!);
+    }
+    if (args.where?.complaint) {
+      const allowedIds = new Set(
+        applyWhere(Array.from(store.values()), args.where.complaint).map(
+          (c) => c.id,
+        ),
+      );
+      all = all.filter((s) => allowedIds.has(s.complaintId));
+    }
     if (args.include?.slaConfig) {
       return Promise.resolve(
         all.map((s) => ({
@@ -1429,10 +1549,62 @@ export function createPrismaMock(): PrismaService {
   };
 
   // ---------------------------------------------------------------------------
+  // ReportExport
+  // ---------------------------------------------------------------------------
+  const reportExportCreate = (args: {
+    data: Omit<StoredReportExport, 'id' | 'createdAt' | 'completedAt'> & {
+      id?: string;
+    };
+  }): Promise<StoredReportExport> => {
+    const row: StoredReportExport = {
+      id: args.data.id ?? randomUUID(),
+      requestedById: args.data.requestedById,
+      format: args.data.format,
+      status: args.data.status,
+      filters: args.data.filters,
+      storageKey: args.data.storageKey ?? null,
+      mimeType: args.data.mimeType ?? null,
+      rowCount: args.data.rowCount ?? null,
+      errorMessage: args.data.errorMessage ?? null,
+      expiresAt: args.data.expiresAt ?? null,
+      createdAt: new Date(),
+      completedAt: null,
+    };
+    reportExportStore.set(row.id, row);
+    return Promise.resolve(row);
+  };
+
+  const reportExportFindUnique = (args: {
+    where: { id: string };
+  }): Promise<StoredReportExport | null> =>
+    Promise.resolve(reportExportStore.get(args.where.id) ?? null);
+
+  const reportExportUpdate = (args: {
+    where: { id: string };
+    data: Partial<
+      Omit<StoredReportExport, 'id' | 'requestedById' | 'createdAt'>
+    >;
+  }): Promise<StoredReportExport> => {
+    const existing = reportExportStore.get(args.where.id);
+    if (!existing) {
+      throw new Error('ReportExport not found');
+    }
+    const updated = { ...existing, ...args.data };
+    reportExportStore.set(updated.id, updated);
+    return Promise.resolve(updated);
+  };
+
+  // ---------------------------------------------------------------------------
   // Assembled mock
   // ---------------------------------------------------------------------------
   const prismaLike = {
-    complaint: { count, findMany, findUnique, update },
+    complaint: {
+      count,
+      findMany,
+      findUnique,
+      update,
+      groupBy: complaintGroupBy,
+    },
     complaintHistory: { findMany: historyFindMany },
     role: { upsert: roleUpsert },
     permission: { upsert: permissionUpsert },
@@ -1503,6 +1675,11 @@ export function createPrismaMock(): PrismaService {
       findUnique: documentFindUnique,
       update: documentUpdate,
       delete: documentDelete,
+    },
+    reportExport: {
+      create: reportExportCreate,
+      findUnique: reportExportFindUnique,
+      update: reportExportUpdate,
     },
     $transaction: async <T>(
       callback: (tx: {

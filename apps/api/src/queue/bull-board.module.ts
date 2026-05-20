@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
-import { QUEUE_SLA_MONITOR } from './queue.constants';
+import { QUEUE_REPORT_EXPORT, QUEUE_SLA_MONITOR } from './queue.constants';
 import { basicAuthMiddleware } from './bull-board.middleware';
 
 /**
@@ -33,6 +33,10 @@ const isTest = process.env.NODE_ENV === 'test';
         }),
         BullBoardModule.forFeature({
           name: QUEUE_SLA_MONITOR,
+          adapter: BullMQAdapter,
+        }),
+        BullBoardModule.forFeature({
+          name: QUEUE_REPORT_EXPORT,
           adapter: BullMQAdapter,
         }),
       ],

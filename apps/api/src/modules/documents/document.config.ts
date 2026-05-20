@@ -34,6 +34,28 @@ export function getLiveBucket(): string {
   return process.env.MINIO_BUCKET_LIVE ?? 'mopd-live';
 }
 
+export function getExportsBucket(): string {
+  return process.env.MINIO_BUCKET_EXPORTS ?? 'mopd-exports';
+}
+
+export function getReportExportMaxRows(): number {
+  const raw = process.env.REPORT_EXPORT_MAX_ROWS;
+  if (!raw) {
+    return 50_000;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isNaN(parsed) || parsed <= 0 ? 50_000 : parsed;
+}
+
+export function getReportExportTtlSec(): number {
+  const raw = process.env.REPORT_EXPORT_TTL_SEC;
+  if (!raw) {
+    return 86_400;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isNaN(parsed) || parsed <= 0 ? 86_400 : parsed;
+}
+
 export function getDocumentMaxBytes(): number {
   const raw = process.env.DOCUMENT_MAX_BYTES;
   if (!raw) {

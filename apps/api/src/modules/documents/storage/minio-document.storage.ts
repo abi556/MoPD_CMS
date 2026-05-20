@@ -5,7 +5,11 @@ import type {
   PutObjectMeta,
   SignedDownloadUrl,
 } from '../interfaces/document-storage.interface';
-import { getLiveBucket, getQuarantineBucket } from '../document.config';
+import {
+  getExportsBucket,
+  getLiveBucket,
+  getQuarantineBucket,
+} from '../document.config';
 
 function getMinioClient(): Minio.Client {
   const endPoint = process.env.MINIO_ENDPOINT ?? 'localhost';
@@ -29,7 +33,11 @@ export class MinioDocumentStorage implements DocumentStorage {
   private readonly client = getMinioClient();
 
   async ensureBuckets(): Promise<void> {
-    for (const bucket of [getQuarantineBucket(), getLiveBucket()]) {
+    for (const bucket of [
+      getQuarantineBucket(),
+      getLiveBucket(),
+      getExportsBucket(),
+    ]) {
       const exists = await this.client.bucketExists(bucket);
       if (!exists) {
         await this.client.makeBucket(bucket, 'us-east-1');
