@@ -57,6 +57,7 @@ export class AuditService {
         data: {
           eventType: event.eventType,
           actorUserId: event.actorUserId ?? null,
+          actorRole: event.actorRole ?? event.actorRoles?.[0] ?? null,
           entityType: event.entityType ?? null,
           entityId: event.entityId ?? null,
           correlationId: event.correlationId ?? null,

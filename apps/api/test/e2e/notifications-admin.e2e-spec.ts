@@ -8,6 +8,7 @@ import {
   createTestApp,
   getBody,
 } from './helpers/test-context';
+import { loginAsRole } from './helpers/login-as-role';
 
 describe('Notifications admin (e2e)', () => {
   let app: INestApplication<Server>;
@@ -64,6 +65,18 @@ describe('Notifications admin (e2e)', () => {
     expect(body.data.some((r) => r.templateKey === 'password_reset')).toBe(
       true,
     );
+  });
+
+  it('lists notification templates for communications officer', async () => {
+    const token = await loginAsRole(
+      asSupertestApp(app),
+      'CommunicationsOfficer',
+    );
+    await request(asSupertestApp(app))
+      .get('/api/v1/notification-templates')
+      .query({ pageSize: 10 })
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
   });
 
   it('returns 403 for notifications list when officer lacks config:manage', async () => {

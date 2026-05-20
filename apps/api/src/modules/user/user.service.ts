@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import bcrypt from 'bcrypt';
+import {
+  getRolePermissionIds,
+  getSeedRoles,
+  SEED_PERMISSIONS,
+} from '../auth/rbac/seed-catalog';
 import { PrismaService } from '../../prisma/prisma.service';
 
 interface AuthUserWithRoles {
@@ -118,6 +123,10 @@ function getRequiredEnv(name: string): string {
   return value;
 }
 
+function getOptionalSeedEnv(name: string, fallback: string): string {
+  return process.env[name] ?? fallback;
+}
+
 function getBcryptCostFactor(): number {
   const raw = process.env.AUTH_BCRYPT_COST;
   if (!raw) {
@@ -143,20 +152,7 @@ export class UserService {
       return;
     }
 
-    const seedRoles = [
-      {
-        id: process.env.AUTH_SEED_SUPER_ADMIN_ROLE_ID ?? 'role-super-admin',
-        name: 'SuperAdmin',
-      },
-      {
-        id: process.env.AUTH_SEED_CASE_OFFICER_ROLE_ID ?? 'role-case-officer',
-        name: 'CaseOfficer',
-      },
-      {
-        id: process.env.AUTH_SEED_AUDITOR_ROLE_ID ?? 'role-auditor',
-        name: 'Auditor',
-      },
-    ];
+    const seedRoles = getSeedRoles();
     for (const role of seedRoles) {
       await this.db.role.upsert({
         where: { id: role.id },
@@ -165,100 +161,7 @@ export class UserService {
       });
     }
 
-    const seedPermissions = [
-      {
-        id: 'perm-admin-ping',
-        code: 'admin:ping',
-        description: 'Access admin health endpoint.',
-      },
-      {
-        id: 'perm-complaints-list',
-        code: 'complaints:list',
-        description: 'List complaints for staff operations.',
-      },
-      {
-        id: 'perm-complaints-detail',
-        code: 'complaints:detail',
-        description: 'View complaint detail for staff workflows.',
-      },
-      {
-        id: 'perm-complaints-history',
-        code: 'complaints:history',
-        description: 'View complaint history timeline.',
-      },
-      {
-        id: 'perm-complaints-assign',
-        code: 'complaints:assign',
-        description: 'Assign or reassign complaint ownership.',
-      },
-      {
-        id: 'perm-complaints-transition',
-        code: 'complaints:transition',
-        description: 'Transition complaint workflow status.',
-      },
-      {
-        id: 'perm-user-manage',
-        code: 'user:manage',
-        description: 'Manage users lifecycle and profile updates.',
-      },
-      {
-        id: 'perm-role-manage',
-        code: 'role:manage',
-        description: 'Manage roles and permission mappings.',
-      },
-      {
-        id: 'perm-complaint-escalate',
-        code: 'complaint:escalate',
-        description: 'Escalate a complaint to higher priority handling.',
-      },
-      {
-        id: 'perm-config-manage',
-        code: 'config:manage',
-        description:
-          'Manage system configuration (SLA, categories, org units).',
-      },
-      {
-        id: 'perm-case-read',
-        code: 'case:read',
-        description: 'List case notes and tasks on complaints.',
-      },
-      {
-        id: 'perm-case-write',
-        code: 'case:write',
-        description: 'Create and update case notes and tasks on complaints.',
-      },
-      {
-        id: 'perm-document-upload',
-        code: 'document:upload',
-        description: 'Upload documents to complaints.',
-      },
-      {
-        id: 'perm-document-read',
-        code: 'document:read',
-        description: 'View document metadata and download clean files.',
-      },
-      {
-        id: 'perm-document-delete',
-        code: 'document:delete',
-        description: 'Delete documents from complaints.',
-      },
-      {
-        id: 'perm-audit-read',
-        code: 'audit:read',
-        description: 'Query and export audit logs.',
-      },
-      {
-        id: 'perm-report-view',
-        code: 'report:view',
-        description: 'View analytics dashboards.',
-      },
-      {
-        id: 'perm-report-export',
-        code: 'report:export',
-        description: 'Generate and download report exports.',
-      },
-    ];
-    for (const permission of seedPermissions) {
+    for (const permission of SEED_PERMISSIONS) {
       await this.db.permission.upsert({
         where: { id: permission.id },
         create: permission,
@@ -269,38 +172,18 @@ export class UserService {
       });
     }
 
-    const rolePermissionMap: Record<string, string[]> = {
-      'role-super-admin': seedPermissions.map((permission) => permission.id),
-      'role-case-officer': [
-        'perm-complaints-list',
-        'perm-complaints-detail',
-        'perm-complaints-history',
-        'perm-complaints-assign',
-        'perm-complaints-transition',
-        'perm-complaint-escalate',
-        'perm-case-read',
-        'perm-case-write',
-        'perm-document-upload',
-        'perm-document-read',
-        'perm-document-delete',
-      ],
-      'role-auditor': [
-        'perm-audit-read',
-        'perm-report-view',
-        'perm-report-export',
-      ],
-    };
-    for (const [roleId, permissionIds] of Object.entries(rolePermissionMap)) {
+    for (const role of seedRoles) {
+      const permissionIds = getRolePermissionIds(role.id);
       for (const permissionId of permissionIds) {
         await this.db.rolePermission.upsert({
           where: {
             roleId_permissionId: {
-              roleId,
+              roleId: role.id,
               permissionId,
             },
           },
           create: {
-            roleId,
+            roleId: role.id,
             permissionId,
           },
           update: {},
@@ -308,18 +191,134 @@ export class UserService {
       }
     }
 
+    const superAdminRoleId =
+      process.env.AUTH_SEED_SUPER_ADMIN_ROLE_ID ?? 'role-super-admin';
+    const caseOfficerRoleId =
+      process.env.AUTH_SEED_CASE_OFFICER_ROLE_ID ?? 'role-case-officer';
+
     const seedUsers = [
       {
         id: getRequiredEnv('AUTH_SEED_SUPER_ADMIN_ID'),
         email: getRequiredEnv('AUTH_SEED_SUPER_ADMIN_EMAIL'),
         password: getRequiredEnv('AUTH_SEED_SUPER_ADMIN_PASSWORD'),
-        roleIds: [seedRoles[0].id],
+        roleIds: [superAdminRoleId],
       },
       {
         id: getRequiredEnv('AUTH_SEED_CASE_OFFICER_ID'),
         email: getRequiredEnv('AUTH_SEED_CASE_OFFICER_EMAIL'),
         password: getRequiredEnv('AUTH_SEED_CASE_OFFICER_PASSWORD'),
-        roleIds: [seedRoles[1].id],
+        roleIds: [caseOfficerRoleId],
+      },
+      {
+        id: getOptionalSeedEnv(
+          'AUTH_SEED_CASE_OFFICER_2_ID',
+          'user-officer-0002',
+        ),
+        email: getOptionalSeedEnv(
+          'AUTH_SEED_CASE_OFFICER_2_EMAIL',
+          'officer2@mopd.local',
+        ),
+        password: getOptionalSeedEnv(
+          'AUTH_SEED_CASE_OFFICER_2_PASSWORD',
+          'Officer2Pass123!',
+        ),
+        roleIds: [caseOfficerRoleId],
+      },
+      {
+        id: getOptionalSeedEnv(
+          'AUTH_SEED_SYSTEM_ADMIN_ID',
+          'user-system-admin-0001',
+        ),
+        email: getOptionalSeedEnv(
+          'AUTH_SEED_SYSTEM_ADMIN_EMAIL',
+          'system-admin@mopd.local',
+        ),
+        password: getOptionalSeedEnv(
+          'AUTH_SEED_SYSTEM_ADMIN_PASSWORD',
+          'SystemAdminPass123!',
+        ),
+        roleIds: ['role-system-admin'],
+      },
+      {
+        id: getOptionalSeedEnv(
+          'AUTH_SEED_COMPLAINTS_ADMIN_ID',
+          'user-complaints-admin-0001',
+        ),
+        email: getOptionalSeedEnv(
+          'AUTH_SEED_COMPLAINTS_ADMIN_EMAIL',
+          'complaints-admin@mopd.local',
+        ),
+        password: getOptionalSeedEnv(
+          'AUTH_SEED_COMPLAINTS_ADMIN_PASSWORD',
+          'ComplaintsAdminPass123!',
+        ),
+        roleIds: ['role-complaints-admin'],
+      },
+      {
+        id: getOptionalSeedEnv('AUTH_SEED_REVIEWER_ID', 'user-reviewer-0001'),
+        email: getOptionalSeedEnv(
+          'AUTH_SEED_REVIEWER_EMAIL',
+          'reviewer@mopd.local',
+        ),
+        password: getOptionalSeedEnv(
+          'AUTH_SEED_REVIEWER_PASSWORD',
+          'ReviewerPass123!',
+        ),
+        roleIds: ['role-reviewer-approver'],
+      },
+      {
+        id: getOptionalSeedEnv(
+          'AUTH_SEED_COMMUNICATIONS_ID',
+          'user-communications-0001',
+        ),
+        email: getOptionalSeedEnv(
+          'AUTH_SEED_COMMUNICATIONS_EMAIL',
+          'communications@mopd.local',
+        ),
+        password: getOptionalSeedEnv(
+          'AUTH_SEED_COMMUNICATIONS_PASSWORD',
+          'CommunicationsPass123!',
+        ),
+        roleIds: ['role-communications-officer'],
+      },
+      {
+        id: getOptionalSeedEnv('AUTH_SEED_AUDITOR_ID', 'user-auditor-0001'),
+        email: getOptionalSeedEnv(
+          'AUTH_SEED_AUDITOR_EMAIL',
+          'auditor@mopd.local',
+        ),
+        password: getOptionalSeedEnv(
+          'AUTH_SEED_AUDITOR_PASSWORD',
+          'AuditorPass123!',
+        ),
+        roleIds: ['role-auditor'],
+      },
+      {
+        id: getOptionalSeedEnv(
+          'AUTH_SEED_OMBUDSPERSON_ID',
+          'user-ombudsperson-0001',
+        ),
+        email: getOptionalSeedEnv(
+          'AUTH_SEED_OMBUDSPERSON_EMAIL',
+          'ombudsperson@mopd.local',
+        ),
+        password: getOptionalSeedEnv(
+          'AUTH_SEED_OMBUDSPERSON_PASSWORD',
+          'OmbudspersonPass123!',
+        ),
+        roleIds: ['role-ombudsperson'],
+      },
+      {
+        id: getOptionalSeedEnv('AUTH_SEED_OBSERVER_ID', 'user-observer-0001'),
+        email: getOptionalSeedEnv(
+          'AUTH_SEED_OBSERVER_EMAIL',
+          'observer@mopd.local',
+        ),
+        password: getOptionalSeedEnv(
+          'AUTH_SEED_OBSERVER_PASSWORD',
+          'ObserverPass123!',
+        ),
+        roleIds: ['role-read-only-observer'],
       },
     ];
 

@@ -12,9 +12,7 @@ import { Throttle } from '@nestjs/throttler';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Permissions } from '../../common/decorators/permissions.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
 import type { RequestWithCorrelationId } from '../../common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
@@ -42,8 +40,7 @@ export class AdminController {
   constructor(private readonly auditService: AuditService) {}
 
   @Get('ping')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('admin:ping')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Admin-only health check endpoint' })
@@ -67,6 +64,7 @@ export class AdminController {
     await this.auditService.logEvent({
       eventType: AUDIT_EVENT.ADMIN_PING,
       actorUserId: user.id,
+      actorRoles: user.roles,
       entityType: 'admin',
       entityId: 'ping',
       correlationId: request.correlationId,

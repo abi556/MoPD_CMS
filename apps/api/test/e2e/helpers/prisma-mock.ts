@@ -68,6 +68,7 @@ interface StoredAuditLog {
   id: string;
   eventType: string;
   actorUserId: string | null;
+  actorRole: string | null;
   entityType: string | null;
   entityId: string | null;
   correlationId: string | null;
@@ -361,7 +362,61 @@ export function createPrismaMock(): PrismaService {
     locale?: StoredComplaint['locale'];
     categoryId?: string;
     orgUnitId?: string;
+    assignedToUserId?: string | null;
     submittedAt?: { gte?: Date; lte?: Date };
+    OR?: Array<{
+      assignedToUserId?: string | null;
+      status?: { in: StoredComplaint['status'][] };
+    }>;
+  };
+
+  const matchesComplaintWhere = (
+    item: StoredComplaint,
+    where: ComplaintWhere,
+  ): boolean => {
+    if (where.OR && where.OR.length > 0) {
+      const orMatch = where.OR.some((clause) => {
+        if (
+          clause.assignedToUserId !== undefined &&
+          item.assignedToUserId !== clause.assignedToUserId
+        ) {
+          return false;
+        }
+        if (clause.status?.in && !clause.status.in.includes(item.status)) {
+          return false;
+        }
+        return true;
+      });
+      if (!orMatch) {
+        return false;
+      }
+    } else if (
+      where.assignedToUserId !== undefined &&
+      item.assignedToUserId !== where.assignedToUserId
+    ) {
+      return false;
+    }
+    if (where.status) {
+      if (
+        typeof where.status === 'object' &&
+        'not' in where.status &&
+        item.status === where.status.not
+      ) {
+        return false;
+      }
+      if (typeof where.status === 'string' && item.status !== where.status) {
+        return false;
+      }
+    }
+    if (where.channel && item.channel !== where.channel) return false;
+    if (where.locale && item.locale !== where.locale) return false;
+    if (where.categoryId && item.categoryId !== where.categoryId) return false;
+    if (where.orgUnitId && item.orgUnitId !== where.orgUnitId) return false;
+    if (where.submittedAt?.gte && item.submittedAt < where.submittedAt.gte)
+      return false;
+    if (where.submittedAt?.lte && item.submittedAt > where.submittedAt.lte)
+      return false;
+    return true;
   };
 
   const applyWhere = (
@@ -371,30 +426,7 @@ export function createPrismaMock(): PrismaService {
     if (!where) {
       return input;
     }
-    return input.filter((item) => {
-      if (where.status) {
-        if (
-          typeof where.status === 'object' &&
-          'not' in where.status &&
-          item.status === where.status.not
-        ) {
-          return false;
-        }
-        if (typeof where.status === 'string' && item.status !== where.status) {
-          return false;
-        }
-      }
-      if (where.channel && item.channel !== where.channel) return false;
-      if (where.locale && item.locale !== where.locale) return false;
-      if (where.categoryId && item.categoryId !== where.categoryId)
-        return false;
-      if (where.orgUnitId && item.orgUnitId !== where.orgUnitId) return false;
-      if (where.submittedAt?.gte && item.submittedAt < where.submittedAt.gte)
-        return false;
-      if (where.submittedAt?.lte && item.submittedAt > where.submittedAt.lte)
-        return false;
-      return true;
-    });
+    return input.filter((item) => matchesComplaintWhere(item, where));
   };
 
   const findMany = (args: {
@@ -640,6 +672,73 @@ export function createPrismaMock(): PrismaService {
       }));
 
     return Promise.resolve({ ...user, userRoles });
+  };
+
+  const buildUserWithRoles = (
+    user: StoredUser,
+  ): StoredUser & {
+    userRoles: Array<{ role: { id: string; name: string } }>;
+  } => ({
+    ...user,
+    userRoles: Array.from(userRoleStore)
+      .map((entry) => entry.split(':'))
+      .filter(([userId]) => userId === user.id)
+      .map(([, roleId]) => {
+        const role = roleStore.get(roleId);
+        return {
+          role: {
+            id: roleId,
+            name: role?.name ?? roleId,
+          },
+        };
+      }),
+  });
+
+  const userFindMany = (args: {
+    where?: {
+      email?: { contains: string; mode?: string };
+      isActive?: boolean;
+    };
+    skip?: number;
+    take?: number;
+  }): Promise<
+    Array<
+      StoredUser & {
+        userRoles: Array<{ role: { id: string; name: string } }>;
+      }
+    >
+  > => {
+    let users = Array.from(userStore.values());
+    if (args.where?.isActive !== undefined) {
+      users = users.filter((row) => row.isActive === args.where?.isActive);
+    }
+    if (args.where?.email?.contains) {
+      const needle = args.where.email.contains.toLowerCase();
+      users = users.filter((row) => row.email.toLowerCase().includes(needle));
+    }
+    users.sort((a, b) => a.email.localeCompare(b.email));
+    const skip = args.skip ?? 0;
+    const take = args.take ?? users.length;
+    return Promise.resolve(
+      users.slice(skip, skip + take).map((user) => buildUserWithRoles(user)),
+    );
+  };
+
+  const userCount = (args: {
+    where?: {
+      email?: { contains: string; mode?: string };
+      isActive?: boolean;
+    };
+  }): Promise<number> => {
+    let users = Array.from(userStore.values());
+    if (args.where?.isActive !== undefined) {
+      users = users.filter((row) => row.isActive === args.where?.isActive);
+    }
+    if (args.where?.email?.contains) {
+      const needle = args.where.email.contains.toLowerCase();
+      users = users.filter((row) => row.email.toLowerCase().includes(needle));
+    }
+    return Promise.resolve(users.length);
   };
 
   // ---------------------------------------------------------------------------
@@ -1613,6 +1712,8 @@ export function createPrismaMock(): PrismaService {
       upsert: userUpsert,
       update: userUpdate,
       findUnique: userFindUnique,
+      findMany: userFindMany,
+      count: userCount,
     },
     userRole: { upsert: userRoleUpsert },
     auditLog: { create: auditLogCreate, findMany: auditLogFindMany },

@@ -61,7 +61,7 @@ export class NotificationTemplatesAdminController {
 
   @Get()
   @Throttle({ default: { limit: 120, ttl: 60000 } })
-  @Permissions('config:manage')
+  @Permissions('template:manage')
   @ApiOperation({ summary: 'List notification templates (paginated)' })
   @ApiOkResponse({ type: NotificationTemplateListEnvelopeDto })
   @ApiUnauthorizedResponse({ type: ErrorResponseDto })
@@ -80,7 +80,7 @@ export class NotificationTemplatesAdminController {
 
   @Get(':id')
   @Throttle({ default: { limit: 120, ttl: 60000 } })
-  @Permissions('config:manage')
+  @Permissions('template:manage')
   @ApiOperation({ summary: 'Get one notification template by id' })
   @ApiParam({ name: 'id', description: 'Template id (UUID)' })
   @ApiOkResponse({ type: NotificationTemplateEnvelopeDto })
@@ -97,7 +97,7 @@ export class NotificationTemplatesAdminController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { limit: 30, ttl: 60000 } })
-  @Permissions('config:manage')
+  @Permissions('template:manage')
   @ApiOperation({ summary: 'Create a notification template' })
   @ApiCreatedResponse({ type: NotificationTemplateEnvelopeDto })
   @ApiConflictResponse({
@@ -122,7 +122,7 @@ export class NotificationTemplatesAdminController {
 
   @Patch(':id')
   @Throttle({ default: { limit: 60, ttl: 60000 } })
-  @Permissions('config:manage')
+  @Permissions('template:manage')
   @ApiOperation({ summary: 'Update template copy (subject/body)' })
   @ApiParam({ name: 'id', description: 'Template id (UUID)' })
   @ApiOkResponse({ type: NotificationTemplateEnvelopeDto })

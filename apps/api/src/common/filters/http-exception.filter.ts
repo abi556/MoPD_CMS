@@ -51,9 +51,10 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
         };
       }
 
+      const customCode = this.extractErrorCode(exceptionResponse);
       return {
         statusCode,
-        code: this.mapStatusToCode(statusCode),
+        code: customCode ?? this.mapStatusToCode(statusCode),
         message: this.extractMessage(exceptionResponse, 'Request failed'),
       };
     }
@@ -77,6 +78,20 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     }
 
     return this.extractMessage(exceptionResponse, 'Request validation failed');
+  }
+
+  private extractErrorCode(
+    exceptionResponse: string | object,
+  ): string | undefined {
+    if (
+      typeof exceptionResponse === 'object' &&
+      exceptionResponse &&
+      'code' in exceptionResponse &&
+      typeof exceptionResponse.code === 'string'
+    ) {
+      return exceptionResponse.code;
+    }
+    return undefined;
   }
 
   private extractMessage(

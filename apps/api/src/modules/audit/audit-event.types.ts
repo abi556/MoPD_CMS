@@ -15,6 +15,7 @@ export const AUDIT_EVENT = {
   COMPLAINT_ASSIGNED: 'complaint.assigned',
   COMPLAINT_TRANSITIONED: 'complaint.transitioned',
   COMPLAINT_ESCALATED: 'complaint.escalated',
+  COMPLAINT_UPDATED: 'complaint.updated',
   ADMIN_PING: 'admin.ping',
   SLA_TRACKER_STARTED: 'sla.tracker.started',
   SLA_WARNING_EMITTED: 'sla.warning_emitted',
@@ -48,6 +49,9 @@ export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];
 export interface AuditEventInput {
   eventType: AuditEventType;
   actorUserId?: string;
+  actorRole?: string;
+  /** When set, first role name is stored as actorRole if actorRole is omitted. */
+  actorRoles?: string[];
   entityType?: string;
   entityId?: string;
   correlationId?: string;

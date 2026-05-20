@@ -51,7 +51,7 @@ export class SlaController {
 
   @Get('complaints/:id/sla')
   @Throttle({ default: { ttl: 60000, limit: 120 } })
-  @Permissions('complaints:detail')
+  @Permissions('complaint:read')
   @ApiOperation({ summary: 'Get SLA status for a complaint' })
   @ApiParam({ name: 'id', description: 'Complaint id' })
   @ApiOkResponse({ type: SlaStatusResponseDto })
@@ -91,7 +91,7 @@ export class SlaController {
 
   @Get('admin/sla-configs')
   @Throttle({ default: { ttl: 60000, limit: 120 } })
-  @Permissions('config:manage')
+  @Permissions('sla:configure')
   @ApiOperation({ summary: 'List all SLA configurations' })
   @ApiOkResponse({ type: [SlaConfigResponseDto] })
   @ApiUnauthorizedResponse({ type: ErrorResponseDto })
@@ -102,7 +102,7 @@ export class SlaController {
 
   @Post('admin/sla-configs')
   @Throttle({ default: { ttl: 60000, limit: 30 } })
-  @Permissions('config:manage')
+  @Permissions('sla:configure')
   @ApiOperation({ summary: 'Create a new SLA configuration' })
   @ApiCreatedResponse({ type: SlaConfigResponseDto })
   @ApiUnauthorizedResponse({ type: ErrorResponseDto })
@@ -116,7 +116,7 @@ export class SlaController {
 
   @Patch('admin/sla-configs/:id')
   @Throttle({ default: { ttl: 60000, limit: 30 } })
-  @Permissions('config:manage')
+  @Permissions('sla:configure')
   @ApiOperation({ summary: 'Update a SLA configuration' })
   @ApiParam({ name: 'id', description: 'SlaConfig id' })
   @ApiOkResponse({ type: SlaConfigResponseDto })

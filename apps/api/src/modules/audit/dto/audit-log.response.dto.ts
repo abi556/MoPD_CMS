@@ -10,6 +10,9 @@ export class AuditLogItemDto {
   @ApiPropertyOptional({ nullable: true, example: 'user-admin-1' })
   actorUserId?: string | null;
 
+  @ApiPropertyOptional({ nullable: true, example: 'CaseOfficer' })
+  actorRole?: string | null;
+
   @ApiPropertyOptional({ nullable: true, example: 'complaint' })
   entityType?: string | null;
 

@@ -41,6 +41,19 @@ describe('PermissionsGuard', () => {
     expect(guard.canActivate(context as never)).toBe(true);
   });
 
+  it('allows SDS complaint:read when user only has legacy complaints:list', () => {
+    const reflector = {
+      getAllAndOverride: jest.fn().mockReturnValue(['complaint:read']),
+    } as unknown as Reflector;
+    const guard = new PermissionsGuard(reflector);
+    const context = createExecutionContext({
+      roles: ['CaseOfficer'],
+      permissions: ['complaints:list'],
+    });
+
+    expect(guard.canActivate(context as never)).toBe(true);
+  });
+
   it('throws forbidden when user lacks one required permission', () => {
     const reflector = {
       getAllAndOverride: jest

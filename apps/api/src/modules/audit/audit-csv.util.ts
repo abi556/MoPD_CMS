@@ -2,6 +2,7 @@ const CSV_COLUMNS = [
   'id',
   'eventType',
   'actorUserId',
+  'actorRole',
   'entityType',
   'entityId',
   'correlationId',
@@ -20,6 +21,7 @@ export interface AuditLogCsvRow {
   id: string;
   eventType: string;
   actorUserId: string | null;
+  actorRole: string | null;
   entityType: string | null;
   entityId: string | null;
   correlationId: string | null;
@@ -38,6 +40,7 @@ export function auditLogsToCsv(rows: AuditLogCsvRow[]): string {
       row.id,
       row.eventType,
       row.actorUserId ?? '',
+      row.actorRole ?? '',
       row.entityType ?? '',
       row.entityId ?? '',
       row.correlationId ?? '',

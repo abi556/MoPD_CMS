@@ -59,7 +59,7 @@ export class NotificationDeliveriesAdminController {
 
   @Get()
   @Throttle({ default: { limit: 120, ttl: 60000 } })
-  @Permissions('config:manage')
+  @Permissions('notification:manage')
   @ApiOperation({
     summary: 'List notification deliveries (paginated, filterable)',
   })
@@ -87,7 +87,7 @@ export class NotificationDeliveriesAdminController {
   @Post(':id/resend')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60000 } })
-  @Permissions('config:manage')
+  @Permissions('notification:manage')
   @ApiOperation({
     summary:
       'Queue a new delivery copying template/payload from a previous one (not allowed while still queued)',

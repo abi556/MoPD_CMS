@@ -2,11 +2,29 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ComplaintChannel, ComplaintLocale } from './dto/create-complaint.dto';
 import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ComplaintsService } from './complaints.service';
+import { ComplaintAccessService } from './complaint-access.service';
+import { WorkflowPolicyService } from './workflow-policy.service';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 import { UnprocessableEntityException } from '@nestjs/common';
 
+const staffUser = {
+  id: 'user-officer-0001',
+  email: 'officer@mopd.local',
+  roles: ['CaseOfficer'],
+  permissions: ['complaints:list', 'complaint:read:own'],
+};
+
 describe('ComplaintsService', () => {
   let service: ComplaintsService;
+  let complaintAccessService: jest.Mocked<
+    Pick<
+      ComplaintAccessService,
+      'buildListScopeFilter' | 'assertCanAccessComplaint'
+    >
+  >;
+  let workflowPolicyService: jest.Mocked<
+    Pick<WorkflowPolicyService, 'assertCanAssign' | 'assertCanTransition'>
+  >;
   const logEvent = jest.fn();
   const complaintCreate = jest.fn();
   const complaintHistoryCreate = jest.fn();
@@ -57,6 +75,15 @@ describe('ComplaintsService', () => {
       },
     );
 
+    complaintAccessService = {
+      buildListScopeFilter: jest.fn().mockReturnValue({}),
+      assertCanAccessComplaint: jest.fn(),
+    };
+    workflowPolicyService = {
+      assertCanAssign: jest.fn(),
+      assertCanTransition: jest.fn(),
+    };
+
     service = new ComplaintsService(
       {
         complaint: {
@@ -87,6 +114,8 @@ describe('ComplaintsService', () => {
         queueComplaintSubmittedAck,
         queueComplaintTransitionIfApplicable,
       } as never,
+      complaintAccessService,
+      workflowPolicyService,
     );
   });
 
@@ -229,7 +258,7 @@ describe('ComplaintsService', () => {
       complainantPhone: '+251922334455',
     });
 
-    const found = await service.getByIdForStaff('cmp_099');
+    const found = await service.getByIdForStaff('cmp_099', staffUser);
 
     expect(found.id).toBe('cmp_099');
     expect(found.referenceNo).toBe('CMS-2026-000099');
@@ -239,9 +268,9 @@ describe('ComplaintsService', () => {
   it('throws not found for unknown complaint id', async () => {
     complaintFindUnique.mockResolvedValue(null);
 
-    await expect(service.getByIdForStaff('cmp_missing')).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(
+      service.getByIdForStaff('cmp_missing', staffUser),
+    ).rejects.toThrow(NotFoundException);
   });
 
   it('lists complaints for staff using filters and pagination', async () => {
@@ -273,7 +302,7 @@ describe('ComplaintsService', () => {
       submittedTo: '2026-04-30T23:59:59.999Z',
     };
 
-    const result = await service.listForStaff(query);
+    const result = await service.listForStaff(query, staffUser);
 
     expect(result.data).toHaveLength(1);
     expect(result.data[0]?.referenceNo).toBe('CMS-2026-000010');
@@ -533,7 +562,7 @@ describe('ComplaintsService', () => {
       },
     ]);
 
-    const history = await service.getHistoryForStaff('cmp_030');
+    const history = await service.getHistoryForStaff('cmp_030', staffUser);
 
     expect(history).toHaveLength(2);
     expect(history[0]?.action).toBe('ASSIGNED');

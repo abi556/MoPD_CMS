@@ -30,6 +30,7 @@ function toAuditLogItemDto(row: AuditLog): AuditLogItemDto {
     id: row.id,
     eventType: row.eventType,
     actorUserId: row.actorUserId,
+    actorRole: row.actorRole,
     entityType: row.entityType,
     entityId: row.entityId,
     correlationId: row.correlationId,

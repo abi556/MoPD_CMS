@@ -21,9 +21,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Permissions } from '../../common/decorators/permissions.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import {
@@ -48,8 +46,7 @@ export class UserManagementController {
   constructor(private readonly userManagementService: UserManagementService) {}
 
   @Get('users')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('user:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List users (paginated/filterable)' })
@@ -71,8 +68,7 @@ export class UserManagementController {
   }
 
   @Get('users/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('user:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user by id' })
@@ -83,8 +79,7 @@ export class UserManagementController {
   }
 
   @Post('users')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('user:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create user' })
@@ -97,8 +92,7 @@ export class UserManagementController {
   }
 
   @Patch('users/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('user:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update user' })
@@ -112,8 +106,7 @@ export class UserManagementController {
   }
 
   @Post('users/:id/deactivate')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('user:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Deactivate user' })
@@ -154,8 +147,7 @@ export class UserManagementController {
   }
 
   @Get('roles')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('role:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List roles' })
@@ -168,8 +160,7 @@ export class UserManagementController {
   }
 
   @Post('roles')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('role:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create role' })
@@ -184,8 +175,7 @@ export class UserManagementController {
   }
 
   @Patch('roles/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('role:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update role permissions' })
@@ -204,8 +194,7 @@ export class UserManagementController {
 
   @Delete('roles/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('role:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete role (if unassigned)' })
@@ -215,8 +204,7 @@ export class UserManagementController {
   }
 
   @Get('permissions')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('role:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List all permissions' })

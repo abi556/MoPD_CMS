@@ -12,6 +12,7 @@ import {
   createTestApp,
   getBody,
 } from './helpers/test-context';
+import { loginAsRole } from './helpers/login-as-role';
 
 describe('Complaints Staff (e2e)', () => {
   let app: INestApplication<Server>;
@@ -323,6 +324,86 @@ describe('Complaints Staff (e2e)', () => {
     expect(body.data[1]?.action).toBe('ASSIGNED');
     expect(body.data[2]?.action).toBe('TRANSITIONED');
     expect(body.data[2]?.toStatus).toBe('IN_INVESTIGATION');
+  });
+
+  it('allows ReviewerApprover to list complaints', async () => {
+    const token = await loginAsRole(asSupertestApp(app), 'ReviewerApprover');
+    await request(asSupertestApp(app))
+      .get('/api/v1/complaints')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+  });
+
+  it('forbids ReadOnlyObserver from assigning complaints', async () => {
+    const created = await request(asSupertestApp(app))
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Observer assign test',
+        description:
+          'Read-only observer must not assign complaints to officers.',
+        channel: 'WEB',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+    const token = await loginAsRole(asSupertestApp(app), 'ReadOnlyObserver');
+    await request(asSupertestApp(app))
+      .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        assigneeUserId: 'user-officer-0001',
+        reason: 'Should be forbidden for observer role.',
+      })
+      .expect(403);
+  });
+
+  it('returns 404 when officer accesses complaint assigned to another officer', async () => {
+    const created = await request(asSupertestApp(app))
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Cross officer scope test',
+        description:
+          'Officer two must not read complaints assigned exclusively to officer one.',
+        channel: 'WEB',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+
+    const adminToken = await loginAsRole(
+      asSupertestApp(app),
+      'ComplaintsAdmin',
+    );
+    await request(asSupertestApp(app))
+      .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ toStatus: 'TRIAGE', reason: 'Triage for assignment test.' })
+      .expect(200);
+    await request(asSupertestApp(app))
+      .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        assigneeUserId: 'user-officer-0001',
+        reason: 'Assign to officer one only.',
+      })
+      .expect(200);
+
+    const officer2Login = await request(asSupertestApp(app))
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'officer2@mopd.local',
+        password: 'Officer2Pass123!',
+      })
+      .expect(200);
+    const officer2Token =
+      getBody<LoginResponse>(officer2Login).data.accessToken;
+
+    await request(asSupertestApp(app))
+      .get(`/api/v1/complaints/${createdBody.data.id}`)
+      .set('Authorization', `Bearer ${officer2Token}`)
+      .expect(404);
   });
 
   it('queues complaint_transition when target status is in NOTIFY_TRANSITION_STATUSES', async () => {

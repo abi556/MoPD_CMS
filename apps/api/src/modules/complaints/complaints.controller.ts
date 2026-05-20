@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -26,10 +27,8 @@ import {
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { RequestWithCorrelationId } from '../../common/middleware/correlation-id.middleware';
 import { Permissions } from '../../common/decorators/permissions.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import {
@@ -45,9 +44,11 @@ import {
   ComplaintTrackingDataDto,
   ComplaintTrackingEnvelopeDto,
 } from './dto/complaint-response.dto';
+import { AppealComplaintDto } from './dto/appeal-complaint.dto';
 import { AssignComplaintDto } from './dto/assign-complaint.dto';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
 import { TransitionComplaintDto } from './dto/transition-complaint.dto';
+import { UpdateComplaintDto } from './dto/update-complaint.dto';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 import { ComplaintsService, type ComplaintRecord } from './complaints.service';
 
@@ -85,9 +86,8 @@ export class ComplaintsController {
   constructor(private readonly complaintsService: ComplaintsService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin', 'CaseOfficer')
-  @Permissions('complaints:list')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:read')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'List complaints for staff operations',
@@ -111,11 +111,14 @@ export class ComplaintsController {
     type: ErrorResponseDto,
   })
   @Throttle({ default: { limit: 180, ttl: 60000 } })
-  async list(@Query() query: ListComplaintsQueryDto): Promise<{
+  async list(
+    @Query() query: ListComplaintsQueryDto,
+    @CurrentUser() user: JwtUser,
+  ): Promise<{
     data: ComplaintListItemDto[];
     meta: ComplaintListMetaDto;
   }> {
-    const result = await this.complaintsService.listForStaff(query);
+    const result = await this.complaintsService.listForStaff(query, user);
 
     return {
       data: result.data.map((item) => ({
@@ -134,9 +137,8 @@ export class ComplaintsController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin', 'CaseOfficer')
-  @Permissions('complaints:detail')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:read')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get complaint details by internal id',
@@ -166,8 +168,9 @@ export class ComplaintsController {
   @Throttle({ default: { limit: 180, ttl: 60000 } })
   async getById(
     @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
   ): Promise<{ data: ComplaintDetailDataDto }> {
-    const complaint = await this.complaintsService.getByIdForStaff(id);
+    const complaint = await this.complaintsService.getByIdForStaff(id, user);
 
     return {
       data: toComplaintDetailData(complaint),
@@ -175,9 +178,8 @@ export class ComplaintsController {
   }
 
   @Get(':id/history')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin', 'CaseOfficer')
-  @Permissions('complaints:history')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:read')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get immutable complaint history timeline',
@@ -208,8 +210,9 @@ export class ComplaintsController {
   @Throttle({ default: { limit: 180, ttl: 60000 } })
   async history(
     @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
   ): Promise<{ data: ComplaintHistoryItemDto[] }> {
-    const items = await this.complaintsService.getHistoryForStaff(id);
+    const items = await this.complaintsService.getHistoryForStaff(id, user);
 
     return {
       data: items.map((item) => ({
@@ -225,9 +228,8 @@ export class ComplaintsController {
   }
 
   @Post(':id/assign')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin', 'CaseOfficer')
-  @Permissions('complaints:assign')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('workflow:transition')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Assign or reassign complaint to an officer',
@@ -273,6 +275,7 @@ export class ComplaintsController {
       user.id,
       body.reason,
       request.correlationId,
+      user,
     );
 
     return {
@@ -281,9 +284,8 @@ export class ComplaintsController {
   }
 
   @Post(':id/transition')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-  @Roles('SuperAdmin', 'CaseOfficer')
-  @Permissions('complaints:transition')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('workflow:transition')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Transition complaint workflow status',
@@ -329,11 +331,60 @@ export class ComplaintsController {
       user.id,
       body.reason,
       request.correlationId,
+      user,
     );
 
     return {
       data: toComplaintDetailData(complaint),
     };
+  }
+
+  @Post(':id/appeal')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:escalate')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Escalate complaint to appeal status' })
+  @ApiParam({ name: 'id', description: 'Internal complaint id.' })
+  @ApiOkResponse({ type: ComplaintDetailEnvelopeDto })
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
+  async appeal(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+    @Body() body: AppealComplaintDto,
+    @Req() request: RequestWithCorrelationId,
+  ): Promise<{ data: ComplaintDetailDataDto }> {
+    const complaint = await this.complaintsService.appealComplaint(
+      id,
+      user,
+      body.reason,
+      request.correlationId,
+    );
+    return { data: toComplaintDetailData(complaint) };
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:update')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update complaint metadata (non-status fields)' })
+  @ApiParam({ name: 'id', description: 'Internal complaint id.' })
+  @ApiOkResponse({ type: ComplaintDetailEnvelopeDto })
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
+  async updateMetadata(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+    @Body() body: UpdateComplaintDto,
+    @Req() request: RequestWithCorrelationId,
+  ): Promise<{ data: ComplaintDetailDataDto }> {
+    const complaint = await this.complaintsService.updateComplaintMetadata(
+      id,
+      user,
+      body,
+      request.correlationId,
+    );
+    return { data: toComplaintDetailData(complaint) };
   }
 
   @Post()

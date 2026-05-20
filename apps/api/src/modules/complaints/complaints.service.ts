@@ -20,10 +20,14 @@ import {
 } from './dto/create-complaint.dto';
 import { ComplaintStatusValue } from './dto/complaint-status.enum';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
+import { UpdateComplaintDto } from './dto/update-complaint.dto';
+import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SlaService } from '../sla/sla.service';
+import { ComplaintAccessService } from './complaint-access.service';
+import { WorkflowPolicyService } from './workflow-policy.service';
 
 export interface ComplaintRecord {
   id: string;
@@ -106,6 +110,8 @@ export class ComplaintsService {
     @Inject(forwardRef(() => SlaService))
     private readonly slaService: SlaService,
     private readonly notificationsService: NotificationsService,
+    private readonly complaintAccessService: ComplaintAccessService,
+    private readonly workflowPolicyService: WorkflowPolicyService,
   ) {}
 
   async create(
@@ -216,7 +222,7 @@ export class ComplaintsService {
     return this.toComplaintRecord(found);
   }
 
-  async getByIdForStaff(id: string): Promise<ComplaintRecord> {
+  async getByIdForStaff(id: string, user: JwtUser): Promise<ComplaintRecord> {
     const found = await this.prisma.complaint.findUnique({
       where: { id },
     });
@@ -225,7 +231,83 @@ export class ComplaintsService {
       throw new NotFoundException('Complaint not found');
     }
 
+    this.complaintAccessService.assertCanAccessComplaint(user, found);
     return this.toComplaintRecord(found);
+  }
+
+  async updateComplaintMetadata(
+    id: string,
+    user: JwtUser,
+    payload: UpdateComplaintDto,
+    correlationId?: string,
+  ): Promise<ComplaintRecord> {
+    const existing = await this.prisma.complaint.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('Complaint not found');
+    }
+    this.complaintAccessService.assertCanAccessComplaint(user, existing);
+
+    if (payload.categoryId) {
+      const cat = await this.prisma.complaintCategory.findUnique({
+        where: { id: payload.categoryId },
+      });
+      if (!cat || !cat.isActive) {
+        throw new BadRequestException('Invalid or inactive complaint category');
+      }
+    }
+
+    const updated = await this.prisma.complaint.update({
+      where: { id },
+      data: {
+        ...(payload.categoryId !== undefined
+          ? { categoryId: payload.categoryId }
+          : {}),
+        ...(payload.orgUnitId !== undefined
+          ? { orgUnitId: payload.orgUnitId }
+          : {}),
+        ...(payload.priority !== undefined
+          ? { priority: payload.priority }
+          : {}),
+      },
+    });
+
+    const record = this.toComplaintRecord(updated);
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.COMPLAINT_UPDATED,
+      actorUserId: user.id,
+      actorRoles: user.roles,
+      entityType: 'complaint',
+      entityId: id,
+      correlationId,
+      metadata: { fields: Object.keys(payload) },
+    });
+    return record;
+  }
+
+  async appealComplaint(
+    id: string,
+    user: JwtUser,
+    reason: string,
+    correlationId?: string,
+  ): Promise<ComplaintRecord> {
+    const existing = await this.prisma.complaint.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException('Complaint not found');
+    }
+    this.complaintAccessService.assertCanAccessComplaint(user, existing);
+    this.workflowPolicyService.assertCanTransition(
+      user,
+      existing.status as ComplaintStatusValue,
+      ComplaintStatusValue.APPEAL,
+    );
+    return this.transitionComplaint(
+      id,
+      ComplaintStatusValue.APPEAL,
+      user.id,
+      reason,
+      correlationId,
+      user,
+    );
   }
 
   async assignComplaint(
@@ -234,7 +316,18 @@ export class ComplaintsService {
     assignedByUserId: string,
     reason?: string,
     correlationId?: string,
+    actor?: JwtUser,
   ): Promise<ComplaintRecord> {
+    if (actor) {
+      this.workflowPolicyService.assertCanAssign(actor);
+      const existing = await this.prisma.complaint.findUnique({
+        where: { id },
+      });
+      if (!existing) {
+        throw new NotFoundException('Complaint not found');
+      }
+      this.complaintAccessService.assertCanAccessComplaint(actor, existing);
+    }
     const updated = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.complaint.findUnique({ where: { id } });
       if (!existing) {
@@ -279,6 +372,7 @@ export class ComplaintsService {
     await this.auditService.logEvent({
       eventType: AUDIT_EVENT.COMPLAINT_ASSIGNED,
       actorUserId: assignedByUserId,
+      actorRoles: actor?.roles,
       entityType: 'complaint',
       entityId: id,
       correlationId,
@@ -297,6 +391,7 @@ export class ComplaintsService {
     transitionedByUserId: string,
     reason: string,
     correlationId?: string,
+    actor?: JwtUser,
   ): Promise<ComplaintRecord> {
     const updated = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.complaint.findUnique({ where: { id } });
@@ -304,7 +399,19 @@ export class ComplaintsService {
         throw new NotFoundException('Complaint not found');
       }
 
+      if (actor) {
+        this.complaintAccessService.assertCanAccessComplaint(actor, existing);
+      }
+
       const fromStatus = existing.status as ComplaintStatusValue;
+      if (actor) {
+        this.workflowPolicyService.assertCanTransition(
+          actor,
+          fromStatus,
+          toStatus,
+        );
+      }
+
       const allowedNext = this.allowedTransitions[fromStatus] ?? [];
 
       if (!allowedNext.includes(toStatus)) {
@@ -351,6 +458,7 @@ export class ComplaintsService {
     await this.auditService.logEvent({
       eventType: AUDIT_EVENT.COMPLAINT_TRANSITIONED,
       actorUserId: transitionedByUserId,
+      actorRoles: actor?.roles,
       entityType: 'complaint',
       entityId: id,
       correlationId,
@@ -373,11 +481,15 @@ export class ComplaintsService {
     return record;
   }
 
-  async getHistoryForStaff(id: string): Promise<ComplaintHistoryRecord[]> {
+  async getHistoryForStaff(
+    id: string,
+    user: JwtUser,
+  ): Promise<ComplaintHistoryRecord[]> {
     const exists = await this.prisma.complaint.findUnique({ where: { id } });
     if (!exists) {
       throw new NotFoundException('Complaint not found');
     }
+    this.complaintAccessService.assertCanAccessComplaint(user, exists);
 
     const rows = await this.prisma.complaintHistory.findMany({
       where: { complaintId: id },
@@ -389,12 +501,15 @@ export class ComplaintsService {
 
   async listForStaff(
     query: ListComplaintsQueryDto,
+    user: JwtUser,
   ): Promise<ComplaintListResult> {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const skip = (page - 1) * pageSize;
 
+    const scopeFilter = this.complaintAccessService.buildListScopeFilter(user);
     const where = {
+      ...scopeFilter,
       status: query.status,
       channel: query.channel,
       locale: query.locale,

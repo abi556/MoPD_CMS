@@ -264,6 +264,7 @@ model AuditLog {
   id            String   @id @default(uuid())
   eventType     String
   actorUserId   String?
+  actorRole     String?
   entityType    String?
   entityId      String?
   correlationId String?

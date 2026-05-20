@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtUser } from '../../modules/auth/interfaces/jwt-user.interface';
+import { hasAllPermissions } from '../../modules/auth/rbac/permission-check';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 
 @Injectable()
@@ -27,10 +28,7 @@ export class PermissionsGuard implements CanActivate {
       throw new ForbiddenException('Insufficient permissions');
     }
 
-    const hasAllRequiredPermissions = requiredPermissions.every((permission) =>
-      user.permissions?.includes(permission),
-    );
-    if (!hasAllRequiredPermissions) {
+    if (!hasAllPermissions(user, requiredPermissions)) {
       throw new ForbiddenException('Insufficient permissions');
     }
 

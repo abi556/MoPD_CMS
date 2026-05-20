@@ -139,7 +139,7 @@ describe('AuditService', () => {
       eventType: 'auth.login.succeeded',
     });
 
-    expect(csv).toContain('id,eventType,actorUserId');
+    expect(csv).toContain('id,eventType,actorUserId,actorRole');
     expect(csv).toContain('auth.login.succeeded');
     expect(auditLogFindMany).toHaveBeenCalledWith(
       expect.objectContaining({ take: 10_001 }),

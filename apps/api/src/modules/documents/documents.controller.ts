@@ -31,11 +31,9 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Permissions } from '../../common/decorators/permissions.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
 import type { RequestWithCorrelationId } from '../../common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
@@ -69,14 +67,13 @@ function toDocumentDto(
 
 @ApiTags('documents')
 @Controller('documents')
-@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-@Roles('SuperAdmin', 'CaseOfficer')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth()
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post('upload')
-  @Permissions('document:upload', 'complaints:detail')
+  @Permissions('document:upload', 'complaint:read')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -125,7 +122,7 @@ export class DocumentsController {
   }
 
   @Get(':id')
-  @Permissions('document:read', 'complaints:detail')
+  @Permissions('document:read', 'complaint:read')
   @ApiOperation({ summary: 'Get document metadata' })
   @ApiParam({ name: 'id', description: 'Document id' })
   @ApiOkResponse({ type: DocumentEnvelopeDto })
@@ -139,7 +136,7 @@ export class DocumentsController {
   }
 
   @Get(':id/download')
-  @Permissions('document:read', 'complaints:detail')
+  @Permissions('document:read', 'complaint:read')
   @ApiOperation({ summary: 'Get pre-signed download URL for a clean document' })
   @ApiParam({ name: 'id', description: 'Document id' })
   @ApiOkResponse({ type: DocumentDownloadEnvelopeDto })

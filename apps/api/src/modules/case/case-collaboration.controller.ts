@@ -26,11 +26,9 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { Permissions } from '../../common/decorators/permissions.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ErrorResponseDto } from '../../common/dto/error-response.dto';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
 import type { RequestWithCorrelationId } from '../../common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
@@ -78,8 +76,7 @@ function toCaseTaskDto(task: CaseTaskRecord): CaseTaskDto {
 
 @ApiTags('case-collaboration')
 @Controller()
-@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-@Roles('SuperAdmin', 'CaseOfficer')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @ApiBearerAuth()
 export class CaseCollaborationController {
   constructor(
