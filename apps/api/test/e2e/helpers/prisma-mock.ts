@@ -425,7 +425,7 @@ export function createPrismaMock(): PrismaService {
             out[key] = row[key as keyof StoredComplaint];
           }
         }
-        return out as StoredComplaint;
+        return out as unknown as StoredComplaint;
       }),
     );
   };
@@ -502,7 +502,7 @@ export function createPrismaMock(): PrismaService {
             out[key] = row[key as keyof StoredComplaintHistory];
           }
         }
-        return out as StoredComplaintHistory;
+        return out as unknown as StoredComplaintHistory;
       }),
     );
   };
