@@ -233,7 +233,7 @@ export function createPrismaMock(): PrismaService {
       const row: StoredNotificationTemplate = {
         id,
         ...seed,
-        bodyText: seed.bodyText,
+        bodyText: seed.bodyText ?? null,
         createdAt: now,
         updatedAt: now,
       };
@@ -1267,10 +1267,10 @@ export function createPrismaMock(): PrismaService {
   }): Promise<StoredCaseNote> => {
     caseNoteSeq += 1;
     const row: StoredCaseNote = {
+      ...args.data,
       id: `case_note_${caseNoteSeq}`,
       createdAt: new Date(),
       visibility: args.data.visibility ?? 'INTERNAL',
-      ...args.data,
     };
     caseNoteStore.set(row.id, row);
     return Promise.resolve(row);
