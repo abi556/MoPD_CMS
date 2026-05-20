@@ -36,6 +36,8 @@ cp .env.docker.example .env.docker
 docker compose -f infra/docker/docker-compose.yml --env-file .env.docker up -d
 ```
 
-Containers: `mopd-cms-postgres`, `mopd-cms-redis`, `mopd-cms-minio`, `mopd-cms-clamav`, `mopd-cms-mailpit`. MinIO console: http://localhost:9001. ClamAV first start may take 2+ minutes.
+Containers: `mopd-cms-postgres`, `mopd-cms-redis`, `mopd-cms-minio`, `mopd-cms-clamav`, `mopd-cms-mailpit`. ClamAV first start may take 2+ minutes.
+
+**Local URLs (Swagger, Mailpit, MinIO, Postgres, Redis, Prisma Studio, Bull Board):** see [docs/LOCAL_DEVELOPMENT_URLS.md](docs/LOCAL_DEVELOPMENT_URLS.md).
 
 Ensure [apps/api/.env](apps/api/.env) includes MinIO/ClamAV settings (see [apps/api/.env.example](apps/api/.env.example)) when running the API on the host with `pnpm dev`.

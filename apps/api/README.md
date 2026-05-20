@@ -97,6 +97,8 @@ Once the server is running, you can access the interactive API documentation at:
 
 This interface allows you to explore endpoints, view request/response schemas, and test the API directly (including JWT authentication).
 
+**All local ports and tools** (Postgres, Redis, MinIO console, Mailpit, Prisma Studio, Bull Board, health URLs): [docs/LOCAL_DEVELOPMENT_URLS.md](../../docs/LOCAL_DEVELOPMENT_URLS.md).
+
 ---
 
 ## 🧪 Testing
