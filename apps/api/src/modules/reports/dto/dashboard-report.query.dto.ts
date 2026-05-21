@@ -15,7 +15,17 @@ export class DashboardReportQueryDto {
   @ApiPropertyOptional({ enum: ['day', 'week', 'month'], default: 'day' })
   @IsOptional()
   @IsIn(['day', 'week', 'month'])
-  @Transform(({ value }) => (value === '' ? undefined : value))
+  @Transform(
+    ({ value }: { value: unknown }): 'day' | 'week' | 'month' | undefined => {
+      if (value === '' || value === undefined || value === null) {
+        return undefined;
+      }
+      if (value === 'day' || value === 'week' || value === 'month') {
+        return value;
+      }
+      return undefined;
+    },
+  )
   bucket?: 'day' | 'week' | 'month';
 
   @ApiPropertyOptional({
