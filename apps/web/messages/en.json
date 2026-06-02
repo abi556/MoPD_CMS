@@ -1,0 +1,87 @@
+{
+  "common": {
+    "appName": "MoPD CMS",
+    "appTitle": "Complaint Management System",
+    "skipToContent": "Skip to main content",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "localeEn": "English",
+    "localeAm": "አማርኛ"
+  },
+  "nav": {
+    "home": "Home",
+    "publicPortal": "Public Portal",
+    "submitComplaint": "Submit Complaint",
+    "trackStatus": "Track Status",
+    "login": "Staff sign in",
+    "dashboard": "Dashboard",
+    "complaints": "Complaints",
+    "reports": "Reports",
+    "admin": "Admin",
+    "profile": "Profile",
+    "logout": "Sign out"
+  },
+  "public": {
+    "heroEyebrow": "Ministry of Planning and Development",
+    "heroTitle": "Complaint Management System",
+    "officialPortal": "Official Government Portal",
+    "heroHeading": "Submit or track a complaint to the Ministry of Planning and Development.",
+    "heroBody": "Submit a complaint, receive a reference number, and track progress online.",
+    "heroBodyExtended": "Our citizen-centered platform ensures transparency and accountability in administrative processes.",
+    "complaintIdLabel": "Complaint ID",
+    "processTitle": "How the process works",
+    "processSubtitle": "A transparent four-step journey from submission to final resolution.",
+    "steps": {
+      "submission": {
+        "title": "Submission",
+        "body": "Provide details and supporting files for your complaint."
+      },
+      "review": {
+        "title": "Review",
+        "body": "MoPD validates and assigns the complaint to an officer."
+      },
+      "investigation": {
+        "title": "Investigation",
+        "body": "Assigned staff gathers evidence and resolves the issue."
+      },
+      "resolution": {
+        "title": "Resolution",
+        "body": "Final decision and resolution outcome are communicated."
+      }
+    },
+    "readyTitle": "Ready to start?",
+    "readyBody": "File a new complaint or track an existing case with your reference number.",
+    "startSubmission": "Start Submission",
+    "footerDescription": "Ministry of Planning and Development (MoPD) Complaint Management System. Building a more responsive administration.",
+    "footerPrivacy": "Privacy Policy",
+    "footerTerms": "Terms of Service",
+    "footerContact": "Contact Us",
+    "footerAccessibility": "Accessibility",
+    "footerCopyright": "© 2026 Ministry of Planning and Development (MoPD). All rights reserved.",
+    "ctaSubmit": "Submit a complaint",
+    "ctaTrack": "Track by reference",
+    "phase0Note": "Foundation build in progress — staff and admin surfaces ship in later phases."
+  },
+  "auth": {
+    "loginTitle": "Staff sign in",
+    "loginSubtitle": "Use your MoPD CMS account credentials.",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "sessionExpiredTitle": "Session expired",
+    "sessionExpiredBody": "Your session has ended. Sign in again to continue.",
+    "forbiddenTitle": "Access denied",
+    "forbiddenBody": "You do not have permission to view this page."
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you requested does not exist.",
+    "genericTitle": "Something went wrong",
+    "genericBody": "An unexpected error occurred. You can try again.",
+    "tooManyRequests": "Too many requests. Please wait a moment and try again."
+  }
+}

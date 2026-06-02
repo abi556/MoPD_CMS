@@ -1,7 +1,7 @@
 /**
  * Resolves `/api/v1` prefix for client-side fetches.
- * Prefer `NEXT_PUBLIC_API_URL` (full prefix, documented in mopd-cms `.env.docker` / infra),
- * otherwise `NEXT_PUBLIC_API_BASE_URL` (host root only).
+ * Env: see apps/web/.env.example (`NEXT_PUBLIC_API_BASE_URL` or `NEXT_PUBLIC_API_URL`).
+ * Staff auth cookie rules: mopd-cms/docs/FRONTEND_DEV.md
  */
 export function resolveApiV1Prefix(): string {
   const fromPath = process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, '');

@@ -1,0 +1,87 @@
+{
+  "common": {
+    "appName": "MoPD CMS",
+    "appTitle": "የቅሬታ አስተዳደር ስርዓት",
+    "skipToContent": "ወደ ዋናው ይዘት ዝለል",
+    "loading": "በመጫን ላይ…",
+    "retry": "እንደገና ይሞክሩ",
+    "back": "ተመለስ",
+    "save": "አስቀምጥ",
+    "cancel": "ሰርዝ",
+    "close": "ዝጋ",
+    "localeEn": "English",
+    "localeAm": "አማርኛ"
+  },
+  "nav": {
+    "home": "መነሻ",
+    "publicPortal": "የህዝብ ፖርታል",
+    "submitComplaint": "ቅሬታ አስገባ",
+    "trackStatus": "ሁኔታ ተከታተል",
+    "login": "የሰራተኛ መግቢያ",
+    "dashboard": "ዳሽቦርድ",
+    "complaints": "ቅሬታዎች",
+    "reports": "ሪፖርቶች",
+    "admin": "አስተዳደር",
+    "profile": "መገለጫ",
+    "logout": "ውጣ"
+  },
+  "public": {
+    "heroEyebrow": "የእቅድ እና ልማት ሚኒስቴር",
+    "heroTitle": "የቅሬታ አስተዳደር ስርዓት",
+    "officialPortal": "ይፋዊ የመንግስት ፖርታል",
+    "heroHeading": "ወደ የእቅድ እና ልማት ሚኒስቴር ቅሬታ ያስገቡ ወይም ይከታተሉ።",
+    "heroBody": "ቅሬታ ያስገቡ፣ የመከታተያ ቁጥር ይቀበሉ፣ እና ሂደቱን በመስመር ይከታተሉ።",
+    "heroBodyExtended": "ለዜጎች ያተኮረ መድረካችን በአስተዳደራዊ ሂደቶች ግልጽነትን እና ተጠያቂነትን ያረጋግጣል።",
+    "complaintIdLabel": "የቅሬታ መለያ",
+    "processTitle": "ሂደቱ እንዴት ይሰራል",
+    "processSubtitle": "ከመጀመሪያ ማስገባት እስከ መጨረሻ ውሳኔ ድረስ ግልጽ የሆነ አራት-ደረጃ ጉዞ።",
+    "steps": {
+      "submission": {
+        "title": "ማስገባት",
+        "body": "ስለ ቅሬታዎ ዝርዝር መረጃ እና የሚደግፉ ፋይሎችን ያቅርቡ።"
+      },
+      "review": {
+        "title": "ግምገማ",
+        "body": "MoPD ቅሬታውን ያረጋግጣል እና ለተጠሪ ሰራተኛ ይመድባል።"
+      },
+      "investigation": {
+        "title": "ምርመራ",
+        "body": "የተመደበው ባለሙያ ማስረጃዎችን ይሰበስባል እና ጉዳዩን ይፈታል።"
+      },
+      "resolution": {
+        "title": "መፍትሄ",
+        "body": "የመጨረሻ ውሳኔ እና የመፍትሄ ውጤት በመደበኛ መንገድ ይገለጻል።"
+      }
+    },
+    "readyTitle": "ለመጀመር ዝግጁ ነዎት?",
+    "readyBody": "አዲስ ቅሬታ ያስገቡ ወይም ነባር ጉዳይን በማጣቀሻ ቁጥርዎ ይከታተሉ።",
+    "startSubmission": "ማስገባት ጀምር",
+    "footerDescription": "የእቅድ እና ልማት ሚኒስቴር (MoPD) የቅሬታ አስተዳደር ስርዓት። ይበልጥ ፈጣን እና ምላሽ ሰጪ አስተዳደር በመገንባት ላይ።",
+    "footerPrivacy": "የግላዊነት ፖሊሲ",
+    "footerTerms": "የአገልግሎት ውሎች",
+    "footerContact": "ያግኙን",
+    "footerAccessibility": "ተደራሽነት",
+    "footerCopyright": "© 2026 የእቅድ እና ልማት ሚኒስቴር (MoPD)። መብቶች በሙሉ የተጠበቁ ናቸው።",
+    "ctaSubmit": "ቅሬታ አስገባ",
+    "ctaTrack": "በማጣቀሻ ቁጥር ተከታተል",
+    "phase0Note": "መሠረት በመገንባት ላይ — የሰራተኛ እና አስተዳደር ገጾች በቀጣይ ደረጃዎች ይመጣሉ።"
+  },
+  "auth": {
+    "loginTitle": "የሰራተኛ መግቢያ",
+    "loginSubtitle": "የ MoPD CMS መለያዎን ይጠቀሙ።",
+    "email": "ኢሜይል",
+    "password": "የይለፍ ቃል",
+    "signIn": "ግባ",
+    "sessionExpiredTitle": "የክፍለ ጊዜ ጊዜ አልቋል",
+    "sessionExpiredBody": "የክፍለ ጊዜዎ አልቋል። ለመቀጠል እንደገና ይግቡ።",
+    "forbiddenTitle": "መዳረሻ ተከልክሏል",
+    "forbiddenBody": "ይህን ገጽ ለማየት ፍቃድ የለዎትም።"
+  },
+  "errors": {
+    "notFoundTitle": "ገጹ አልተገኘም",
+    "notFoundBody": "የጠየቁት ገጽ የለም።",
+    "genericTitle": "አንድ ነገር ተሳሳተ",
+    "genericBody": "ያልተጠበቀ ስህተት ተከስቷል። እንደገና ሊሞክሩ ይችላሉ።",
+    "tooManyRequests": "ብዙ ጥያቄዎች። ትንሽ ይጠብቁና እንደገና ይሞክሩ።"
+  }
+}
