@@ -109,12 +109,13 @@ describe('Documents (e2e)', () => {
     const complaintId = await createComplaint();
     const eicar =
       'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*';
+    const eicarPdf = `%PDF-1.4\n${eicar}\n%%EOF`;
 
     const upload = await request(asSupertestApp(app))
       .post('/api/v1/documents/upload')
       .set('Authorization', `Bearer ${token}`)
       .field('complaintId', complaintId)
-      .attach('file', Buffer.from(eicar), {
+      .attach('file', Buffer.from(eicarPdf), {
         filename: 'eicar.pdf',
         contentType: 'application/pdf',
       })
