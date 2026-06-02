@@ -3,7 +3,15 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "dist/**", "build/**"]
+      "outputs": [".next/**", "dist/**", "build/**"],
+      "env": [
+        "DATABASE_URL",
+        "EMAIL_PROVIDER",
+        "APP_PUBLIC_URL",
+        "DOCUMENT_STORAGE_DRIVER",
+        "VIRUS_SCANNER",
+        "NODE_ENV"
+      ]
     },
     "dev": {
       "cache": false,
