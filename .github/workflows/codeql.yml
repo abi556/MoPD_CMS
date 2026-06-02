@@ -47,14 +47,14 @@ jobs:
           node-version: '22'
           cache: pnpm
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           build-mode: none
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
