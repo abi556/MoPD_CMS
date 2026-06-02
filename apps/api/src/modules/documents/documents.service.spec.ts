@@ -1,4 +1,8 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getQueueToken } from '@nestjs/bullmq';
 import { DocumentScanStatus, type Document } from '@prisma/client';
@@ -205,5 +209,63 @@ describe('DocumentsService', () => {
     await expect(
       service.upload('missing', 'user-officer-0001', file),
     ).rejects.toThrow(NotFoundException);
+  });
+
+  it('rejects payload when magic bytes do not match declared mime', async () => {
+    const file: UploadedMulterFile = {
+      fieldname: 'file',
+      originalname: 'not-a-pdf.pdf',
+      encoding: '7bit',
+      mimetype: 'application/pdf',
+      size: 6,
+      buffer: Buffer.from('GIF89a', 'utf8'),
+    };
+
+    await expect(
+      service.upload('cmp_1', 'user-officer-0001', file),
+    ).rejects.toThrow(UnprocessableEntityException);
+  });
+
+  it('strips jpeg metadata before persisting', async () => {
+    const jpegWithApp1 = Buffer.from([
+      0xff,
+      0xd8, // SOI
+      0xff,
+      0xe1,
+      0x00,
+      0x06,
+      0x45,
+      0x78,
+      0x69,
+      0x66, // APP1 metadata payload ("Exif")
+      0xff,
+      0xdb,
+      0x00,
+      0x04,
+      0x00,
+      0x00, // DQT
+      0xff,
+      0xda,
+      0x00,
+      0x04,
+      0x00,
+      0x00, // SOS
+      0x11,
+      0x22,
+      0xff,
+      0xd9, // compressed data + EOI
+    ]);
+    const file: UploadedMulterFile = {
+      fieldname: 'file',
+      originalname: 'photo.jpg',
+      encoding: '7bit',
+      mimetype: 'image/jpeg',
+      size: jpegWithApp1.length,
+      buffer: jpegWithApp1,
+    };
+
+    const record = await service.upload('cmp_1', 'user-officer-0001', file);
+
+    expect(record.sizeBytes).toBeLessThan(jpegWithApp1.length);
   });
 });

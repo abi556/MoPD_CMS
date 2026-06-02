@@ -11,6 +11,13 @@ export function PublicShell({ children }: { children: ReactNode }) {
   const nav = useTranslations("nav");
   const pub = useTranslations("public");
   const pathname = usePathname();
+  const safePub = (key: string, fallback: string) => {
+    try {
+      return pub(key);
+    } catch {
+      return fallback;
+    }
+  };
 
   const normalizedPath = pathname
     .replace(/^(\/(en|am))(?=\/|$)/, "")
@@ -104,27 +111,33 @@ export function PublicShell({ children }: { children: ReactNode }) {
               </span>
             </div>
             <p className="font-body-sm text-body-sm max-w-xs text-inverse-on-surface/70">
-              {pub("footerDescription")}
+              {safePub(
+                "footerDescription",
+                "Ministry of Planning and Development (MoPD) Complaint Management System. Building a more responsive administration.",
+              )}
             </p>
           </div>
           <div className="grid grid-cols-2 md:flex items-center gap-x-12 gap-y-4">
             <Link className="hover:text-primary transition-colors font-body-sm text-body-sm text-inverse-on-surface/70" href="/forbidden">
-              {pub("footerPrivacy")}
+              {safePub("footerPrivacy", "Privacy Policy")}
             </Link>
             <Link className="hover:text-primary transition-colors font-body-sm text-body-sm text-inverse-on-surface/70" href="/forbidden">
-              {pub("footerTerms")}
+              {safePub("footerTerms", "Terms of Service")}
             </Link>
             <Link className="hover:text-primary transition-colors font-body-sm text-body-sm text-inverse-on-surface/70" href="/forbidden">
-              {pub("footerContact")}
+              {safePub("footerContact", "Contact Us")}
             </Link>
             <Link className="hover:text-primary transition-colors font-body-sm text-body-sm text-inverse-on-surface/70" href="/forbidden">
-              {pub("footerAccessibility")}
+              {safePub("footerAccessibility", "Accessibility")}
             </Link>
           </div>
         </div>
         <div className="max-w-max-width mx-auto px-gutter py-6 border-t border-white/10">
           <p className="font-body-sm text-body-sm text-center text-inverse-on-surface/50">
-            {pub("footerCopyright")}
+            {safePub(
+              "footerCopyright",
+              "© 2026 Ministry of Planning and Development (MoPD). All rights reserved.",
+            )}
           </p>
         </div>
       </footer>

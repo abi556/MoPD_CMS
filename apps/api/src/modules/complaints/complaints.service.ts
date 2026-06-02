@@ -1,12 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   forwardRef,
   Inject,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
 import type {
   Complaint as ComplaintEntity,
   ComplaintHistory as ComplaintHistoryEntity,
@@ -28,6 +30,45 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { SlaService } from '../sla/sla.service';
 import { ComplaintAccessService } from './complaint-access.service';
 import { WorkflowPolicyService } from './workflow-policy.service';
+import { DocumentsService } from '../documents/documents.service';
+import type { UploadedMulterFile } from '../documents/types/uploaded-file';
+import { getDocumentMaxBytes } from '../documents/document.config';
+
+function getUploadTokenSecret(): string {
+  if (process.env.COMPLAINT_UPLOAD_TOKEN_SECRET) {
+    return process.env.COMPLAINT_UPLOAD_TOKEN_SECRET;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'COMPLAINT_UPLOAD_TOKEN_SECRET must be configured in production',
+    );
+  }
+  return 'dev-complaint-upload-token-secret-change-me';
+}
+
+function getUploadTokenTtlSec(): number {
+  const raw = process.env.COMPLAINT_UPLOAD_TOKEN_TTL_SEC;
+  const parsed = raw ? Number.parseInt(raw, 10) : NaN;
+  if (Number.isNaN(parsed) || parsed < 60) {
+    return 30 * 60;
+  }
+  return parsed;
+}
+
+function getUploadMaxFiles(): number {
+  const raw = process.env.COMPLAINT_UPLOAD_MAX_FILES;
+  const parsed = raw ? Number.parseInt(raw, 10) : NaN;
+  if (Number.isNaN(parsed) || parsed < 1) {
+    return 5;
+  }
+  return parsed;
+}
+
+function getPreferredPublicUploadOwnerId(): string {
+  return (
+    process.env.COMPLAINT_PUBLIC_UPLOAD_OWNER_ID ?? 'user-system-admin-0001'
+  );
+}
 
 export interface ComplaintRecord {
   id: string;
@@ -74,6 +115,27 @@ export interface ComplaintHistoryRecord {
   createdAt: string;
 }
 
+export interface ComplaintUploadSession {
+  token: string;
+  expiresAt: string;
+  complaintId: string;
+  maxFiles: number;
+  maxBytesPerFile: number;
+}
+
+export interface ComplaintCreateResult {
+  complaint: ComplaintRecord;
+  uploadSession?: ComplaintUploadSession;
+}
+
+interface UploadTokenPayload {
+  complaintId: string;
+  exp: number;
+  purpose: 'evidence_upload';
+  maxFiles: number;
+  maxBytesPerFile: number;
+}
+
 @Injectable()
 export class ComplaintsService {
   private readonly allowedTransitions: Record<
@@ -112,12 +174,13 @@ export class ComplaintsService {
     private readonly notificationsService: NotificationsService,
     private readonly complaintAccessService: ComplaintAccessService,
     private readonly workflowPolicyService: WorkflowPolicyService,
+    private readonly documentsService: DocumentsService,
   ) {}
 
   async create(
     payload: CreateComplaintDto,
     correlationId?: string,
-  ): Promise<ComplaintRecord> {
+  ): Promise<ComplaintCreateResult> {
     if (payload.categoryId) {
       const cat = await this.prisma.complaintCategory.findUnique({
         where: { id: payload.categoryId },
@@ -207,7 +270,134 @@ export class ComplaintsService {
         )
         .catch(() => undefined);
     }
-    return record;
+    return {
+      complaint: record,
+      uploadSession: payload.requestUploadSession
+        ? this.issueUploadSession(record.id)
+        : undefined,
+    };
+  }
+
+  async uploadPublicEvidence(
+    complaintId: string,
+    token: string,
+    file: UploadedMulterFile,
+    correlationId?: string,
+  ) {
+    const claims = this.verifyUploadSession(token);
+    if (claims.complaintId !== complaintId) {
+      throw new ForbiddenException('Upload token does not match complaint id');
+    }
+
+    const complaint = await this.prisma.complaint.findUnique({
+      where: { id: complaintId },
+      select: { id: true },
+    });
+    if (!complaint) {
+      throw new NotFoundException('Complaint not found');
+    }
+
+    const documentStore = this.prisma.document as unknown as {
+      count?: (args: { where: { complaintId: string } }) => Promise<number>;
+    };
+    if (documentStore.count) {
+      const existingCount = await documentStore.count({
+        where: { complaintId },
+      });
+      if (existingCount >= claims.maxFiles) {
+        throw new ConflictException('Maximum number of evidence files reached');
+      }
+    }
+
+    const ownerUserId = await this.resolvePublicUploadOwnerId();
+    return this.documentsService.upload(
+      complaintId,
+      ownerUserId,
+      file,
+      correlationId,
+    );
+  }
+
+  private issueUploadSession(complaintId: string): ComplaintUploadSession {
+    const ttlSec = getUploadTokenTtlSec();
+    const nowSec = Math.floor(Date.now() / 1000);
+    const payload: UploadTokenPayload = {
+      complaintId,
+      exp: nowSec + ttlSec,
+      purpose: 'evidence_upload',
+      maxFiles: getUploadMaxFiles(),
+      maxBytesPerFile: getDocumentMaxBytes(),
+    };
+    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
+      'base64url',
+    );
+    const signature = createHmac('sha256', getUploadTokenSecret())
+      .update(encodedPayload)
+      .digest('base64url');
+    return {
+      token: `${encodedPayload}.${signature}`,
+      expiresAt: new Date(payload.exp * 1000).toISOString(),
+      complaintId,
+      maxFiles: payload.maxFiles,
+      maxBytesPerFile: payload.maxBytesPerFile,
+    };
+  }
+
+  private verifyUploadSession(token: string): UploadTokenPayload {
+    const [encodedPayload, signature] = token.split('.');
+    if (!encodedPayload || !signature) {
+      throw new ForbiddenException('Invalid upload token');
+    }
+
+    const expected = createHmac('sha256', getUploadTokenSecret())
+      .update(encodedPayload)
+      .digest('base64url');
+    if (
+      expected.length !== signature.length ||
+      !timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
+    ) {
+      throw new ForbiddenException('Invalid upload token signature');
+    }
+
+    let payload: UploadTokenPayload;
+    try {
+      payload = JSON.parse(
+        Buffer.from(encodedPayload, 'base64url').toString('utf8'),
+      ) as UploadTokenPayload;
+    } catch {
+      throw new ForbiddenException('Invalid upload token payload');
+    }
+
+    if (payload.purpose !== 'evidence_upload') {
+      throw new ForbiddenException('Invalid upload token purpose');
+    }
+    if (
+      typeof payload.exp !== 'number' ||
+      payload.exp <= Math.floor(Date.now() / 1000)
+    ) {
+      throw new ForbiddenException('Upload token expired');
+    }
+    return payload;
+  }
+
+  private async resolvePublicUploadOwnerId(): Promise<string> {
+    const preferred = getPreferredPublicUploadOwnerId();
+    const preferredUser = await this.prisma.user.findUnique({
+      where: { id: preferred },
+      select: { id: true },
+    });
+    if (preferredUser) {
+      return preferredUser.id;
+    }
+    const fallback = await this.prisma.user.findMany({
+      take: 1,
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
+    if (!fallback.length) {
+      throw new NotFoundException('No uploader account available for evidence');
+    }
+    return fallback[0].id;
   }
 
   async getByReference(referenceNo: string): Promise<ComplaintRecord> {

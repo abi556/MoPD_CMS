@@ -77,8 +77,9 @@ export class DocumentsService implements OnModuleInit {
     file: UploadedMulterFile,
     correlationId?: string,
   ): Promise<DocumentRecord> {
+    const normalizedFile = this.normalizeUpload(file);
     await this.assertComplaintExists(complaintId);
-    this.validateUpload(file);
+    this.validateUpload(normalizedFile);
 
     const storage = this.storageFactory.getStorage();
     const quarantineBucket = getQuarantineBucket();
@@ -86,19 +87,24 @@ export class DocumentsService implements OnModuleInit {
     const storageKey = buildStorageKey(complaintId, documentId);
     const quarantineKey = `${storageKey}/quarantine`;
 
-    await storage.putObject(quarantineBucket, quarantineKey, file.buffer, {
-      contentType: file.mimetype,
-      originalName: file.originalname,
-    });
+    await storage.putObject(
+      quarantineBucket,
+      quarantineKey,
+      normalizedFile.buffer,
+      {
+        contentType: normalizedFile.mimetype,
+        originalName: normalizedFile.originalname,
+      },
+    );
 
     const row = await this.prisma.document.create({
       data: {
         id: documentId,
         complaintId,
         ownerUserId,
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        sizeBytes: file.size,
+        originalName: normalizedFile.originalname,
+        mimeType: normalizedFile.mimetype,
+        sizeBytes: normalizedFile.size,
         scanStatus: DocumentScanStatus.PENDING,
         storageKey,
         quarantineKey,
@@ -113,9 +119,9 @@ export class DocumentsService implements OnModuleInit {
       correlationId,
       metadata: {
         complaintId,
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        sizeBytes: file.size,
+        originalName: normalizedFile.originalname,
+        mimeType: normalizedFile.mimetype,
+        sizeBytes: normalizedFile.size,
       },
     });
 
@@ -371,6 +377,132 @@ export class DocumentsService implements OnModuleInit {
     if (isExtensionBlocked(file.originalname ?? '')) {
       throw new UnprocessableEntityException('File extension is not allowed');
     }
+    if (!this.matchesMagicSignature(file.buffer, mime)) {
+      throw new UnprocessableEntityException(
+        'File content signature does not match declared type',
+      );
+    }
+  }
+
+  private normalizeUpload(file: UploadedMulterFile): UploadedMulterFile {
+    const mime = file.mimetype?.toLowerCase() ?? '';
+    if (mime === 'image/jpeg') {
+      const stripped = this.stripJpegMetadata(file.buffer);
+      return { ...file, buffer: stripped, size: stripped.length };
+    }
+    if (mime === 'image/png') {
+      const stripped = this.stripPngMetadata(file.buffer);
+      return { ...file, buffer: stripped, size: stripped.length };
+    }
+    return file;
+  }
+
+  private matchesMagicSignature(buffer: Buffer, mime: string): boolean {
+    if (buffer.length < 4) {
+      return false;
+    }
+    const startsWith = (...bytes: number[]) =>
+      bytes.every((byte, i) => buffer[i] === byte);
+
+    switch (mime) {
+      case 'application/pdf':
+        return startsWith(0x25, 0x50, 0x44, 0x46); // %PDF
+      case 'image/jpeg':
+        return startsWith(0xff, 0xd8, 0xff);
+      case 'image/png':
+        return startsWith(0x89, 0x50, 0x4e, 0x47);
+      case 'image/gif':
+        return (
+          startsWith(0x47, 0x49, 0x46, 0x38, 0x37, 0x61) ||
+          startsWith(0x47, 0x49, 0x46, 0x38, 0x39, 0x61)
+        );
+      case 'video/mp4':
+        return (
+          buffer.length >= 12 && buffer.subarray(4, 8).toString() === 'ftyp'
+        );
+      case 'audio/mpeg':
+        return (
+          startsWith(0x49, 0x44, 0x33) || // ID3 tag
+          (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0)
+        );
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        return startsWith(0x50, 0x4b, 0x03, 0x04); // ZIP container
+      case 'application/msword':
+      case 'application/vnd.ms-excel':
+        return startsWith(0xd0, 0xcf, 0x11, 0xe0); // OLE CF
+      default:
+        // If allowed MIME is extended, keep backward compatibility and avoid false rejects.
+        return true;
+    }
+  }
+
+  private stripJpegMetadata(input: Buffer): Buffer {
+    if (input.length < 4 || input[0] !== 0xff || input[1] !== 0xd8) {
+      return input;
+    }
+    const chunks: Buffer[] = [input.subarray(0, 2)];
+    let offset = 2;
+    while (offset + 4 <= input.length) {
+      if (input[offset] !== 0xff) {
+        break;
+      }
+      const marker = input[offset + 1];
+      // Start of scan -> copy rest as-is (compressed image stream).
+      if (marker === 0xda) {
+        chunks.push(input.subarray(offset));
+        return Buffer.concat(chunks);
+      }
+      // Standalone markers without payload.
+      if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd9)) {
+        chunks.push(input.subarray(offset, offset + 2));
+        offset += 2;
+        continue;
+      }
+      const length = input.readUInt16BE(offset + 2);
+      if (length < 2 || offset + 2 + length > input.length) {
+        return input;
+      }
+      const segmentEnd = offset + 2 + length;
+      const isMetadata = (marker >= 0xe0 && marker <= 0xef) || marker === 0xfe;
+      if (!isMetadata) {
+        chunks.push(input.subarray(offset, segmentEnd));
+      }
+      offset = segmentEnd;
+    }
+    return Buffer.concat(chunks);
+  }
+
+  private stripPngMetadata(input: Buffer): Buffer {
+    const pngSig = Buffer.from([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+    ]);
+    if (input.length < 8 || !input.subarray(0, 8).equals(pngSig)) {
+      return input;
+    }
+    const chunks: Buffer[] = [input.subarray(0, 8)];
+    let offset = 8;
+    while (offset + 12 <= input.length) {
+      const length = input.readUInt32BE(offset);
+      const chunkTypeStart = offset + 4;
+      const chunkDataStart = offset + 8;
+      const chunkEnd = chunkDataStart + length + 4; // +crc
+      if (chunkEnd > input.length) {
+        return input;
+      }
+      const chunkType = input.subarray(chunkTypeStart, chunkTypeStart + 4);
+      const isCritical = chunkType.every(
+        (char) => char >= 65 && char <= 90, // A-Z
+      );
+      if (isCritical) {
+        chunks.push(input.subarray(offset, chunkEnd));
+      }
+      offset = chunkEnd;
+      if (chunkType.toString() === 'IEND') {
+        break;
+      }
+    }
+    return Buffer.concat(chunks);
   }
 
   private async assertComplaintExists(complaintId: string): Promise<void> {

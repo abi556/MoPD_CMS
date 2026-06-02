@@ -83,5 +83,46 @@
     "genericTitle": "Something went wrong",
     "genericBody": "An unexpected error occurred. You can try again.",
     "tooManyRequests": "Too many requests. Please wait a moment and try again."
+  },
+  "complaintSubmit": {
+    "steps": {
+      "one": "1. Complaint details",
+      "two": "2. Contact and consent",
+      "threeOptional": "3. Evidence upload (optional)"
+    },
+    "sectionDetails": "Complaint details",
+    "sectionContact": "Contact and consent",
+    "sectionEvidence": "Evidence upload (optional)",
+    "fields": {
+      "subject": "Subject",
+      "description": "Description",
+      "name": "Full name (optional)",
+      "email": "Email (optional)",
+      "phone": "Phone (optional)",
+      "consent": "I confirm I consent to data processing for complaint handling.",
+      "evidenceHint": "You can skip this step and submit without files. If needed, add evidence now.",
+      "selectedFiles": "{count} file(s) selected"
+    },
+    "actions": {
+      "next": "Next",
+      "back": "Back",
+      "submit": "Submit complaint",
+      "submitting": "Submitting..."
+    },
+    "errors": {
+      "subjectMin": "Subject must be at least 5 characters.",
+      "descriptionMin": "Description must be at least 20 characters.",
+      "consentRequired": "You must provide consent to submit the complaint.",
+      "submitFailed": "Could not submit complaint. Please try again."
+    },
+    "warnings": {
+      "partialUpload": "{count} evidence file(s) failed to upload. Your complaint is still submitted."
+    },
+    "success": {
+      "title": "Complaint submitted",
+      "body": "Your complaint has been submitted successfully.",
+      "reference": "Reference number",
+      "trackLink": "Track your complaint status"
+    }
   }
 }

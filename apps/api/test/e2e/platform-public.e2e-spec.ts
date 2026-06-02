@@ -82,6 +82,66 @@ describe('Platform/Public (e2e)', () => {
     expect(body.data.status).toBe('SUBMITTED');
   });
 
+  it('returns upload session when requestUploadSession=true', async () => {
+    const response = await request(asSupertestApp(app))
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Public intake with optional evidence',
+        description:
+          'Citizen submits complaint and requests upload session for optional evidence.',
+        channel: 'WEB',
+        consentGiven: true,
+        locale: 'en',
+        requestUploadSession: true,
+      })
+      .expect(201);
+    const body = getBody<ComplaintCreateResponse>(response);
+
+    expect(body.data.uploadSession).toBeDefined();
+    expect(typeof body.data.uploadSession?.token).toBe('string');
+    expect(body.data.uploadSession?.complaintId).toBe(body.data.id);
+  });
+
+  it('uploads optional evidence through public tokenized endpoint', async () => {
+    // Ensure seeded users exist in prisma mock for document ownership relation.
+    await request(asSupertestApp(app)).post('/api/v1/auth/login').send({
+      email: 'admin@mopd.local',
+      password: 'AdminPass123!',
+    });
+
+    const created = await request(asSupertestApp(app))
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Evidence upload test from public flow',
+        description:
+          'This complaint is used to validate tokenized evidence upload for unauthenticated users.',
+        channel: 'WEB',
+        consentGiven: true,
+        locale: 'en',
+        requestUploadSession: true,
+      })
+      .expect(201);
+
+    const createdBody = getBody<ComplaintCreateResponse>(created);
+    const uploadToken = createdBody.data.uploadSession?.token;
+    expect(uploadToken).toBeDefined();
+
+    const upload = await request(asSupertestApp(app))
+      .post(`/api/v1/complaints/${createdBody.data.id}/evidence`)
+      .field('uploadToken', uploadToken as string)
+      .attach('file', Buffer.from('%PDF-1.4 public-evidence-test'), {
+        filename: 'public-evidence.pdf',
+        contentType: 'application/pdf',
+      })
+      .expect(201);
+
+    const uploadBody = getBody<{
+      data: { complaintId: string; scanStatus: string };
+    }>(upload);
+    expect(uploadBody.data.complaintId).toBe(createdBody.data.id);
+    expect(uploadBody.data.scanStatus).toBe('CLEAN');
+  });
+
   it('tracks complaint by reference number', async () => {
     const created = await request(asSupertestApp(app))
       .post('/api/v1/complaints')

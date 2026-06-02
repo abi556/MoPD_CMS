@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   Equals,
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsOptional,
@@ -111,4 +112,13 @@ export class CreateComplaintDto {
   })
   @IsEnum(ComplaintLocale)
   locale!: ComplaintLocale;
+
+  @ApiPropertyOptional({
+    example: true,
+    description:
+      'When true, response includes a short-lived public upload session token for optional evidence uploads.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  requestUploadSession?: boolean;
 }

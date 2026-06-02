@@ -83,5 +83,46 @@
     "genericTitle": "አንድ ነገር ተሳሳተ",
     "genericBody": "ያልተጠበቀ ስህተት ተከስቷል። እንደገና ሊሞክሩ ይችላሉ።",
     "tooManyRequests": "ብዙ ጥያቄዎች። ትንሽ ይጠብቁና እንደገና ይሞክሩ።"
+  },
+  "complaintSubmit": {
+    "steps": {
+      "one": "1. የቅሬታ ዝርዝሮች",
+      "two": "2. የመገናኛ መረጃ እና ፍቃድ",
+      "threeOptional": "3. ማስረጃ መጫን (አማራጭ)"
+    },
+    "sectionDetails": "የቅሬታ ዝርዝሮች",
+    "sectionContact": "የመገናኛ መረጃ እና ፍቃድ",
+    "sectionEvidence": "ማስረጃ መጫን (አማራጭ)",
+    "fields": {
+      "subject": "ርዕስ",
+      "description": "መግለጫ",
+      "name": "ሙሉ ስም (አማራጭ)",
+      "email": "ኢሜይል (አማራጭ)",
+      "phone": "ስልክ (አማራጭ)",
+      "consent": "ለቅሬታ አስተዳደር የመረጃ ሂደት ፍቃድ እንዳለኝ አረጋግጣለሁ።",
+      "evidenceHint": "ይህን ደረጃ መዝለል እና ያለ ፋይል ማስገባት ይችላሉ። ካስፈለገ አሁን ማስረጃ ያክሉ።",
+      "selectedFiles": "{count} ፋይል(ዎች) ተመርጠዋል"
+    },
+    "actions": {
+      "next": "ቀጣይ",
+      "back": "ተመለስ",
+      "submit": "ቅሬታ አስገባ",
+      "submitting": "በማስገባት ላይ..."
+    },
+    "errors": {
+      "subjectMin": "ርዕሱ ቢያንስ 5 ፊደላት ሊኖሩት ይገባል።",
+      "descriptionMin": "መግለጫው ቢያንስ 20 ፊደላት ሊኖሩት ይገባል።",
+      "consentRequired": "ቅሬታውን ለማስገባት ፍቃድ መስጠት አለብዎት።",
+      "submitFailed": "ቅሬታውን ማስገባት አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
+    },
+    "warnings": {
+      "partialUpload": "{count} የማስረጃ ፋይል(ዎች) መጫን አልተሳካም። ቅሬታዎ ግን ተመዝግቧል።"
+    },
+    "success": {
+      "title": "ቅሬታዎ ተመዝግቧል",
+      "body": "ቅሬታዎ በተሳካ ሁኔታ ተመዝግቧል።",
+      "reference": "የማጣቀሻ ቁጥር",
+      "trackLink": "የቅሬታዎን ሁኔታ ይከታተሉ"
+    }
   }
 }

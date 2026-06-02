@@ -52,6 +52,13 @@ export interface ComplaintCreateResponse {
     submittedAt: string;
     locale: 'en' | 'am';
     consentGiven: boolean;
+    uploadSession?: {
+      token: string;
+      expiresAt: string;
+      complaintId: string;
+      maxFiles: number;
+      maxBytesPerFile: number;
+    } | null;
   };
 }
 

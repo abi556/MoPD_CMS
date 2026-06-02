@@ -10,9 +10,14 @@ import {
   Query,
   UseGuards,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import {
+  ApiBody,
+  ApiConsumes,
   ApiParam,
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -47,10 +52,14 @@ import {
 import { AppealComplaintDto } from './dto/appeal-complaint.dto';
 import { AssignComplaintDto } from './dto/assign-complaint.dto';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
+import { UploadEvidenceDto } from './dto/upload-evidence.dto';
 import { TransitionComplaintDto } from './dto/transition-complaint.dto';
 import { UpdateComplaintDto } from './dto/update-complaint.dto';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 import { ComplaintsService, type ComplaintRecord } from './complaints.service';
+import { getDocumentMaxBytes } from '../documents/document.config';
+import type { UploadedMulterFile } from '../documents/types/uploaded-file';
+import { DocumentEnvelopeDto } from '../documents/dto/document-response.dto';
 
 function toComplaintDetailData(
   complaint: ComplaintRecord,
@@ -413,18 +422,64 @@ export class ComplaintsController {
 
     return {
       data: {
-        id: created.id,
-        referenceNo: created.referenceNo,
-        status: created.status,
-        channel: created.channel,
-        subject: created.subject,
-        submittedAt: created.submittedAt,
-        locale: created.locale,
-        consentGiven: created.consentGiven,
-        categoryId: created.categoryId ?? null,
-        orgUnitId: created.orgUnitId ?? null,
+        id: created.complaint.id,
+        referenceNo: created.complaint.referenceNo,
+        status: created.complaint.status,
+        channel: created.complaint.channel,
+        subject: created.complaint.subject,
+        submittedAt: created.complaint.submittedAt,
+        locale: created.complaint.locale,
+        consentGiven: created.complaint.consentGiven,
+        categoryId: created.complaint.categoryId ?? null,
+        orgUnitId: created.complaint.orgUnitId ?? null,
+        uploadSession: created.uploadSession ?? null,
       },
     };
+  }
+
+  @Post(':id/evidence')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: getDocumentMaxBytes() },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Upload optional public evidence for a submitted complaint',
+  })
+  @ApiParam({ name: 'id', description: 'Complaint id.' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file', 'uploadToken'],
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        uploadToken: { type: 'string' },
+      },
+    },
+  })
+  @ApiCreatedResponse({
+    description: 'Evidence uploaded successfully.',
+    type: DocumentEnvelopeDto,
+  })
+  @ApiUnauthorizedResponse({ type: ErrorResponseDto })
+  @ApiForbiddenResponse({ type: ErrorResponseDto })
+  @ApiNotFoundResponse({ type: ErrorResponseDto })
+  @ApiUnprocessableEntityResponse({ type: ErrorResponseDto })
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
+  async uploadEvidence(
+    @Param('id') id: string,
+    @Body() body: UploadEvidenceDto,
+    @UploadedFile() file: UploadedMulterFile,
+    @Req() request: RequestWithCorrelationId,
+  ): Promise<DocumentEnvelopeDto> {
+    const record = await this.complaintsService.uploadPublicEvidence(
+      id,
+      body.uploadToken,
+      file,
+      request.correlationId,
+    );
+    return { data: record };
   }
 
   @Get('track/:referenceNo')

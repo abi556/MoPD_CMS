@@ -3,6 +3,27 @@ import { ComplaintChannel, ComplaintLocale } from './create-complaint.dto';
 import { ComplaintStatusValue } from './complaint-status.enum';
 
 export class ComplaintCreatedDataDto {
+  @ApiPropertyOptional({
+    description:
+      'Short-lived upload session for optional public evidence uploads.',
+    nullable: true,
+    type: Object,
+    example: {
+      token: '<signed-token>',
+      expiresAt: '2026-06-02T13:00:00.000Z',
+      complaintId: 'a3f8ad3f-967c-4b15-a18d-724bf6ca9a08',
+      maxFiles: 5,
+      maxBytesPerFile: 10485760,
+    },
+  })
+  uploadSession?: {
+    token: string;
+    expiresAt: string;
+    complaintId: string;
+    maxFiles: number;
+    maxBytesPerFile: number;
+  } | null;
+
   @ApiProperty({
     example: 'a3f8ad3f-967c-4b15-a18d-724bf6ca9a08',
     description: 'Internal complaint id.',

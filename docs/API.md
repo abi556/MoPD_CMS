@@ -177,7 +177,9 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
   - `orgUnitId?`
   - `consentGiven` (must be `true`)
   - `locale` (`en|am`)
-- **Response:** `{ data: { id, referenceNo, status, channel, subject, submittedAt, locale, consentGiven, categoryId?, orgUnitId? } }`
+  - `requestUploadSession?` (`boolean`) - when `true`, response includes short-lived upload session for optional evidence
+- **Response:** `{ data: { id, referenceNo, status, channel, subject, submittedAt, locale, consentGiven, categoryId?, orgUnitId?, uploadSession? } }`
+  - `uploadSession`: `{ token, expiresAt, complaintId, maxFiles, maxBytesPerFile }`
 - **Errors:** `422`
 
 ### GET `/complaints/track/:referenceNo`
@@ -218,6 +220,14 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 - **Permission:** `complaint:escalate`
 - **Body:** `{ reason }` (10..2000)
 - **Response:** `{ data: ComplaintDetailDataDto }`
+
+### POST `/complaints/:id/evidence`
+- **Auth:** Public (token-based)
+- **Content-Type:** `multipart/form-data`
+- **Body fields:** `file` (binary), `uploadToken` (issued from `POST /complaints` when `requestUploadSession=true`)
+- **Response:** `{ data: DocumentDto }`
+- **Status:** `201`
+- **Errors:** `403` (invalid/expired token), `404` (unknown complaint), `422`
 
 ### PATCH `/complaints/:id`
 - **Permission:** `complaint:update`
