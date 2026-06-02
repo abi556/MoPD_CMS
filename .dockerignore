@@ -1,0 +1,52 @@
+# Monorepo Docker build context (repo root).
+# Used by: docker build -f apps/api/Dockerfile .  |  apps/web/Dockerfile
+
+# Dependencies & build outputs (reinstalled/built in image)
+**/node_modules
+**/.pnpm-store
+**/.next
+**/out
+**/dist
+**/build
+**/.turbo
+**/coverage
+**/.cache
+
+# Environment & secrets
+**/.env
+**/.env.*
+!**/.env.example
+!.env.docker.example
+
+# VCS & IDE
+.git
+.github
+.vscode
+.idea
+.cursor
+**/*.md
+!apps/api/README.md
+
+# Tests & dev tooling
+**/*.spec.ts
+**/*.e2e-spec.ts
+**/test
+**/tests
+**/__tests__
+**/playwright-report
+**/test-results
+**/.nyc_output
+
+# Local infra / compose (not needed inside app images)
+infra/docker
+.env.docker
+extract.py
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Docker meta (avoid recursive context noise)
+**/.dockerignore
+**/docker-compose*.yml
+**/compose*.yaml

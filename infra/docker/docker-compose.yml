@@ -1,8 +1,10 @@
 # Local dev infrastructure for MoPD CMS.
 # From repo root:
-#   docker compose -f infra/docker/docker-compose.yml --env-file .env.docker up -d
-# Infra only (postgres, redis, minio, clamav, mailpit): omit --profile app
-# Full stack (+ api, web): docker compose ... --profile app up -d
+#   pnpm docker:infra          # postgres, redis, minio, clamav, mailpit only
+#   pnpm dev:stack             # infra + API/web on host (recommended daily dev)
+#   pnpm docker:app            # full stack in containers (--profile app)
+#
+# Do not run `pnpm docker:app` and `pnpm dev` together — both use ports 3000/3001.
 
 services:
   mailpit:
@@ -15,7 +17,9 @@ services:
   api:
     profiles: ["app"]
     container_name: mopd-cms-api
-    build: ../../apps/api
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
     ports:
       - "${API_PORT:-3001}:3001"
     depends_on:
@@ -56,7 +60,11 @@ services:
   web:
     profiles: ["app"]
     container_name: mopd-cms-web
-    build: ../../apps/web
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api/v1}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
