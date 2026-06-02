@@ -42,6 +42,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Safety check: makes failures clearer if env vars are ever changed/removed later
+      - name: Verify required env vars are set
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${DATABASE_URL:-}" || (echo "DATABASE_URL is missing" && exit 1)
+
       - name: Generate Prisma Client
         run: pnpm --filter @mopd-cms/api run prisma:generate
 
@@ -58,4 +65,11 @@ jobs:
         run: pnpm --filter @mopd-cms/api run test:e2e
 
       - name: Build
+        env:
+          # Explicitly re-export for this step (helps with tooling/subprocess env propagation)
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          EMAIL_PROVIDER: ${{ env.EMAIL_PROVIDER }}
+          APP_PUBLIC_URL: ${{ env.APP_PUBLIC_URL }}
+          DOCUMENT_STORAGE_DRIVER: ${{ env.DOCUMENT_STORAGE_DRIVER }}
+          VIRUS_SCANNER: ${{ env.VIRUS_SCANNER }}
         run: pnpm turbo run build
