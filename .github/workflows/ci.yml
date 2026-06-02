@@ -33,43 +33,104 @@ jobs:
         with:
           version: 10.18.0
 
-      - name: Setup Node.js
+      - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'pnpm'
 
+      # Monorepo optimization: decide what changed
+      - name: Paths Changes Filter
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+              - 'package.json'
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+              - 'package.json'
+            workflows:
+              - '.github/workflows/**'
+
+      # Generic cache: Turbo + Next build cache (big speedup)
+      - name: Cache turbo + next cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .turbo
+            apps/web/.next/cache
+          key: ${{ runner.os }}-turbo-next-${{ hashFiles('**/pnpm-lock.yaml', 'turbo.json', 'apps/web/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-next-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Safety check: makes failures clearer if env vars are ever changed/removed later
       - name: Verify required env vars are set
         shell: bash
         run: |
           set -euo pipefail
           test -n "${DATABASE_URL:-}" || (echo "DATABASE_URL is missing" && exit 1)
 
-      - name: Generate Prisma Client
+      # Secrets scanning (free). Runs on PRs/pushes.
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@v3.95.4
+        with:
+          # Scan current branch/PR diff; this is safe for public CI usage.
+          scanArguments: --no-update --only-verified
+
+      # API steps (run if api changed OR workflow changed)
+      - name: Generate Prisma Client (API)
+        if: steps.changes.outputs.api == 'true' || steps.changes.outputs.workflows == 'true'
         run: pnpm --filter @mopd-cms/api run prisma:generate
 
       - name: Lint (API, non-mutating)
+        if: steps.changes.outputs.api == 'true' || steps.changes.outputs.workflows == 'true'
         run: pnpm --filter @mopd-cms/api run lint:ci
 
-      - name: Lint (web and shared)
-        run: pnpm turbo run lint --filter=@mopd-cms/web --filter=@mopd-cms/shared
-
       - name: API unit tests
+        if: steps.changes.outputs.api == 'true' || steps.changes.outputs.workflows == 'true'
         run: pnpm --filter @mopd-cms/api run test:unit
 
       - name: API E2E tests
+        if: steps.changes.outputs.api == 'true' || steps.changes.outputs.workflows == 'true'
         run: pnpm --filter @mopd-cms/api run test:e2e
 
+      # Web/shared lint (run if web changed OR workflow changed)
+      - name: Lint (web and shared)
+        if: steps.changes.outputs.web == 'true' || steps.changes.outputs.workflows == 'true'
+        run: pnpm turbo run lint --filter=@mopd-cms/web --filter=@mopd-cms/shared
+
+      # Build (run if either api or web changed OR workflow changed)
       - name: Build
+        if: steps.changes.outputs.api == 'true' || steps.changes.outputs.web == 'true' || steps.changes.outputs.workflows == 'true'
         env:
-          # Explicitly re-export for this step (helps with tooling/subprocess env propagation)
+          # Explicit re-export for this step (helps with subprocess env propagation)
           DATABASE_URL: ${{ env.DATABASE_URL }}
           EMAIL_PROVIDER: ${{ env.EMAIL_PROVIDER }}
           APP_PUBLIC_URL: ${{ env.APP_PUBLIC_URL }}
           DOCUMENT_STORAGE_DRIVER: ${{ env.DOCUMENT_STORAGE_DRIVER }}
           VIRUS_SCANNER: ${{ env.VIRUS_SCANNER }}
         run: pnpm turbo run build
+
+      # Upload artifacts on failure (useful for debugging)
+      - name: Upload CI artifacts (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: |
+            apps/api/coverage
+            apps/web/.next
+            **/test-results
+            **/playwright-report
+            **/*.log
+          if-no-files-found: ignore
