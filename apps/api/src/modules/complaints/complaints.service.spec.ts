@@ -155,10 +155,10 @@ describe('ComplaintsService', () => {
       locale: ComplaintLocale.EN,
     });
 
-    expect(created.id).toBe('cmp_001');
-    expect(created.referenceNo).toMatch(/^CMS-\d{4}-\d{6}$/);
-    expect(created.status).toBe('SUBMITTED');
-    expect(created.channel).toBe(ComplaintChannel.WEB);
+    expect(created.complaint.id).toBe('cmp_001');
+    expect(created.complaint.referenceNo).toMatch(/^CMS-\d{4}-\d{6}$/);
+    expect(created.complaint.status).toBe('SUBMITTED');
+    expect(created.complaint.channel).toBe(ComplaintChannel.WEB);
     expect(complaintCreate).toHaveBeenCalledTimes(1);
     expect(complaintUpdate).toHaveBeenCalledTimes(1);
     expect(queueComplaintSubmittedAck).not.toHaveBeenCalled();
@@ -672,8 +672,8 @@ describe('ComplaintsService', () => {
         orgUnitId: 'org-active',
       });
 
-      expect(created.categoryId).toBe('cat-active');
-      expect(created.orgUnitId).toBe('org-active');
+      expect(created.complaint.categoryId).toBe('cat-active');
+      expect(created.complaint.orgUnitId).toBe('org-active');
       expect(complaintCategoryFindUnique).toHaveBeenCalledWith({
         where: { id: 'cat-active' },
       });
