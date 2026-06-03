@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { buildDescriptionWithLocation } from "@/lib/build-complaint-description";
@@ -12,7 +12,13 @@ import {
   type ComplaintFormOptions,
 } from "@/lib/public-complaints";
 import { ApiError } from "@/lib/api-client";
+import {
+  clearComplaintSubmitDraft,
+  getComplaintSubmitDraft,
+  setComplaintSubmitDraft,
+} from "@/lib/complaint-submit-draft";
 import { isUploadSessionExpired } from "@/lib/upload-session";
+import { sortCategoriesForPicker } from "./category-picker-order";
 import { ComplaintInfoCards } from "./ComplaintInfoCards";
 import { ComplaintEvidencePanel } from "./ComplaintEvidencePanel";
 import { ComplaintStepContactLocation } from "./ComplaintStepContactLocation";
@@ -48,7 +54,8 @@ type Action =
   | { type: "SET_STEP"; step: WizardStep }
   | { type: "PATCH_FORM"; patch: Partial<WizardFormData> }
   | { type: "SET_ERROR"; error: string | null }
-  | { type: "SET_SUBMITTED"; submitted: SubmittedComplaint };
+  | { type: "SET_SUBMITTED"; submitted: SubmittedComplaint }
+  | { type: "RESTORE_DRAFT"; draft: Pick<State, "wizardStep" | "form" | "phase"> };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -73,6 +80,14 @@ function reducer(state: State, action: Action): State {
         phase: "success",
         error: null,
       };
+    case "RESTORE_DRAFT":
+      return {
+        ...state,
+        wizardStep: action.draft.wizardStep,
+        form: action.draft.form,
+        phase: action.draft.phase === "submitting" ? "wizard" : action.draft.phase,
+        error: null,
+      };
     default:
       return state;
   }
@@ -87,32 +102,37 @@ const initialState: State = {
   error: null,
 };
 
-function initialWizardState(): State {
-  const cached = getComplaintFormOptionsFromCache();
-  const form = { ...initialWizardFormData };
-  if (cached?.categories[0] && !form.categoryId) {
-    form.categoryId = cached.categories[0].id;
-  }
-  return { ...initialState, form };
+function defaultCategoryId(
+  categories: ComplaintFormOptions["categories"],
+): string | undefined {
+  const sorted = sortCategoriesForPicker(categories);
+  return sorted[0]?.id;
 }
 
 export function ComplaintSubmitWizard({ locale }: Props) {
   const t = useTranslations("complaintSubmit");
   const router = useRouter();
-  const [state, dispatch] = useReducer(reducer, undefined, initialWizardState);
-  const [options, setOptions] = useState<ComplaintFormOptions | null>(() =>
-    getComplaintFormOptionsFromCache(),
-  );
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const [options, setOptions] = useState<ComplaintFormOptions | null>(null);
   const [optionsError, setOptionsError] = useState<string | null>(null);
   const [optionsWarning, setOptionsWarning] = useState<string | null>(null);
-  const [optionsLoading, setOptionsLoading] = useState(
-    () => !getComplaintFormOptionsFromCache(),
-  );
+  /** Always true on server + first client paint so SSR matches hydration. */
+  const [optionsLoading, setOptionsLoading] = useState(true);
   const [optionsRetrying, setOptionsRetrying] = useState(false);
+  const persistEnabledRef = useRef(false);
 
   useEffect(() => {
-    const categoryIdAtMount = state.form.categoryId;
     let cancelled = false;
+    const draft = getComplaintSubmitDraft();
+    if (draft) {
+      dispatch({ type: "RESTORE_DRAFT", draft });
+      requestAnimationFrame(() => {
+        persistEnabledRef.current = true;
+      });
+    } else {
+      persistEnabledRef.current = true;
+    }
+    const categoryIdAtMount = draft?.form.categoryId ?? "";
 
     void (async () => {
       try {
@@ -121,18 +141,28 @@ export function ComplaintSubmitWizard({ locale }: Props) {
         setOptions(data);
         setOptionsError(null);
         setOptionsWarning(null);
-        if (!categoryIdAtMount && data.categories.length > 0) {
+        const defaultId = defaultCategoryId(data.categories);
+        if (!categoryIdAtMount && defaultId) {
           dispatch({
             type: "PATCH_FORM",
-            patch: { categoryId: data.categories[0].id },
+            patch: { categoryId: defaultId },
           });
         }
       } catch {
         if (cancelled) return;
-        const cached = getComplaintFormOptionsFromCache();
-        if (cached) {
+        const fallback = getComplaintFormOptionsFromCache();
+        if (fallback) {
+          setOptions(fallback);
           setOptionsWarning(t("errors.optionsPartial"));
+          const defaultId = defaultCategoryId(fallback.categories);
+          if (!categoryIdAtMount && defaultId) {
+            dispatch({
+              type: "PATCH_FORM",
+              patch: { categoryId: defaultId },
+            });
+          }
         } else {
+          setOptions(null);
           setOptionsError(t("errors.optionsFailed"));
         }
       } finally {
@@ -148,21 +178,43 @@ export function ComplaintSubmitWizard({ locale }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount revalidate only
   }, []);
 
+  useEffect(() => {
+    if (!persistEnabledRef.current) {
+      return;
+    }
+    if (state.phase !== "wizard" && state.phase !== "submitting") {
+      return;
+    }
+    setComplaintSubmitDraft({
+      wizardStep: state.wizardStep,
+      form: state.form,
+      phase: state.phase === "submitting" ? "submitting" : "wizard",
+    });
+  }, [state.phase, state.wizardStep, state.form]);
+
   const categories = options?.categories ?? [];
-  const orgUnits = options?.orgUnits ?? [];
   const optionsUnavailable =
     !optionsLoading &&
-    (Boolean(optionsError) ||
-      categories.length === 0 ||
-      orgUnits.length === 0);
-  const submitDisabled =
-    optionsUnavailable || !state.form.categoryId || !state.form.orgUnitId;
+    (Boolean(optionsError) || categories.length === 0);
 
-  const validateStep1 = useCallback((): boolean => {
-    if (!state.form.categoryId) {
-      dispatch({ type: "SET_ERROR", error: t("errors.categoryRequired") });
+  const validateRequiredFields = useCallback((): boolean => {
+    if (state.form.subject.trim().length < 5) {
+      dispatch({ type: "SET_ERROR", error: t("errors.subjectMin") });
       return false;
     }
+    if (state.form.description.trim().length < 20) {
+      dispatch({ type: "SET_ERROR", error: t("errors.descriptionMin") });
+      return false;
+    }
+    if (!state.form.consentGiven) {
+      dispatch({ type: "SET_ERROR", error: t("errors.consentRequired") });
+      return false;
+    }
+    dispatch({ type: "SET_ERROR", error: null });
+    return true;
+  }, [state.form, t]);
+
+  const validateStep1 = useCallback((): boolean => {
     if (state.form.subject.trim().length < 5) {
       dispatch({ type: "SET_ERROR", error: t("errors.subjectMin") });
       return false;
@@ -176,25 +228,17 @@ export function ComplaintSubmitWizard({ locale }: Props) {
   }, [state.form, t]);
 
   const validateStep2 = useCallback((): boolean => {
-    if (!state.form.region || !state.form.zone) {
-      dispatch({ type: "SET_ERROR", error: t("errors.locationRequired") });
-      return false;
+    const phoneRaw = state.form.complainantPhone.trim();
+    if (phoneRaw) {
+      const phone = normalizePhoneE164(phoneRaw);
+      if (!phone || !isValidE164(phone)) {
+        dispatch({ type: "SET_ERROR", error: t("errors.phoneInvalid") });
+        return false;
+      }
     }
-    if (!state.form.complainantName.trim()) {
-      dispatch({ type: "SET_ERROR", error: t("errors.nameRequired") });
-      return false;
-    }
-    const phone = normalizePhoneE164(state.form.complainantPhone.trim());
-    if (!phone) {
-      dispatch({ type: "SET_ERROR", error: t("errors.phoneRequired") });
-      return false;
-    }
-    if (!isValidE164(phone)) {
-      dispatch({ type: "SET_ERROR", error: t("errors.phoneInvalid") });
-      return false;
-    }
-    if (!state.form.orgUnitId) {
-      dispatch({ type: "SET_ERROR", error: t("errors.orgUnitRequired") });
+    const emailRaw = state.form.complainantEmail.trim();
+    if (emailRaw && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw)) {
+      dispatch({ type: "SET_ERROR", error: t("errors.emailInvalid") });
       return false;
     }
     if (!state.form.consentGiven) {
@@ -206,7 +250,7 @@ export function ComplaintSubmitWizard({ locale }: Props) {
   }, [state.form, t]);
 
   const submitComplaint = async () => {
-    if (submitDisabled) {
+    if (!validateRequiredFields()) {
       return;
     }
 
@@ -224,20 +268,24 @@ export function ComplaintSubmitWizard({ locale }: Props) {
         locale,
       );
 
+      const phoneNormalized = normalizePhoneE164(
+        state.form.complainantPhone.trim(),
+      );
+
       const created = await createPublicComplaint({
         subject: state.form.subject.trim(),
         description,
         channel: "WEB",
         consentGiven: true,
         locale,
-        complainantName: state.form.complainantName.trim(),
+        complainantName: state.form.complainantName.trim() || undefined,
         complainantEmail: state.form.complainantEmail.trim() || undefined,
-        complainantPhone: normalizePhoneE164(state.form.complainantPhone.trim()),
-        categoryId: state.form.categoryId,
-        orgUnitId: state.form.orgUnitId,
+        complainantPhone: phoneNormalized || undefined,
+        categoryId: state.form.categoryId || undefined,
         requestUploadSession: true,
       });
 
+      clearComplaintSubmitDraft();
       dispatch({
         type: "SET_SUBMITTED",
         submitted: {
@@ -267,10 +315,11 @@ export function ComplaintSubmitWizard({ locale }: Props) {
         setOptions(data);
         setOptionsError(null);
         setOptionsWarning(null);
-        if (!state.form.categoryId && data.categories.length > 0) {
+        const defaultId = defaultCategoryId(data.categories);
+        if (!state.form.categoryId && defaultId) {
           dispatch({
             type: "PATCH_FORM",
-            patch: { categoryId: data.categories[0].id },
+            patch: { categoryId: defaultId },
           });
         }
       } catch {
@@ -349,7 +398,10 @@ export function ComplaintSubmitWizard({ locale }: Props) {
                 dispatch({ type: "SET_STEP", step: 2 });
               }
             }}
-            onCancel={() => router.push("/")}
+            onCancel={() => {
+              clearComplaintSubmitDraft();
+              router.push("/");
+            }}
             error={state.error}
           />
         ) : null}
@@ -357,8 +409,6 @@ export function ComplaintSubmitWizard({ locale }: Props) {
         {state.wizardStep === 2 ? (
           <ComplaintStepContactLocation
             locale={locale}
-            orgUnits={orgUnits}
-            orgUnitsUnavailable={optionsUnavailable}
             data={state.form}
             onChange={(patch) => dispatch({ type: "PATCH_FORM", patch })}
             onNext={() => {
@@ -375,12 +425,10 @@ export function ComplaintSubmitWizard({ locale }: Props) {
           <ComplaintStepReview
             locale={locale}
             categories={categories}
-            orgUnits={orgUnits}
             data={state.form}
             onBack={() => dispatch({ type: "SET_STEP", step: 2 })}
             onSubmit={submitComplaint}
             isSubmitting={state.phase === "submitting"}
-            submitDisabled={submitDisabled}
             error={state.error}
           />
         ) : null}

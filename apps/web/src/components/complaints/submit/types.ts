@@ -11,7 +11,6 @@ export interface WizardFormData {
   region: string;
   zone: string;
   woreda: string;
-  orgUnitId: string;
   complainantName: string;
   complainantEmail: string;
   complainantPhone: string;
@@ -31,7 +30,6 @@ export const initialWizardFormData: WizardFormData = {
   region: "",
   zone: "",
   woreda: "",
-  orgUnitId: "",
   complainantName: "",
   complainantEmail: "",
   complainantPhone: "",

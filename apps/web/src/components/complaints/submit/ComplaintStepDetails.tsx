@@ -4,8 +4,7 @@ import { useTranslations } from "next-intl";
 import { AlignLeft, ArrowRight, Tag, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ComplaintFormOptionItem } from "@/lib/public-complaints";
-import { optionLabel } from "@/lib/public-complaints";
-import { getCategoryIcon } from "./category-icons";
+import { CategoryPicker } from "./CategoryPicker";
 import type { WizardFormData } from "./types";
 
 interface ComplaintStepDetailsProps {
@@ -47,13 +46,16 @@ export function ComplaintStepDetails({
         <legend className="flex items-center gap-2 text-label font-semibold uppercase tracking-wide text-on-surface-variant">
           <Tag className="h-[18px] w-[18px]" aria-hidden />
           {t("fields.category")}
+          <span className="font-normal normal-case tracking-normal text-text-secondary">
+            {t("optional")}
+          </span>
         </legend>
         {categoriesLoading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-busy="true">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" aria-busy="true">
             {[1, 2, 3, 4].map((key) => (
               <div
                 key={key}
-                className="h-[88px] animate-pulse rounded-lg bg-surface-container-high"
+                className="h-14 animate-pulse rounded-lg bg-surface-container-high"
               />
             ))}
           </div>
@@ -62,41 +64,12 @@ export function ComplaintStepDetails({
             {t("errors.categoriesUnavailable")}
           </p>
         ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {categories.map((cat) => {
-            const Icon = getCategoryIcon(cat.code);
-            const selected = data.categoryId === cat.id;
-            return (
-              <label
-                key={cat.id}
-                className="group relative cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="categoryId"
-                  value={cat.id}
-                  checked={selected}
-                  onChange={() => onChange({ categoryId: cat.id })}
-                  className="peer sr-only"
-                  aria-label={optionLabel(cat, locale)}
-                />
-                <div className="flex items-center gap-4 rounded-lg border border-border-standard p-4 transition-all peer-checked:border-primary peer-checked:bg-brand-wash hover:border-primary">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-container-low text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
-                    <Icon className="h-6 w-6" aria-hidden />
-                  </div>
-                  <div>
-                    <p className="text-h3 font-semibold text-on-surface">
-                      {optionLabel(cat, locale)}
-                    </p>
-                    <p className="text-body-sm leading-tight text-text-secondary">
-                      {cat.code.replace(/_/g, " ")}
-                    </p>
-                  </div>
-                </div>
-              </label>
-            );
-          })}
-        </div>
+          <CategoryPicker
+            locale={locale}
+            categories={categories}
+            selectedId={data.categoryId}
+            onSelect={(categoryId) => onChange({ categoryId })}
+          />
         )}
       </fieldset>
 
@@ -107,6 +80,9 @@ export function ComplaintStepDetails({
         >
           <Type className="h-[18px] w-[18px]" aria-hidden />
           {t("fields.subject")}
+          <span className="text-danger" aria-hidden="true">
+            *
+          </span>
         </label>
         <input
           id="subject"
@@ -128,6 +104,9 @@ export function ComplaintStepDetails({
           >
             <AlignLeft className="h-[18px] w-[18px]" aria-hidden />
             {t("fields.description")}
+            <span className="text-danger" aria-hidden="true">
+              *
+            </span>
           </label>
           <span
             className={`text-label font-semibold ${

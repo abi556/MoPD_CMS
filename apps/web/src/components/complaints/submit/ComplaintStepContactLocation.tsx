@@ -4,18 +4,14 @@ import { useTranslations } from "next-intl";
 import { ArrowRight, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { ComplaintFormOptionItem } from "@/lib/public-complaints";
 import {
   COMPLAINT_REGIONS,
   COMPLAINT_ZONES_BY_REGION,
 } from "@/lib/complaint-location-options";
-import { CategoryOrgSelects } from "./CategoryOrgSelects";
 import type { WizardFormData } from "./types";
 
 interface ComplaintStepContactLocationProps {
   locale: "en" | "am";
-  orgUnits: ComplaintFormOptionItem[];
-  orgUnitsUnavailable?: boolean;
   data: WizardFormData;
   onChange: (patch: Partial<WizardFormData>) => void;
   onNext: () => void;
@@ -28,8 +24,6 @@ const selectClassName =
 
 export function ComplaintStepContactLocation({
   locale,
-  orgUnits,
-  orgUnitsUnavailable = false,
   data,
   onChange,
   onNext,
@@ -46,6 +40,8 @@ export function ComplaintStepContactLocation({
         e.preventDefault();
         onNext();
       }}
+
+      
     >
       <div>
         <h2 className="mb-4 flex items-center border-b border-border-standard pb-2 text-h2 font-semibold text-brand-deep">
@@ -55,12 +51,12 @@ export function ComplaintStepContactLocation({
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="region" className="text-label font-semibold text-on-surface">
-              {t("fields.region")} <span className="text-danger">*</span>
+              {t("fields.region")}{" "}
+              <span className="font-normal text-text-secondary">{t("optional")}</span>
             </label>
             <select
               id="region"
               name="region"
-              required
               value={data.region}
               onChange={(e) =>
                 onChange({ region: e.target.value, zone: "" })
@@ -77,12 +73,12 @@ export function ComplaintStepContactLocation({
           </div>
           <div className="space-y-1">
             <label htmlFor="zone" className="text-label font-semibold text-on-surface">
-              {t("fields.zone")} <span className="text-danger">*</span>
+              {t("fields.zone")}{" "}
+              <span className="font-normal text-text-secondary">{t("optional")}</span>
             </label>
             <select
               id="zone"
               name="zone"
-              required
               value={data.zone}
               disabled={!data.region}
               onChange={(e) => onChange({ zone: e.target.value })}
@@ -98,7 +94,8 @@ export function ComplaintStepContactLocation({
           </div>
           <div className="space-y-1 md:col-span-2">
             <label htmlFor="woreda" className="text-label font-semibold text-on-surface">
-              {t("fields.woreda")}
+              {t("fields.woreda")}{" "}
+              <span className="font-normal text-text-secondary">{t("optional")}</span>
             </label>
             <input
               id="woreda"
@@ -124,45 +121,31 @@ export function ComplaintStepContactLocation({
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="md:col-span-2">
             <Input
-              label={`${t("fields.name")} *`}
+              label={`${t("fields.name")} ${t("optional")}`}
               name="complainantName"
               value={data.complainantName}
               onChange={(e) => onChange({ complainantName: e.target.value })}
               placeholder={t("fields.namePlaceholder")}
-              required
             />
           </div>
           <Input
-            label={t("fields.email")}
+            label={`${t("fields.email")} ${t("optional")}`}
             name="complainantEmail"
             type="email"
             value={data.complainantEmail}
             onChange={(e) => onChange({ complainantEmail: e.target.value })}
             placeholder={t("fields.emailPlaceholder")}
           />
-          <div>
-            <Input
-              label={`${t("fields.phone")} *`}
-              name="complainantPhone"
-              type="tel"
-              value={data.complainantPhone}
-              onChange={(e) => onChange({ complainantPhone: e.target.value })}
-              placeholder={t("fields.phonePlaceholder")}
-              required
-            />
-          </div>
-          <div className="md:col-span-2">
-            <CategoryOrgSelects
-              locale={locale}
-              orgUnits={orgUnits}
-              orgUnitId={data.orgUnitId}
-              onOrgUnitChange={(orgUnitId) => onChange({ orgUnitId })}
-              orgUnitsUnavailable={orgUnitsUnavailable}
-            />
-          </div>
+          <Input
+            label={`${t("fields.phone")} ${t("optional")}`}
+            name="complainantPhone"
+            type="tel"
+            value={data.complainantPhone}
+            onChange={(e) => onChange({ complainantPhone: e.target.value })}
+            placeholder={t("fields.phonePlaceholder")}
+          />
         </div>
       </div>
-
       <div className="rounded-lg border border-primary-fixed-dim bg-brand-wash p-4">
         <div className="flex items-start">
           <input
@@ -179,7 +162,10 @@ export function ComplaintStepContactLocation({
               htmlFor="consent"
               className="text-body-sm font-medium text-on-surface"
             >
-              {t("fields.consent")} <span className="text-danger">*</span>
+              {t("fields.consent")}{" "}
+              <span className="text-danger" aria-hidden="true">
+                *
+              </span>
             </label>
             <p className="mt-1 text-body-sm text-text-secondary">
               {t("fields.consentDetail")}

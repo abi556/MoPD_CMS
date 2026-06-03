@@ -90,12 +90,12 @@
     "progress": "ሂደት፡ {percent}%",
     "headings": {
       "step1": "ደረጃ 1፡ ምድብ እና ዝርዝር",
-      "step2": "ደረጃ 2፡ ቦታ እና የግል መረጃ",
+      "step2": "ደረጃ 2፡ የግል መረጃ እና አድራሻ",
       "step3": "ደረጃ 3፡ ግምገማ እና ማስገባት"
     },
     "steps": {
       "details": "1. ዝርዝር",
-      "contact": "2. ቦታ",
+      "contact": "2. የግል መረጃ",
       "review": "3. ግምገማ"
     },
     "sectionLocation": "የቦታ ዝርዝር",
@@ -104,8 +104,7 @@
     "reviewIntro": "ከማስገባትዎ በፊት ቅሬታዎን በጥንቃቄ ይገምግሙ። ማንኛውንም ክፍል ለማስተካከል ወደ ኋላ መመለስ ይችላሉ።",
     "reviewSections": {
       "complaint": "ቅሬታ",
-      "location": "ቦታ እና ቢሮ",
-      "contact": "መገናኛ"
+      "personalLocation": "የግል መረጃ እና አድራሻ"
     },
     "info": {
       "privacyTitle": "የግላዊነት ማስታወቂያ",
@@ -113,6 +112,8 @@
       "slaTitle": "የተገመተ ምላሽ ጊዜ",
       "slaBody": "መደበኛ ምላሾች ብዙውን ከማስገባት በኋላ በ3–5 የስራ ቀናት ውስጥ ይሰጣሉ።"
     },
+    "optional": "አስገዳጅ አይደለም",
+    "requiredMark": "አስገዳጅ ",
     "fields": {
       "category": "የቅሬታ ምድብ",
       "subject": "የቅሬታ ርዕስ",
@@ -145,22 +146,22 @@
       "cancel": "ሰርዝ",
       "continueReview": "ወደ ግምገማ ቀጥል",
       "retryOptions": "እንደገና ሞክር",
+      "showMoreCategories": "{count} ተጨማሪ ምድቦች አሳይ",
+      "showFewerCategories": "አነስተኛ ምድቦች አሳይ",
       "submit": "ቅሬታ አስገባ",
       "submitting": "በማስገባት ላይ…"
     },
     "errors": {
-      "optionsFailed": "ምድቦችን እና ቢሮዎችን መጫን አልተቻለም። ሌሎች ዝርዝሮችን መሙላት ይችላሉ፣ ከዚያ እንደገና ይሞክሩ።",
-      "optionsPartial": "የቅርብ ጊዜ ምድቦችን እና ቢሮዎችን ማደስ አልተሳካም። ቀደም ብሎ የተጫኑት አማራጮች እያሳየን ነው።",
-      "categoriesUnavailable": "ምድቦች እስኪጫኑ ድረስ አይገኙም። ከላይ ያለውን እንደገና ይሞክሩ ወይም ቆይተው ይሞክሩ።",
+      "optionsFailed": "የቅሬታ ምድቦችን መጫን አልተቻለም። ሌሎች ዝርዝሮችን መሙላት ይችላሉ፣ ከዚያ እንደገና ይሞክሩ።",
+      "optionsPartial": "የቅርብ ጊዜ ምድቦችን ማደስ አልተሳካም። ቀደም ብሎ የተጫኑት አማራጮች እያሳየን ነው።",
+      "categoriesUnavailable": "ምድቦችን መጫን አልተቻለም። ምድብ ሳያስቀምጡ መቀጠል እና ማስገባት ይችላሉ።",
       "orgUnitsUnavailable": "ኃላፊ ቢሮዎች እስኪጫኑ ድረስ አይገኙም።",
       "categoryRequired": "እባክዎ የቅሬታ ምድብ ይምረጡ።",
       "subjectMin": "ርዕሱ ቢያንስ 5 ፊደላት ሊኖሩት ይገባል።",
       "descriptionMin": "መግለጫው ቢያንስ 20 ፊደላት ሊኖሩት ይገባል።",
       "locationRequired": "እባክዎ ክልል እና ዞን ይምረጡ።",
-      "nameRequired": "ሙሉ ስም ያስፈልጋል።",
-      "phoneRequired": "ስልክ ቁጥር ያስፈልጋል።",
       "phoneInvalid": "ትክክለኛ ስልክ ቁጥር ያስገቡ (ለምሳሌ +251911223344)።",
-      "orgUnitRequired": "እባክዎ ኃላፊ ቢሮ ይምረጡ።",
+      "emailInvalid": "ትክክለኛ ኢሜይል ያስገቡ።",
       "consentRequired": "ቅሬታውን ለማስገባት ፍቃድ መስጠት አለብዎት።",
       "submitFailed": "ቅሬታውን ማስገባት አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
     },

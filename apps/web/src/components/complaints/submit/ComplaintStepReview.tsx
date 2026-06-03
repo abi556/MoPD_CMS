@@ -14,12 +14,10 @@ import type { WizardFormData } from "./types";
 interface ComplaintStepReviewProps {
   locale: "en" | "am";
   categories: ComplaintFormOptionItem[];
-  orgUnits: ComplaintFormOptionItem[];
   data: WizardFormData;
   onBack: () => void;
   onSubmit: () => void;
   isSubmitting: boolean;
-  submitDisabled?: boolean;
   error: string | null;
 }
 
@@ -36,18 +34,15 @@ function ReviewRow({ label, value }: { label: string; value: string }) {
 export function ComplaintStepReview({
   locale,
   categories,
-  orgUnits,
   data,
   onBack,
   onSubmit,
   isSubmitting,
-  submitDisabled = false,
   error,
 }: ComplaintStepReviewProps) {
   const t = useTranslations("complaintSubmit");
 
   const category = categories.find((c) => c.id === data.categoryId);
-  const orgUnit = orgUnits.find((o) => o.id === data.orgUnitId);
 
   const locationParts: string[] = [];
   if (data.region) {
@@ -80,28 +75,16 @@ export function ComplaintStepReview({
 
       <section className="rounded-lg border border-border-standard bg-surface-container-low p-6">
         <h2 className="mb-4 text-h3 font-semibold text-brand-deep">
-          {t("reviewSections.location")}
-        </h2>
-        <dl>
-          <ReviewRow
-            label={t("fields.locationSummary")}
-            value={locationParts.join(" · ")}
-          />
-          <ReviewRow
-            label={t("fields.orgUnit")}
-            value={orgUnit ? optionLabel(orgUnit, locale) : ""}
-          />
-        </dl>
-      </section>
-
-      <section className="rounded-lg border border-border-standard bg-surface-container-low p-6">
-        <h2 className="mb-4 text-h3 font-semibold text-brand-deep">
-          {t("reviewSections.contact")}
+          {t("reviewSections.personalLocation")}
         </h2>
         <dl>
           <ReviewRow label={t("fields.name")} value={data.complainantName} />
           <ReviewRow label={t("fields.email")} value={data.complainantEmail} />
           <ReviewRow label={t("fields.phone")} value={data.complainantPhone} />
+          <ReviewRow
+            label={t("fields.locationSummary")}
+            value={locationParts.join(" · ")}
+          />
         </dl>
       </section>
 
@@ -128,7 +111,7 @@ export function ComplaintStepReview({
         <Button
           type="button"
           onClick={onSubmit}
-          disabled={isSubmitting || submitDisabled}
+          disabled={isSubmitting}
           className="w-full gap-2 md:w-auto"
         >
           {isSubmitting ? t("actions.submitting") : t("actions.submit")}

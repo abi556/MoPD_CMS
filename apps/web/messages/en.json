@@ -90,12 +90,12 @@
     "progress": "Progress: {percent}%",
     "headings": {
       "step1": "Step 1: Category & Details",
-      "step2": "Step 2: Location & Personal Info",
+      "step2": "Step 2: Personal Info & Location",
       "step3": "Step 3: Review & Submit"
     },
     "steps": {
       "details": "1. Details",
-      "contact": "2. Location",
+      "contact": "2. Personal Info",
       "review": "3. Review"
     },
     "sectionLocation": "Location Details",
@@ -104,8 +104,7 @@
     "reviewIntro": "Please review your complaint carefully before submitting. You can go back to edit any section.",
     "reviewSections": {
       "complaint": "Complaint",
-      "location": "Location & office",
-      "contact": "Contact"
+      "personalLocation": "Personal info & location"
     },
     "info": {
       "privacyTitle": "Privacy Notice",
@@ -113,6 +112,8 @@
       "slaTitle": "Estimated SLA",
       "slaBody": "Standard responses are typically provided within 3–5 working days from submission."
     },
+    "optional": "(Optional)",
+    "requiredMark": "Required",
     "fields": {
       "category": "Complaint category",
       "subject": "Complaint subject",
@@ -145,22 +146,22 @@
       "cancel": "Cancel",
       "continueReview": "Continue to review",
       "retryOptions": "Retry",
+      "showMoreCategories": "Show {count} more categories",
+      "showFewerCategories": "Show fewer categories",
       "submit": "Submit complaint",
       "submitting": "Submitting…"
     },
     "errors": {
-      "optionsFailed": "Could not load categories and offices. You can still fill in other details, then retry.",
-      "optionsPartial": "Could not refresh the latest categories and offices. Showing previously loaded options.",
-      "categoriesUnavailable": "Categories are unavailable until the list loads. Use Retry above or try again later.",
+      "optionsFailed": "Could not load complaint categories. You can still fill in other details, then retry.",
+      "optionsPartial": "Could not refresh the latest categories. Showing previously loaded options.",
+      "categoriesUnavailable": "Categories could not be loaded. You can still continue and submit without selecting one.",
       "orgUnitsUnavailable": "Responsible offices are unavailable until the list loads.",
       "categoryRequired": "Please select a complaint category.",
       "subjectMin": "Subject must be at least 5 characters.",
       "descriptionMin": "Description must be at least 20 characters.",
       "locationRequired": "Please select a region and zone.",
-      "nameRequired": "Full name is required.",
-      "phoneRequired": "Phone number is required.",
       "phoneInvalid": "Enter a valid phone number (e.g. +251911223344).",
-      "orgUnitRequired": "Please select a responsible office.",
+      "emailInvalid": "Enter a valid email address.",
       "consentRequired": "You must provide consent to submit the complaint.",
       "submitFailed": "Could not submit complaint. Please try again."
     },
