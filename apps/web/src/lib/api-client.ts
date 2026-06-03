@@ -144,7 +144,7 @@ export async function apiRequest<T>(
   ) {
     clearAccessToken();
     const locale = window.location.pathname.split("/")[1] ?? "en";
-    window.location.assign(`/${locale}/session-expired`);
+    window.location.assign(`/${locale}/auth/session-expired`);
     throw new ApiError(401, { message: "Session expired" });
   }
 

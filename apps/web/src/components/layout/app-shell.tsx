@@ -1,1 +1,1 @@
-export { AppShell } from "@/components/shell/app-shell";
+export { AppShell } from "@/components/layout/app/app-shell";

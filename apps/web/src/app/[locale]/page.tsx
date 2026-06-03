@@ -22,7 +22,7 @@ export default async function LandingPage({
   setRequestLocale(locale);
 
   if (await hasRefreshCookie()) {
-    redirect({ href: "/dashboard" });
+    redirect({ href: "/dashboard", locale });
   }
 
   const t = await getTranslations("public");

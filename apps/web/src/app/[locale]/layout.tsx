@@ -3,7 +3,7 @@ import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { SkipToContent } from "@/components/shell/skip-to-content";
+import { SkipToContent } from "@/components/layout/skip-to-content";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { routing } from "@/i18n/routing";

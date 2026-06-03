@@ -78,7 +78,7 @@ AUTH_CSRF_ENFORCED=false
 - **Refresh cookie:** `refresh_token` (name from `AUTH_REFRESH_COOKIE_NAME`), set by API on login; path under `/api/v1/auth`.
 - **CSRF:** When `AUTH_CSRF_ENFORCED=true`, requests must send a trusted `Origin` (see `AUTH_CSRF_TRUSTED_ORIGINS`).
 
-`lib/api-client.ts` implements: parse `{ data }` / `{ error }`, attach Bearer, **one** refresh attempt on 401 (when a token existed), then redirect to `/[locale]/session-expired`.
+`lib/api-client.ts` implements: parse `{ data }` / `{ error }`, attach Bearer, **one** refresh attempt on 401 (when a token existed), then redirect to `/[locale]/auth/session-expired`.
 
 ---
 
@@ -161,9 +161,9 @@ Implemented in `apps/web`:
 |------|--------|
 | i18n | `src/i18n/*`, `messages/en.json`, `messages/am.json`, `proxy.ts` (Next 16; was `middleware.ts`) |
 | API client | `src/lib/api-client.ts`, `src/lib/api-credentials.ts` |
-| Auth | `src/components/providers/auth-provider.tsx`, `/[locale]/login` |
+| Auth | `src/components/providers/auth-provider.tsx`, `/[locale]/auth/login` |
 | Shells | `PublicShell`, `AuthShell`, `AppShell`, `LocaleSwitcher` |
-| Routes | `/en`, `/en/login`, `/en/app`, `/en/forbidden`, `/en/session-expired`, `/en/reset-password` |
+| Routes | `/en`, `/en/complaints/new`, `/en/complaints/track`, `/en/auth/login`, `/en/dashboard`, `/en/forbidden` (legacy `/en/login`, `/en/submit`, `/en/track`, `/en/app` redirect in `next.config.ts`) |
 | E2E | `playwright.config.ts`, `e2e/smoke.spec.ts` |
 
 **Run locally:**

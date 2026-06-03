@@ -1246,6 +1246,38 @@ export function createPrismaMock(): PrismaService {
     return Promise.resolve(updated);
   };
 
+  /** Active category + org unit for GET /complaints/form-options in public E2E. */
+  const seedPublicFormOptionsReferenceData = (): void => {
+    const now = new Date();
+    catSeq += 1;
+    const categoryId = `cat_${catSeq}`;
+    categoryStore.set(categoryId, {
+      id: categoryId,
+      code: 'E2E_PUBLIC_CAT',
+      nameEn: 'E2E Public Category',
+      nameAm: null,
+      parentId: null,
+      isActive: true,
+      sortOrder: 0,
+      createdAt: now,
+      updatedAt: now,
+    });
+    orgSeq += 1;
+    const orgUnitId = `org_${orgSeq}`;
+    orgUnitStore.set(orgUnitId, {
+      id: orgUnitId,
+      code: 'E2E_PUBLIC_ORG',
+      nameEn: 'E2E Public Org Unit',
+      nameAm: null,
+      parentId: null,
+      isActive: true,
+      sortOrder: 0,
+      createdAt: now,
+      updatedAt: now,
+    });
+  };
+  seedPublicFormOptionsReferenceData();
+
   const notificationTemplateUpsert = (args: {
     where: {
       key_locale_channel: { key: string; locale: string; channel: string };

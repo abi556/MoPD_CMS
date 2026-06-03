@@ -1,1 +1,1 @@
-export { PublicShell } from "@/components/shell/public-shell";
+export { PublicShell } from "@/components/layout/public/public-shell";

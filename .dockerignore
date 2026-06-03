@@ -40,7 +40,6 @@
 # Local infra / compose (not needed inside app images)
 infra/docker
 .env.docker
-extract.py
 
 # OS
 **/.DS_Store

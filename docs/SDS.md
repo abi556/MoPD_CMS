@@ -1958,29 +1958,45 @@ mopd-cms/
 │   └── web/                          # Next.js Frontend
 │       ├── src/
 │       │   ├── app/
+│       │   │   ├── layout.tsx                # Root layout (html/body)
 │       │   │   ├── [locale]/
-│       │   │   │   ├── layout.tsx
-│       │   │   │   ├── page.tsx              # Landing page
+│       │   │   │   ├── layout.tsx            # next-intl + providers
+│       │   │   │   ├── page.tsx              # Public landing
+│       │   │   │   ├── error.tsx / not-found.tsx
+│       │   │   │   ├── forbidden/page.tsx    # RBAC denied
 │       │   │   │   ├── complaints/
-│       │   │   │   │   ├── new/page.tsx      # Submission form
-│       │   │   │   │   └── track/page.tsx    # Public tracking
+│       │   │   │   │   ├── new/page.tsx      # Submission wizard
+│       │   │   │   │   └── track/page.tsx    # Public tracking (Phase 3)
 │       │   │   │   ├── dashboard/
-│       │   │   │   │   ├── layout.tsx        # Staff layout
-│       │   │   │   │   ├── page.tsx          # Dashboard home
-│       │   │   │   │   ├── complaints/       # Staff complaint views
-│       │   │   │   │   ├── reports/          # Analytics
-│       │   │   │   │   └── admin/            # Administration
+│       │   │   │   │   ├── layout.tsx        # Staff shell + auth guard
+│       │   │   │   │   ├── page.tsx
+│       │   │   │   │   ├── complaints/
+│       │   │   │   │   ├── reports/
+│       │   │   │   │   └── admin/
 │       │   │   │   └── auth/
+│       │   │   │       ├── layout.tsx        # Auth shell
 │       │   │   │       ├── login/page.tsx
-│       │   │   │       └── forgot-password/page.tsx
+│       │   │   │       ├── forgot-password/page.tsx
+│       │   │   │       ├── reset-password/page.tsx
+│       │   │   │       └── session-expired/page.tsx
 │       │   │   ├── api/                      # Next.js API routes (BFF proxy, if needed)
 │       │   │   └── globals.css
+│       │   │   # Legacy paths (/login, /submit, /track, /app, /session-expired)
+│       │   │   # redirect via next.config.ts — not duplicate route folders
 │       │   ├── components/
-│       │   │   ├── ui/                       # shadcn/ui components
-│       │   │   ├── forms/                    # Form components
-│       │   │   ├── layout/                   # Header, sidebar, footer
-│       │   │   ├── chatbot/                  # Chat widget
-│       │   │   └── dashboard/                # Dashboard widgets
+│       │   │   ├── ui/                       # Primitives (button, input, card)
+│       │   │   ├── forms/                    # login-form, reset-password-form
+│       │   │   ├── layout/                   # Shells + chrome (no duplicate shell/)
+│       │   │   │   ├── locale-switcher.tsx
+│       │   │   │   ├── skip-to-content.tsx
+│       │   │   │   ├── public/               # public-header, public-nav, public-footer, public-shell
+│       │   │   │   ├── app/                  # app-sidebar, app-header, app-footer, app-shell
+│       │   │   │   └── auth/                 # auth-shell
+│       │   │   ├── auth/                     # app-auth-guard, permission-gate
+│       │   │   ├── complaints/submit/        # Public submission wizard
+│       │   │   ├── chatbot/
+│       │   │   ├── dashboard/
+│       │   │   └── providers/
 │       │   ├── lib/
 │       │   │   ├── api-client.ts             # Typed API client
 │       │   │   ├── auth.ts                   # Auth utilities

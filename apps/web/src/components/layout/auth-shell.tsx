@@ -1,1 +1,1 @@
-export { AuthShell } from "@/components/shell/auth-shell";
+export { AuthShell } from "@/components/layout/auth/auth-shell";
