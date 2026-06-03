@@ -1,6 +1,6 @@
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
+import { ComplaintSubmitWizard } from "@/components/complaints/submit/ComplaintSubmitWizard";
 import { PublicShell } from "@/components/layout/public-shell";
-import { ComplaintSubmissionForm } from "@/components/forms/complaint-submission-form";
 
 export default async function ComplaintNewPage({
   params,
@@ -8,15 +8,13 @@ export default async function ComplaintNewPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations("public");
+  setRequestLocale(locale);
+  const resolvedLocale = locale === "am" ? "am" : "en";
 
   return (
     <PublicShell>
       <div className="mx-auto w-full max-w-max-width px-gutter py-12">
-        <div className="mb-8 max-w-2xl">
-          <h1 className="text-3xl font-semibold text-on-surface">{t("ctaSubmit")}</h1>
-        </div>
-        <ComplaintSubmissionForm locale={locale === "am" ? "am" : "en"} />
+        <ComplaintSubmitWizard locale={resolvedLocale} />
       </div>
     </PublicShell>
   );

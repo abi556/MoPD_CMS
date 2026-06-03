@@ -57,6 +57,6 @@ import { QueueModule } from './queue/queue.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*path');
   }
 }

@@ -164,6 +164,12 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 
 ## 6) Complaints
 
+### GET `/complaints/form-options`
+- **Auth:** Public
+- **Response:** `{ data: { categories: FormOptionItem[], orgUnits: FormOptionItem[] } }`
+  - `FormOptionItem`: `{ id, code, nameEn, nameAm }` (active records only)
+- **Purpose:** Populate category and responsible-office dropdowns on the public submission form
+
 ### POST `/complaints`
 - **Auth:** Public
 - **Body (CreateComplaintDto):**

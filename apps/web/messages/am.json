@@ -85,44 +85,124 @@
     "tooManyRequests": "ብዙ ጥያቄዎች። ትንሽ ይጠብቁና እንደገና ይሞክሩ።"
   },
   "complaintSubmit": {
-    "steps": {
-      "one": "1. የቅሬታ ዝርዝሮች",
-      "two": "2. የመገናኛ መረጃ እና ፍቃድ",
-      "threeOptional": "3. ማስረጃ መጫን (አማራጭ)"
+    "overline": "የቅሬታ ማስገቢያ",
+    "loading": "የቅጽ አማራጮች በመጫን ላይ…",
+    "progress": "ሂደት፡ {percent}%",
+    "headings": {
+      "step1": "ደረጃ 1፡ ምድብ እና ዝርዝር",
+      "step2": "ደረጃ 2፡ ቦታ እና የግል መረጃ",
+      "step3": "ደረጃ 3፡ ግምገማ እና ማስገባት"
     },
-    "sectionDetails": "የቅሬታ ዝርዝሮች",
-    "sectionContact": "የመገናኛ መረጃ እና ፍቃድ",
-    "sectionEvidence": "ማስረጃ መጫን (አማራጭ)",
+    "steps": {
+      "details": "1. ዝርዝር",
+      "contact": "2. ቦታ",
+      "review": "3. ግምገማ"
+    },
+    "sectionLocation": "የቦታ ዝርዝር",
+    "sectionContact": "የግል መረጃ",
+    "contactIntro": "የግል ዝርዝሮችዎ ሚስጥራዊ ናቸው እና ቅሬታዎን ለመከታተል ብቻ ይውላሉ።",
+    "reviewIntro": "ከማስገባትዎ በፊት ቅሬታዎን በጥንቃቄ ይገምግሙ። ማንኛውንም ክፍል ለማስተካከል ወደ ኋላ መመለስ ይችላሉ።",
+    "reviewSections": {
+      "complaint": "ቅሬታ",
+      "location": "ቦታ እና ቢሮ",
+      "contact": "መገናኛ"
+    },
+    "info": {
+      "privacyTitle": "የግላዊነት ማስታወቂያ",
+      "privacyBody": "መረጃዎ በብሔራዊ የመረጃ ጥበቃ ሕግ የተጠበቀ ነው። ዝርዝሮችን ከባለሥልጣን ክፍሎች ጋር ብቻ እናጋራለን።",
+      "slaTitle": "የተገመተ ምላሽ ጊዜ",
+      "slaBody": "መደበኛ ምላሾች ብዙውን ከማስገባት በኋላ በ3–5 የስራ ቀናት ውስጥ ይሰጣሉ።"
+    },
     "fields": {
-      "subject": "ርዕስ",
-      "description": "መግለጫ",
-      "name": "ሙሉ ስም (አማራጭ)",
-      "email": "ኢሜይል (አማራጭ)",
-      "phone": "ስልክ (አማራጭ)",
-      "consent": "ለቅሬታ አስተዳደር የመረጃ ሂደት ፍቃድ እንዳለኝ አረጋግጣለሁ።",
-      "evidenceHint": "ይህን ደረጃ መዝለል እና ያለ ፋይል ማስገባት ይችላሉ። ካስፈለገ አሁን ማስረጃ ያክሉ።",
-      "selectedFiles": "{count} ፋይል(ዎች) ተመርጠዋል"
+      "category": "የቅሬታ ምድብ",
+      "subject": "የቅሬታ ርዕስ",
+      "subjectPlaceholder": "ጉዳዩን በአጭሩ ይገልጹ…",
+      "description": "ዝርዝር መግለጫ",
+      "descriptionPlaceholder": "ስለ ችግሩ የተወሰኑ ዝርዝሮች፣ ቀኖች እና አስቸኳይ አደጋዎች ያስረዱ…",
+      "charCount": "{count} / 1000",
+      "region": "ክልል",
+      "regionPlaceholder": "ክልል ይምረጡ",
+      "zone": "ዞን / ንዑስ ከተማ",
+      "zonePlaceholder": "ዞን ወይም ንዑስ ከተማ ይምረጡ",
+      "woreda": "ወረዳ / የተወሰነ አካባቢ",
+      "woredaPlaceholder": "ለምሳሌ ወረዳ 03፣ ቤት ቁ. 124",
+      "locationSummary": "ቦታ",
+      "orgUnit": "ኃላፊ ቢሮ",
+      "orgUnitPlaceholder": "ኃላፊ ቢሮ ይምረጡ",
+      "orgUnitHint": "ይህን ቅሬታ ለመቀበል የሚገባውን የMoPD ዳይሬክቶሬት ይምረጡ።",
+      "name": "ሙሉ ስም",
+      "namePlaceholder": "ሙሉ ሕጋዊ ስምዎን ያስገቡ",
+      "email": "ኢሜይል",
+      "emailPlaceholder": "you@example.com",
+      "phone": "ስልክ ቁጥር",
+      "phonePlaceholder": "+251 9…",
+      "consent": "የግል መረጃዬ እንዲሰራ ፍቃድ እሰጣለሁ",
+      "consentDetail": "ይህን ሳጥን በመምረጥ MoPD መረጃዎን በግላዊነት ለማከማቸት እና ቅሬታዎን ለመቆጣጠር እንዲሰራ ተስማምተዋል።"
     },
     "actions": {
-      "next": "ቀጣይ",
+      "next": "ቀጥል",
       "back": "ተመለስ",
+      "cancel": "ሰርዝ",
+      "continueReview": "ወደ ግምገማ ቀጥል",
+      "retryOptions": "እንደገና ሞክር",
       "submit": "ቅሬታ አስገባ",
-      "submitting": "በማስገባት ላይ..."
+      "submitting": "በማስገባት ላይ…"
     },
     "errors": {
+      "optionsFailed": "ምድቦችን እና ቢሮዎችን መጫን አልተቻለም። ሌሎች ዝርዝሮችን መሙላት ይችላሉ፣ ከዚያ እንደገና ይሞክሩ።",
+      "optionsPartial": "የቅርብ ጊዜ ምድቦችን እና ቢሮዎችን ማደስ አልተሳካም። ቀደም ብሎ የተጫኑት አማራጮች እያሳየን ነው።",
+      "categoriesUnavailable": "ምድቦች እስኪጫኑ ድረስ አይገኙም። ከላይ ያለውን እንደገና ይሞክሩ ወይም ቆይተው ይሞክሩ።",
+      "orgUnitsUnavailable": "ኃላፊ ቢሮዎች እስኪጫኑ ድረስ አይገኙም።",
+      "categoryRequired": "እባክዎ የቅሬታ ምድብ ይምረጡ።",
       "subjectMin": "ርዕሱ ቢያንስ 5 ፊደላት ሊኖሩት ይገባል።",
       "descriptionMin": "መግለጫው ቢያንስ 20 ፊደላት ሊኖሩት ይገባል።",
+      "locationRequired": "እባክዎ ክልል እና ዞን ይምረጡ።",
+      "nameRequired": "ሙሉ ስም ያስፈልጋል።",
+      "phoneRequired": "ስልክ ቁጥር ያስፈልጋል።",
+      "phoneInvalid": "ትክክለኛ ስልክ ቁጥር ያስገቡ (ለምሳሌ +251911223344)።",
+      "orgUnitRequired": "እባክዎ ኃላፊ ቢሮ ይምረጡ።",
       "consentRequired": "ቅሬታውን ለማስገባት ፍቃድ መስጠት አለብዎት።",
       "submitFailed": "ቅሬታውን ማስገባት አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
     },
-    "warnings": {
-      "partialUpload": "{count} የማስረጃ ፋይል(ዎች) መጫን አልተሳካም። ቅሬታዎ ግን ተመዝግቧል።"
-    },
     "success": {
-      "title": "ቅሬታዎ ተመዝግቧል",
-      "body": "ቅሬታዎ በተሳካ ሁኔታ ተመዝግቧል።",
-      "reference": "የማጣቀሻ ቁጥር",
-      "trackLink": "የቅሬታዎን ሁኔታ ይከታተሉ"
+      "title": "በተሳካ ሁኔታ ተመዝግቧል",
+      "body": "ቅሬታዎ ወደ የእቅድ እና ልማት ሚኒስቴር በደህንነት ተልኳል። ለመጀመሪያ ግምገማ በወሩ ቆይቷል።",
+      "reference": "ይፋዊ የማጣቀሻ ቁጥር",
+      "copyAria": "የማጣቀሻ ቁጥር ወደ ቅንጥብ ሰሌዳ ቅዳ",
+      "copied": "ወደ ቅንጥብ ሰሌዳ ተቀድቷል!",
+      "nextTitle": "ቀጥሎ ምን ይከሰታል?",
+      "next1": "የአስተዳደር ቡድናችን ቅሬታዎን በ24–48 የስራ ሰዓታት ውስጥ ይገምግማል።",
+      "next2": "ተመራማሪ ከተመደበ በኋላ በአውቶማቲክ ኢሜይል ማሳወቂያ ይደርስዎታል።",
+      "next3": "የማጣቀሻ ቁጥርዎን ይያዙ። የጉዳይዎን ሁኔታ በደህንነት ለመከታተል ያስፈልጋል።",
+      "evidencePrompt": "አሁን የሚደግፉ ሰነዶችን በአማራጭ ሊያያዙ ይችላሉ። ማስረጃ ከቅሬታው ተመዝግቦ በኋላ ብቻ ይጫናል።",
+      "attachEvidence": "ማስረጃ አያይዝ",
+      "trackLink": "ሁኔታ ይከታተሉ",
+      "returnPortal": "ወደ ፖርታል ተመለስ"
+    },
+    "evidence": {
+      "title": "ማስረጃ እና አባሪዎች",
+      "intro": "ከቅሬታዎ ጋር የተያያዙ ሰነዶችን፣ ምስሎችን ወይም ፋይሎችን ይጫኑ።",
+      "reference": "ማጣቀሻ፡ {reference}",
+      "dropTitle": "ፋይሎችን እዚህ ይጎትቱ እና ይጣሉ",
+      "dropHint": "ወይም ከመሣሪያዎ ለመራቅ ይጫኑ",
+      "maxSize": "ከፍተኛ 25MB በፋይል",
+      "attached": "የተያያዙ ፋይሎች",
+      "removeFile": "ፋይል አስወግድ",
+      "notesLabel": "ለተመራማሪዎች ተጨማሪ ማስታወሻ (አማራጭ)",
+      "notesPlaceholder": "ስለ አባሪዎቹ ማንኛውንም አውድ ያቅርቡ…",
+      "notesHint": "ማስታወሻዎች ከተደገፈ በቅሬታዎ ጋር ይቀመጣሉ።",
+      "skip": "አሁን ይዝለሉ",
+      "submit": "ማስረጃ ጫን",
+      "uploading": "በመጫን ላይ…",
+      "uploaded": "ተጭኗል",
+      "uploadFailed": "መጫን አልተሳካም",
+      "fileTooLarge": "{name} ከፍተኛውን የፋይል መጠን አልፏል።",
+      "partialFailure": "አንዳንድ ፋይሎች አልተጫኑም። የአልተሳኩትን ያስወግዱ ወይም እንደገና ይሞክሩ።",
+      "sessionExpired": "የማስረጃ መጫን ጊዜ አልቋል።",
+      "sessionExpiredHint": "ቅሬታዎ {reference} በተሳካ ሁኔታ ተመዝግቧል። ፋይሎችን ለማያዝ አገልግሎት ያግኙ።",
+      "completeTitle": "ማስረጃ ተጭኗል",
+      "completeBody": "ፋይሎችዎ ለቅሬታ {reference} በተሳካ ሁኔታ ተጭነዋል።",
+      "done": "ጨርስ"
     }
   }
 }

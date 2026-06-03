@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { CircleCheck } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -13,9 +13,16 @@ async function hasRefreshCookie(): Promise<boolean> {
   return Boolean(cookieStore.get(name)?.value);
 }
 
-export default async function LandingPage() {
+export default async function LandingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   if (await hasRefreshCookie()) {
-    redirect("/dashboard");
+    redirect({ href: "/dashboard" });
   }
 
   const t = await getTranslations("public");
@@ -56,6 +63,7 @@ export default async function LandingPage() {
                 src="/mopd_logo.png"
                 alt="MoPD portal visual"
                 fill
+                sizes="(max-width: 768px) 100vw, 400px"
                 className="object-contain object-[center_38%] p-8 pb-20 opacity-95"
                 priority
               />

@@ -60,6 +60,11 @@ import { ComplaintsService, type ComplaintRecord } from './complaints.service';
 import { getDocumentMaxBytes } from '../documents/document.config';
 import type { UploadedMulterFile } from '../documents/types/uploaded-file';
 import { DocumentEnvelopeDto } from '../documents/dto/document-response.dto';
+import { ReferenceDataService } from '../reference-data/reference-data.service';
+import {
+  ComplaintFormOptionsDataDto,
+  ComplaintFormOptionsEnvelopeDto,
+} from './dto/complaint-form-options.dto';
 
 function toComplaintDetailData(
   complaint: ComplaintRecord,
@@ -92,7 +97,10 @@ function toComplaintDetailData(
 @ApiTags('complaints')
 @Controller('complaints')
 export class ComplaintsController {
-  constructor(private readonly complaintsService: ComplaintsService) {}
+  constructor(
+    private readonly complaintsService: ComplaintsService,
+    private readonly referenceDataService: ReferenceDataService,
+  ) {}
 
   @Get()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -142,6 +150,70 @@ export class ComplaintsController {
         orgUnitId: item.orgUnitId ?? null,
       })),
       meta: result.meta,
+    };
+  }
+
+  // Public routes — must be registered before @Get(':id') to avoid param capture.
+  @Get('form-options')
+  @ApiOperation({
+    summary: 'Public complaint form reference data',
+    description:
+      'Returns active complaint categories and org units for the public submission form.',
+  })
+  @ApiOkResponse({
+    description: 'Form options for public complaint submission.',
+    type: ComplaintFormOptionsEnvelopeDto,
+  })
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
+  async getFormOptions(): Promise<{ data: ComplaintFormOptionsDataDto }> {
+    const [categories, orgUnits] = await Promise.all([
+      this.referenceDataService.listCategories(true),
+      this.referenceDataService.listOrgUnits(true),
+    ]);
+
+    return {
+      data: {
+        categories: categories.map((c) => ({
+          id: c.id,
+          code: c.code,
+          nameEn: c.nameEn,
+          nameAm: c.nameAm,
+        })),
+        orgUnits: orgUnits.map((o) => ({
+          id: o.id,
+          code: o.code,
+          nameEn: o.nameEn,
+          nameAm: o.nameAm,
+        })),
+      },
+    };
+  }
+
+  @Get('track/:referenceNo')
+  @ApiOperation({
+    summary: 'Track a complaint by public reference number',
+  })
+  @ApiOkResponse({
+    description: 'Complaint tracking information.',
+    type: ComplaintTrackingEnvelopeDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Complaint reference was not found.',
+    type: ErrorResponseDto,
+  })
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
+  async track(@Param('referenceNo') referenceNo: string): Promise<{
+    data: ComplaintTrackingDataDto;
+  }> {
+    const complaint = await this.complaintsService.getByReference(referenceNo);
+
+    return {
+      data: {
+        referenceNo: complaint.referenceNo,
+        status: complaint.status,
+        subject: complaint.subject,
+        submittedAt: complaint.submittedAt,
+      },
     };
   }
 
@@ -480,33 +552,5 @@ export class ComplaintsController {
       request.correlationId,
     );
     return { data: record };
-  }
-
-  @Get('track/:referenceNo')
-  @ApiOperation({
-    summary: 'Track a complaint by public reference number',
-  })
-  @ApiOkResponse({
-    description: 'Complaint tracking information.',
-    type: ComplaintTrackingEnvelopeDto,
-  })
-  @ApiNotFoundResponse({
-    description: 'Complaint reference was not found.',
-    type: ErrorResponseDto,
-  })
-  @Throttle({ default: { limit: 60, ttl: 60000 } })
-  async track(@Param('referenceNo') referenceNo: string): Promise<{
-    data: ComplaintTrackingDataDto;
-  }> {
-    const complaint = await this.complaintsService.getByReference(referenceNo);
-
-    return {
-      data: {
-        referenceNo: complaint.referenceNo,
-        status: complaint.status,
-        subject: complaint.subject,
-        submittedAt: complaint.submittedAt,
-      },
-    };
   }
 }

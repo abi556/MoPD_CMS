@@ -31,6 +31,12 @@ export function isPublicApiPath(path: string): boolean {
   if (normalized === '/complaints' || normalized.startsWith('/complaints/track')) {
     return true;
   }
+  if (normalized === '/complaints/form-options') {
+    return true;
+  }
+  if (/^\/complaints\/[^/]+\/evidence$/.test(normalized)) {
+    return true;
+  }
   if (
     normalized.startsWith('/auth/forgot-password') ||
     normalized.startsWith('/auth/reset-password')

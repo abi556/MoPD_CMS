@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
+import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { SkipToContent } from "@/components/shell/skip-to-content";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
-import { routing, type AppLocale } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -19,7 +20,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!routing.locales.includes(locale as AppLocale)) {
+  if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
 

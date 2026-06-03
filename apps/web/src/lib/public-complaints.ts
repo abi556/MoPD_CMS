@@ -1,4 +1,8 @@
-import { apiPost, apiUpload } from "@/lib/api-client";
+import { apiGet, apiPost, apiUpload } from "@/lib/api-client";
+import {
+  getCachedComplaintFormOptions,
+  setCachedComplaintFormOptions,
+} from "@/lib/complaint-form-options-cache";
 
 export interface ComplaintUploadSession {
   token: string;
@@ -6,6 +10,18 @@ export interface ComplaintUploadSession {
   complaintId: string;
   maxFiles: number;
   maxBytesPerFile: number;
+}
+
+export interface ComplaintFormOptionItem {
+  id: string;
+  code: string;
+  nameEn: string;
+  nameAm: string | null;
+}
+
+export interface ComplaintFormOptions {
+  categories: ComplaintFormOptionItem[];
+  orgUnits: ComplaintFormOptionItem[];
 }
 
 export interface CreatePublicComplaintInput {
@@ -17,6 +33,8 @@ export interface CreatePublicComplaintInput {
   complainantName?: string;
   complainantEmail?: string;
   complainantPhone?: string;
+  categoryId?: string;
+  orgUnitId?: string;
   requestUploadSession: true;
 }
 
@@ -24,6 +42,41 @@ export interface CreatePublicComplaintResult {
   id: string;
   referenceNo: string;
   uploadSession: ComplaintUploadSession | null;
+}
+
+export function optionLabel(
+  item: ComplaintFormOptionItem,
+  locale: "en" | "am",
+): string {
+  if (locale === "am" && item.nameAm) {
+    return item.nameAm;
+  }
+  return item.nameEn;
+}
+
+export async function fetchComplaintFormOptions(): Promise<ComplaintFormOptions> {
+  return apiGet<ComplaintFormOptions>("/complaints/form-options", {
+    auth: false,
+  });
+}
+
+export function getComplaintFormOptionsFromCache(): ComplaintFormOptions | null {
+  return getCachedComplaintFormOptions();
+}
+
+/** Loads form options with session cache; pass `force` to bypass cache on retry. */
+export async function loadComplaintFormOptions(options?: {
+  force?: boolean;
+}): Promise<ComplaintFormOptions> {
+  if (!options?.force) {
+    const cached = getCachedComplaintFormOptions();
+    if (cached) {
+      return cached;
+    }
+  }
+  const data = await fetchComplaintFormOptions();
+  setCachedComplaintFormOptions(data);
+  return data;
 }
 
 export async function createPublicComplaint(

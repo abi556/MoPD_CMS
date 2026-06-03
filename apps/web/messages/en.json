@@ -85,44 +85,124 @@
     "tooManyRequests": "Too many requests. Please wait a moment and try again."
   },
   "complaintSubmit": {
-    "steps": {
-      "one": "1. Complaint details",
-      "two": "2. Contact and consent",
-      "threeOptional": "3. Evidence upload (optional)"
+    "overline": "Complaint submission",
+    "loading": "Loading form options…",
+    "progress": "Progress: {percent}%",
+    "headings": {
+      "step1": "Step 1: Category & Details",
+      "step2": "Step 2: Location & Personal Info",
+      "step3": "Step 3: Review & Submit"
     },
-    "sectionDetails": "Complaint details",
-    "sectionContact": "Contact and consent",
-    "sectionEvidence": "Evidence upload (optional)",
+    "steps": {
+      "details": "1. Details",
+      "contact": "2. Location",
+      "review": "3. Review"
+    },
+    "sectionLocation": "Location Details",
+    "sectionContact": "Personal Information",
+    "contactIntro": "Your personal details are kept confidential and used solely for following up on your complaint.",
+    "reviewIntro": "Please review your complaint carefully before submitting. You can go back to edit any section.",
+    "reviewSections": {
+      "complaint": "Complaint",
+      "location": "Location & office",
+      "contact": "Contact"
+    },
+    "info": {
+      "privacyTitle": "Privacy Notice",
+      "privacyBody": "Your data is protected under the National Data Protection Law. We only share details with relevant departments.",
+      "slaTitle": "Estimated SLA",
+      "slaBody": "Standard responses are typically provided within 3–5 working days from submission."
+    },
     "fields": {
-      "subject": "Subject",
-      "description": "Description",
-      "name": "Full name (optional)",
-      "email": "Email (optional)",
-      "phone": "Phone (optional)",
-      "consent": "I confirm I consent to data processing for complaint handling.",
-      "evidenceHint": "You can skip this step and submit without files. If needed, add evidence now.",
-      "selectedFiles": "{count} file(s) selected"
+      "category": "Complaint category",
+      "subject": "Complaint subject",
+      "subjectPlaceholder": "Brief summary of the issue…",
+      "description": "Detailed description",
+      "descriptionPlaceholder": "Please provide specific details about the problem, including dates and any immediate risks…",
+      "charCount": "{count} / 1000",
+      "region": "Region",
+      "regionPlaceholder": "Select region",
+      "zone": "Zone / Sub-city",
+      "zonePlaceholder": "Select zone or sub-city",
+      "woreda": "Woreda / Specific area",
+      "woredaPlaceholder": "e.g. Woreda 03, House No. 124",
+      "locationSummary": "Location",
+      "orgUnit": "Responsible office",
+      "orgUnitPlaceholder": "Select responsible office",
+      "orgUnitHint": "Choose the MoPD directorate best suited to handle this complaint.",
+      "name": "Full name",
+      "namePlaceholder": "Enter your full legal name",
+      "email": "Email address",
+      "emailPlaceholder": "you@example.com",
+      "phone": "Phone number",
+      "phonePlaceholder": "+251 9…",
+      "consent": "I consent to the processing of my personal data",
+      "consentDetail": "By checking this box, you agree that MoPD may securely store and process the provided information in accordance with our Privacy Policy to handle this complaint."
     },
     "actions": {
-      "next": "Next",
+      "next": "Continue",
       "back": "Back",
+      "cancel": "Cancel",
+      "continueReview": "Continue to review",
+      "retryOptions": "Retry",
       "submit": "Submit complaint",
-      "submitting": "Submitting..."
+      "submitting": "Submitting…"
     },
     "errors": {
+      "optionsFailed": "Could not load categories and offices. You can still fill in other details, then retry.",
+      "optionsPartial": "Could not refresh the latest categories and offices. Showing previously loaded options.",
+      "categoriesUnavailable": "Categories are unavailable until the list loads. Use Retry above or try again later.",
+      "orgUnitsUnavailable": "Responsible offices are unavailable until the list loads.",
+      "categoryRequired": "Please select a complaint category.",
       "subjectMin": "Subject must be at least 5 characters.",
       "descriptionMin": "Description must be at least 20 characters.",
+      "locationRequired": "Please select a region and zone.",
+      "nameRequired": "Full name is required.",
+      "phoneRequired": "Phone number is required.",
+      "phoneInvalid": "Enter a valid phone number (e.g. +251911223344).",
+      "orgUnitRequired": "Please select a responsible office.",
       "consentRequired": "You must provide consent to submit the complaint.",
       "submitFailed": "Could not submit complaint. Please try again."
     },
-    "warnings": {
-      "partialUpload": "{count} evidence file(s) failed to upload. Your complaint is still submitted."
-    },
     "success": {
-      "title": "Complaint submitted",
-      "body": "Your complaint has been submitted successfully.",
-      "reference": "Reference number",
-      "trackLink": "Track your complaint status"
+      "title": "Submission Successful",
+      "body": "Your complaint has been securely transmitted to the Ministry of Planning and Development. It is currently queued for initial review.",
+      "reference": "Official reference number",
+      "copyAria": "Copy reference number to clipboard",
+      "copied": "Copied to clipboard!",
+      "nextTitle": "What happens next?",
+      "next1": "Our administrative triage team will evaluate your submission within 24 to 48 business hours.",
+      "next2": "You will receive an automated email notification once an investigator has been formally assigned.",
+      "next3": "Please retain your reference number. You will need it to track the live status of your case securely.",
+      "evidencePrompt": "You may optionally attach supporting documents now. Evidence can only be uploaded after your complaint has been registered.",
+      "attachEvidence": "Attach evidence",
+      "trackLink": "Track status",
+      "returnPortal": "Return to portal"
+    },
+    "evidence": {
+      "title": "Evidence & Attachments",
+      "intro": "Upload supporting documents, images, or files related to your complaint.",
+      "reference": "Reference: {reference}",
+      "dropTitle": "Drag and drop files here",
+      "dropHint": "or click to browse from your device",
+      "maxSize": "Max 25MB per file",
+      "attached": "Attached files",
+      "removeFile": "Remove file",
+      "notesLabel": "Additional notes for investigators (optional)",
+      "notesPlaceholder": "Provide any context about the attached files…",
+      "notesHint": "Notes are stored with your complaint record when supported.",
+      "skip": "Skip for now",
+      "submit": "Upload evidence",
+      "uploading": "Uploading…",
+      "uploaded": "Uploaded",
+      "uploadFailed": "Upload failed",
+      "fileTooLarge": "{name} exceeds the maximum file size.",
+      "partialFailure": "Some files could not be uploaded. Remove failed files or try again.",
+      "sessionExpired": "The evidence upload window has expired.",
+      "sessionExpiredHint": "Your complaint {reference} was submitted successfully. Contact support if you still need to attach files.",
+      "completeTitle": "Evidence submitted",
+      "completeBody": "Your files were uploaded successfully for complaint {reference}.",
+      "done": "Done"
     }
   }
 }

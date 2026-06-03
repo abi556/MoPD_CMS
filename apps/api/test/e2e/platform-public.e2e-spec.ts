@@ -61,6 +61,25 @@ describe('Platform/Public (e2e)', () => {
     await request(asSupertestApp(app)).get('/api/docs-json').expect(200);
   });
 
+  it('GET /complaints/form-options returns active categories and org units without auth', async () => {
+    const response = await request(asSupertestApp(app))
+      .get('/api/v1/complaints/form-options')
+      .expect(200);
+    const body = getBody<{
+      data: {
+        categories: Array<{ id: string; code: string; nameEn: string }>;
+        orgUnits: Array<{ id: string; code: string; nameEn: string }>;
+      };
+    }>(response);
+
+    expect(Array.isArray(body.data.categories)).toBe(true);
+    expect(Array.isArray(body.data.orgUnits)).toBe(true);
+    expect(body.data.categories.length).toBeGreaterThan(0);
+    expect(body.data.orgUnits.length).toBeGreaterThan(0);
+    expect(typeof body.data.categories[0].id).toBe('string');
+    expect(typeof body.data.categories[0].code).toBe('string');
+  });
+
   it('creates complaint and returns tracking reference', async () => {
     const response = await request(asSupertestApp(app))
       .post('/api/v1/complaints')

@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/",
+        destination: "/en",
+        permanent: false,
+      },
+      {
         source: "/auth/reset",
         destination: "/en/reset-password",
         permanent: false,

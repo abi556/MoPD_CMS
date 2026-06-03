@@ -159,7 +159,7 @@ Implemented in `apps/web`:
 
 | Area | Paths |
 |------|--------|
-| i18n | `src/i18n/*`, `messages/en.json`, `messages/am.json`, `src/middleware.ts` |
+| i18n | `src/i18n/*`, `messages/en.json`, `messages/am.json`, `proxy.ts` (Next 16; was `middleware.ts`) |
 | API client | `src/lib/api-client.ts`, `src/lib/api-credentials.ts` |
 | Auth | `src/components/providers/auth-provider.tsx`, `/[locale]/login` |
 | Shells | `PublicShell`, `AuthShell`, `AppShell`, `LocaleSwitcher` |
@@ -175,5 +175,7 @@ pnpm dev
 ```
 
 **Build:** `pnpm run build` (if TypeScript complains about deleted routes, remove `.next` and rebuild).
+
+**404 on `/en` after route changes:** `pnpm dev` runs `predev`, which clears `.next/dev` so Turbopack does not serve stale routes (e.g. after removing `app/[locale]/(public)/page.tsx`). If 404 persists, stop the dev server and run `pnpm dev:stack` again — do not keep a long-running `next dev` across major App Router moves.
 
 **Next:** Phase 2 staff slice — complaints queue, detail, assign/transition ([roadmap](../../CMS%20SRS%20+%20SDS/MoPD_CMS_Frontend_Implementation_Roadmap.md) Phase 2).
