@@ -79,6 +79,22 @@ export async function loadComplaintFormOptions(options?: {
   return data;
 }
 
+export interface ComplaintTrackPayload {
+  referenceNo: string;
+  status: string;
+  subject: string;
+  submittedAt: string;
+}
+
+export async function trackComplaintByReference(
+  referenceNo: string,
+): Promise<ComplaintTrackPayload> {
+  const encoded = encodeURIComponent(referenceNo.trim());
+  return apiGet<ComplaintTrackPayload>(`/complaints/track/${encoded}`, {
+    auth: false,
+  });
+}
+
 export async function createPublicComplaint(
   input: CreatePublicComplaintInput,
 ): Promise<CreatePublicComplaintResult> {

@@ -1,7 +1,7 @@
-/**
- * Ethiopian calendar display helper (Phase 1 stub).
- * Full Temporal-based conversion can replace this in a later task.
- */
+import { EthDateTime } from "ethiopian-calendar-date-converter";
+import type { AppLocale } from "@/i18n/routing";
+
+const ADDIS_ABABA_TZ = "Africa/Addis_Ababa";
 
 const ETHIOPIAN_MONTHS_EN = [
   "Meskerem",
@@ -19,68 +19,126 @@ const ETHIOPIAN_MONTHS_EN = [
   "Pagumen",
 ] as const;
 
-/** Approximate Ethiopian date parts for display (not for legal deadlines). */
-export function toEthiopianDisplayParts(date: Date): {
+const ETHIOPIAN_MONTHS_AM = [
+  "መስከረም",
+  "ጥቅምት",
+  "ህዳር",
+  "ታህሳስ",
+  "ጥር",
+  "የካቲት",
+  "መጋቢት",
+  "ሚያዝያ",
+  "ግንቦት",
+  "ሰኔ",
+  "ሐምሌ",
+  "ነሐሴ",
+  "ጳጉሜን",
+] as const;
+
+export type EthiopianDisplayParts = {
   year: number;
   month: number;
   day: number;
   monthName: string;
+};
+
+export type LocalizedDatePair = {
+  gregorian: string;
+  ethiopian: string;
+  iso: string;
+};
+
+export type DateDisplayStyle = "medium" | "long";
+
+function parseToDate(value: string | Date): Date {
+  return typeof value === "string" ? new Date(value) : value;
+}
+
+/** Civil calendar Y-M-D in Addis Ababa for a UTC instant. */
+export function getAddisAbabaDateParts(value: string | Date): {
+  year: number;
+  month: number;
+  day: number;
 } {
-  const jdn = gregorianToJdn(
-    date.getUTCFullYear(),
-    date.getUTCMonth() + 1,
-    date.getUTCDate(),
-  );
-  const { year, month, day } = jdnToEthiopian(jdn);
+  const instant = parseToDate(value);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: ADDIS_ABABA_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(instant);
+
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  const month = Number(parts.find((p) => p.type === "month")?.value);
+  const day = Number(parts.find((p) => p.type === "day")?.value);
+
+  return { year, month, day };
+}
+
+/** Gregorian civil date in Addis Ababa as UTC noon (SSR/client stable). */
+export function toAddisAbabaCalendarDate(value: string | Date): Date {
+  const { year, month, day } = getAddisAbabaDateParts(value);
+  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+}
+
+export function toEthiopianDisplayParts(value: string | Date): EthiopianDisplayParts {
+  const civil = toAddisAbabaCalendarDate(value);
+  const eth = EthDateTime.fromEuropeanDate(civil);
+  const month = eth.month;
+  const day = eth.date;
+  const monthIndex = month - 1;
+
   return {
-    year,
+    year: eth.year,
     month,
     day,
-    monthName: ETHIOPIAN_MONTHS_EN[month - 1] ?? "Pagumen",
+    monthName:
+      ETHIOPIAN_MONTHS_EN[monthIndex] ??
+      ETHIOPIAN_MONTHS_EN[ETHIOPIAN_MONTHS_EN.length - 1],
   };
 }
 
 export function formatEthiopianDate(
-  date: Date,
-  locale: "en" | "am" = "en",
+  value: string | Date,
+  locale: AppLocale = "en",
 ): string {
-  const { year, month, day, monthName } = toEthiopianDisplayParts(date);
+  const { year, month, day } = toEthiopianDisplayParts(value);
+  const monthIndex = month - 1;
+
   if (locale === "am") {
-    return `${day}/${month}/${year} ዓ.ም.`;
+    const monthName =
+      ETHIOPIAN_MONTHS_AM[monthIndex] ??
+      ETHIOPIAN_MONTHS_AM[ETHIOPIAN_MONTHS_AM.length - 1];
+    return `${monthName} ${day}, ${year}`;
   }
+
+  const monthName =
+    ETHIOPIAN_MONTHS_EN[monthIndex] ??
+    ETHIOPIAN_MONTHS_EN[ETHIOPIAN_MONTHS_EN.length - 1];
   return `${monthName} ${day}, ${year} (EC)`;
 }
 
 export function formatGregorianDate(
-  date: Date,
-  locale: "en" | "am",
+  value: string | Date,
+  locale: AppLocale,
+  dateStyle: DateDisplayStyle = "medium",
 ): string {
+  const instant = parseToDate(value);
   return new Intl.DateTimeFormat(locale === "am" ? "am-ET" : "en-ET", {
-    dateStyle: "medium",
-    timeZone: "Africa/Addis_Ababa",
-  }).format(date);
+    dateStyle,
+    timeZone: ADDIS_ABABA_TZ,
+  }).format(instant);
 }
 
-function gregorianToJdn(year: number, month: number, day: number): number {
-  const a = Math.floor((14 - month) / 12);
-  const y = year + 4800 - a;
-  const m = month + 12 * a - 3;
-  return (
-    day +
-    Math.floor((153 * m + 2) / 5) +
-    365 * y +
-    Math.floor(y / 4) -
-    Math.floor(y / 100) +
-    Math.floor(y / 400) -
-    32045
-  );
-}
-
-function jdnToEthiopian(jdn: number): { year: number; month: number; day: number } {
-  const r = (jdn - 1723856) % 1461;
-  const n = r % 365 + 365 * Math.floor(r / 1460);
-  const year = 4 * Math.floor((jdn - 1723856) / 1461) + Math.floor(r / 365) - Math.floor(r / 1460);
-  const month = Math.floor(n / 30) + 1;
-  const day = (n % 30) + 1;
-  return { year, month, day };
+export function formatLocalizedDatePair(
+  value: string | Date,
+  locale: AppLocale,
+  dateStyle: DateDisplayStyle = "medium",
+): LocalizedDatePair {
+  const instant = parseToDate(value);
+  return {
+    gregorian: formatGregorianDate(instant, locale, dateStyle),
+    ethiopian: formatEthiopianDate(instant, locale),
+    iso: instant.toISOString(),
+  };
 }

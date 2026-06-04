@@ -205,5 +205,81 @@
       "completeBody": "ፋይሎችዎ ለቅሬታ {reference} በተሳካ ሁኔታ ተጭነዋል።",
       "done": "ጨርስ"
     }
+  },
+  "complaintTrack": {
+    "title": "የቅሬታ ሁኔታ ይከታተሉ",
+    "intro": "የቅሬታዎን ሁኔታ እና ዝመናዎችን በአስተማማኝ መንገድ ለመመልከት ልዩ የማጣቀሻ ቁጥርዎን ያስገቡ።",
+    "referenceLabel": "የማጣቀሻ ቁጥር",
+    "referencePlaceholder": "ለምሳሌ CMS-2026-000001",
+    "search": "ሁኔታ ይፈትሹ",
+    "searching": "በመፈተሽ ላይ…",
+    "loading": "በመጫን ላይ…",
+    "lostReference": "የማጣቀሻ ቁጥርዎን አጥተዋል?",
+    "contactSupport": "አገልግሎት ያግኙ",
+    "resultsHeading": "የክትትል ውጤት ለ፡ {reference}",
+    "searchAnother": "ሌላ ቅሬታ ይከታተሉ",
+    "currentStatus": "የአሁን ሁኔታ",
+    "subject": "ርዕስ",
+    "submittedAt": "የማስገባት ቀን",
+    "timelineTitle": "የሂደት ታሪክ",
+    "progress": {
+      "label": "አጠቃላይ ሂደት",
+      "stepOf": "ደረጃ {current} ከ {total}",
+      "loading": "የቅሬታ ሁኔታ በመጫን ላይ…",
+      "errorHint": "ይህ ማጣቀሻ አልተገኘም። ቁጥሩን ያረጋግጡ እና እንደገና ይሞክሩ።"
+    },
+    "timeline": {
+      "received": {
+        "title": "ቅሬታ ተቀብሏል",
+        "body": "ቅሬታዎ በማጣቀሻ ቁጥር በMoPD ስርዓት ውስጥ ይገባል።"
+      },
+      "review": {
+        "title": "በግምገማ ላይ",
+        "body": "MoPD ማስገባትዎን ያገናዘብ እና ለተገቢ ቡድን ያስተላልፋል።"
+      },
+      "investigation": {
+        "title": "በምርመራ ላይ",
+        "body": "ሰራተኞች ጉዳዩን ያጣራሉ፣ ምላሽ ያዘጋጁ እና ውስጣዊ ግምገማ ያጠናቅቃሉ።"
+      },
+      "response": {
+        "title": "ምላሽ ተሰጥቷል",
+        "body": "የMoPD ምላሽ ይደርስዎታል፤ ግብረመልስ ሊሰጡ ወይም ግልጽ ማቅረብ ሊጠይቁ ይችላሉ።"
+      },
+      "closed": {
+        "title": "ጉዳይ ተዘግቷል",
+        "body": "ጉዳዩ ተጠናቋል።"
+      }
+    },
+    "statusDetail": {
+      "SUBMITTED": "ቅሬታዎ በስርዓታችን ተመዝግቧል። ሂደቱን እዚህ ለመከታተል የማጣቀሻ ቁጥር ተሰጥቷል።",
+      "TRIAGE": "MoPD ማስገባትዎን እያገናዘበ እና ቅሬታዎ እንዴት እንደሚታወቅ በመወሰን ላይ ነው።",
+      "ASSIGNED": "ቅሬታዎ ለተገቢ የMoPD ቡድን ወይም ኃላፊ ተመድቧል። ቀጣይ እርምጃዎችን ይወስዳሉ።",
+      "IN_INVESTIGATION": "የተመደቡ ሰራተኞች የቅሬታዎን ዝርዝር እና ሁኔታ እያገናዘቡ ነው።",
+      "DRAFT_RESPONSE": "MoPD ለቅሬታዎ ይፋዊ የቃል ምላሽ እያዘጋጁ ነው።",
+      "QA_LEGAL_REVIEW": "የረቂቅ ምላሹ ከመላክዎ በፊት ለጥራት እና ለሕጋዊ ተገዢነት እያገናዘበ ነው።",
+      "RESPONSE_ISSUED": "MoPD ይፋዊ ምላሽ ሰጥቷል። ያገኙትን ውጤት እባክዎ ይመልከቱ።",
+      "AWAITING_FEEDBACK": "MoPD ስለ ምላሹ ግብረመልስዎን በመጠበቅ ላይ ነው። አስተያየትዎ ጉዳዩን ለመዝጋት ወይም ለመቀጠል ሊረዳ ይችላል።",
+      "APPEAL": "ግልጽ ማቅረብ ወይም ተጨማሪ ግምገማ ተመዝግቧል። ቅሬታዎ እንደገና በMoPD እያገናዘበ ነው።",
+      "CLOSED": "ይህ ቅሬታ ተዘግቷል። ተነጣጠል የግልጽ ማቅረብ ሂደት ካልተከፈተ ተጨማሪ ዝመና አይጠበቅም።"
+    },
+    "status": {
+      "SUBMITTED": "ተመዝግቧል",
+      "TRIAGE": "በትሪያጅ",
+      "ASSIGNED": "ተመድቧል",
+      "IN_INVESTIGATION": "በምርመራ ላይ",
+      "DRAFT_RESPONSE": "የረቂቅ ምላሽ",
+      "QA_LEGAL_REVIEW": "ሕጋዊ ግምገማ",
+      "RESPONSE_ISSUED": "ምላሽ ተሰጥቷል",
+      "AWAITING_FEEDBACK": "ግብረመልስ በመጠበቅ ላይ",
+      "APPEAL": "ግልጽ ማቅረብ",
+      "CLOSED": "ተዘግቷል"
+    },
+    "errors": {
+      "title": "ክትትል ማግኘት አልተቻለም",
+      "referenceAttempted": "የተፈለገ ማጣቀሻ፦ {reference}",
+      "referenceRequired": "የማጣቀሻ ቁጥር ያስገቡ።",
+      "notFound": "ለዚያ ማጣቀሻ ቅሬታ አልተገኘም። ቁጥሩን ያረጋግጡ እና እንደገና ይሞክሩ።",
+      "generic": "የክትትል መረጃ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
+    }
   }
 }

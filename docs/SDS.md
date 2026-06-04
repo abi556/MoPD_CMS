@@ -1517,7 +1517,7 @@ All public-facing interfaces must conform to WCAG 2.2 Level AA. The design enfor
 
 ## 10.3 Ethiopian Calendar Support
 
-- **Library**: Custom Ethiopian calendar utility (based on established algorithms for Gregorian ↔ Ethiopian conversion).
+- **Library**: `ethiopian-calendar-date-converter` via [`ethiopian-calendar.ts`](apps/web/src/lib/ethiopian-calendar.ts) (Gregorian ↔ Ethiopian display; UTC storage unchanged).
 - **Display**: Dates shown in Ethiopian calendar format where configured by policy (e.g., SLA deadlines, complaint submission dates).
 - **Storage**: All dates stored internally as UTC timestamps (Gregorian). Ethiopian calendar is a display-layer concern only.
 - **User preference**: Users can toggle between Gregorian and Ethiopian calendar display in their profile settings.

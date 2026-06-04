@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/track/:referenceNo",
-        destination: "/en/complaints/track",
+        destination: "/en/complaints/track?ref=:referenceNo",
         permanent: false,
       },
       {
