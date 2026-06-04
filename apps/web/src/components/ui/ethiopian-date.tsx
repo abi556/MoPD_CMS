@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import {
   formatLocalizedDatePair,
   type DateDisplayStyle,
-  type LocalizedDatePair,
 } from "@/lib/ethiopian-calendar";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -24,11 +23,11 @@ export function EthiopianDate({
   className?: string;
 }) {
   const iso = toIso(value);
-  const [pair, setPair] = useState<LocalizedDatePair | null>(null);
 
-  useEffect(() => {
-    setPair(formatLocalizedDatePair(value, locale, dateStyle));
-  }, [value, locale, dateStyle]);
+  const pair = useMemo(
+    () => formatLocalizedDatePair(value, locale, dateStyle),
+    [value, locale, dateStyle],
+  );
 
   return (
     <time
@@ -36,19 +35,13 @@ export function EthiopianDate({
       suppressHydrationWarning
       className={className ?? "font-body text-body text-on-surface"}
     >
-      {pair ? (
-        <>
-          <span>{pair.gregorian}</span>
-          <span className="mx-1 text-text-secondary" aria-hidden="true">
-            ·
-          </span>
-          <span className={locale === "am" ? "font-ethiopic" : undefined}>
-            {pair.ethiopian}
-          </span>
-        </>
-      ) : (
-        <span aria-hidden="true">&nbsp;</span>
-      )}
+      <span>{pair.gregorian}</span>
+      <span className="mx-1 text-text-secondary" aria-hidden="true">
+        ·
+      </span>
+      <span className={locale === "am" ? "font-ethiopic" : undefined}>
+        {pair.ethiopian}
+      </span>
     </time>
   );
 }
