@@ -20,6 +20,7 @@ export function Input({ label, error, hint, id, className = "", ...props }: Inpu
         id={inputId}
         aria-invalid={Boolean(error)}
         aria-describedby={[hintId, errorId].filter(Boolean).join(" ") || undefined}
+        suppressHydrationWarning
         className={`min-h-11 w-full rounded-md border bg-surface-container-lowest px-3 py-2 text-sm text-on-surface transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 ${
           error ? "border-danger" : "border-border-standard"
         } ${className}`}

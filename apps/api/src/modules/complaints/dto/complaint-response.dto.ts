@@ -86,6 +86,13 @@ export class ComplaintCreatedDataDto {
     description: 'Selected organizational unit id when provided at intake.',
   })
   orgUnitId?: string | null;
+
+  @ApiProperty({
+    example: true,
+    description:
+      'True when a submission acknowledgment email was queued for complainantEmail.',
+  })
+  ackEmailQueued!: boolean;
 }
 
 export class ComplaintCreatedEnvelopeDto {

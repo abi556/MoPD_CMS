@@ -63,6 +63,11 @@ export const SEED_PERMISSIONS: SeedPermission[] = [
     description: 'Update complaint metadata (non-status fields).',
   },
   {
+    id: 'perm-complaint-recovery-manage',
+    code: 'complaint:recovery:manage',
+    description: 'Manage manual reference recovery inquiries.',
+  },
+  {
     id: 'perm-workflow-transition',
     code: 'workflow:transition',
     description: 'Perform workflow transitions and assignments.',
@@ -175,6 +180,7 @@ export const ROLE_PERMISSION_IDS: Record<string, string[]> = {
     P['complaints:detail'],
     P['complaints:history'],
     P['complaint:update'],
+    P['complaint:recovery:manage'],
   ],
   'role-case-officer': [
     P['complaint:read:own'],
@@ -216,6 +222,7 @@ export const ROLE_PERMISSION_IDS: Record<string, string[]> = {
     P['complaints:list'],
     P['complaints:detail'],
     P['complaints:history'],
+    P['complaint:recovery:manage'],
   ],
   'role-read-only-observer': [
     P['complaint:read'],

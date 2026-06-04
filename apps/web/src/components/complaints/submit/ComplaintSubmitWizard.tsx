@@ -18,6 +18,10 @@ import {
   setComplaintSubmitDraft,
 } from "@/lib/complaint-submit-draft";
 import { isUploadSessionExpired } from "@/lib/upload-session";
+import {
+  deriveAckContext,
+  maskEmailForDisplay,
+} from "@/lib/complaint-ack-context";
 import { sortCategoriesForPicker } from "./category-picker-order";
 import { ComplaintInfoCards } from "./ComplaintInfoCards";
 import { ComplaintEvidencePanel } from "./ComplaintEvidencePanel";
@@ -338,9 +342,17 @@ export function ComplaintSubmitWizard({ locale }: Props) {
   };
 
   if (state.phase === "success" && state.submitted) {
+    const ackContext = deriveAckContext(state.form);
+    const maskedEmail =
+      ackContext === "email"
+        ? maskEmailForDisplay(state.form.complainantEmail)
+        : undefined;
+
     return (
       <ComplaintSubmitSuccess
         referenceNo={state.submitted.referenceNo}
+        ackContext={ackContext}
+        maskedEmail={maskedEmail}
         onAttachEvidence={() =>
           dispatch({
             type: "OPEN_EVIDENCE",

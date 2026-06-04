@@ -1,11 +1,12 @@
 "use client";
 
 import {
-  type FormEvent,
   type ReactNode,
+  type SubmitEvent,
   Suspense,
   useCallback,
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -13,7 +14,7 @@ import Image from "next/image";
 import { ArrowRight, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api-client";
 import {
@@ -89,24 +90,15 @@ function ComplaintTrackPanelInner() {
   const [result, setResult] = useState<ComplaintTrackResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [lookupAttempted, setLookupAttempted] = useState(false);
 
   const urlRef = isClient ? (searchParams.get(REF_QUERY) ?? "") : "";
-  const activeReference = normalizeReferenceInput(reference || urlRef);
-  const showSplitLayout =
-    isClient && lookupAttempted && Boolean(activeReference);
+  const skipUrlFetchRef = useRef(false);
+  const prevUrlRef = useRef<string | null>(null);
+  const manualSearchInFlightRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!isClient) {
-      return;
-    }
-    const ref = searchParams.get(REF_QUERY) ?? "";
-    if (ref) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync ?ref= from URL after hydration
-      setReference(ref);
-      setLookupAttempted(true);
-    }
-  }, [isClient, searchParams]);
+  const activeReference = normalizeReferenceInput(reference);
+  const showSplitLayout =
+    isClient && (result !== null || error !== null || loading);
 
   const runSearch = useCallback(
     async (raw: string) => {
@@ -114,13 +106,12 @@ function ComplaintTrackPanelInner() {
       if (!normalized) {
         setError(t("errors.referenceRequired"));
         setResult(null);
-        setLookupAttempted(true);
         return;
       }
 
+      skipUrlFetchRef.current = false;
       setLoading(true);
       setError(null);
-      setLookupAttempted(true);
 
       try {
         const data = await trackComplaintByReference(normalized);
@@ -130,6 +121,7 @@ function ComplaintTrackPanelInner() {
           subject: data.subject,
           submittedAt: data.submittedAt,
         });
+        prevUrlRef.current = data.referenceNo;
         const params = new URLSearchParams(searchParams.toString());
         params.set(REF_QUERY, data.referenceNo);
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
@@ -144,38 +136,67 @@ function ComplaintTrackPanelInner() {
         );
       } finally {
         setLoading(false);
+        manualSearchInFlightRef.current = null;
       }
     },
     [pathname, router, searchParams, t],
   );
 
+  // Load from ?ref= only when the URL reference actually changes (not when loading toggles).
   useEffect(() => {
     if (!isClient) {
       return;
     }
-    const ref = searchParams.get(REF_QUERY) ?? "";
-    const normalized = normalizeReferenceInput(ref);
-    if (!normalized || loading) {
+    if (prevUrlRef.current === urlRef) {
       return;
     }
-    if (result?.referenceNo === normalized) {
-      return;
-    }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch from ?ref= after hydration
-    void runSearch(ref);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClient, searchParams, loading, result?.referenceNo]);
+    prevUrlRef.current = urlRef;
 
-  const onSubmit = (e: FormEvent) => {
+    setReference(urlRef);
+
+    if (!urlRef) {
+      skipUrlFetchRef.current = false;
+      return;
+    }
+    if (skipUrlFetchRef.current) {
+      return;
+    }
+    if (manualSearchInFlightRef.current) {
+      return;
+    }
+
+    const normalized = normalizeReferenceInput(urlRef);
+    if (!normalized) {
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch when ?ref= changes (load, locale switch)
+    void runSearch(urlRef);
+  }, [isClient, urlRef, runSearch]);
+
+  const onSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    void runSearch(reference);
+    const field = e.currentTarget.elements.namedItem("referenceNumber");
+    const value =
+      field instanceof HTMLInputElement ? field.value : reference;
+    const normalized = normalizeReferenceInput(value);
+    if (!normalized) {
+      void runSearch(value);
+      return;
+    }
+    manualSearchInFlightRef.current = normalized;
+    setReference(value);
+    void runSearch(value);
   };
 
   const onSearchAnother = () => {
+    skipUrlFetchRef.current = true;
+    manualSearchInFlightRef.current = null;
+    prevUrlRef.current = "";
     setResult(null);
     setError(null);
     setReference("");
-    setLookupAttempted(false);
+    setLoading(false);
     router.replace(pathname, { scroll: false });
   };
 
@@ -275,12 +296,12 @@ function ComplaintTrackPanelInner() {
 
         <p className="mt-8 w-full border-t border-border-standard pt-8 font-body-sm text-body-sm text-text-secondary">
           {t("lostReference")}{" "}
-          <a
-            href="mailto:support@mopd.gov.et"
+          <Link
+            href="/complaints/recover"
             className="text-primary underline-offset-4 hover:underline"
           >
-            {t("contactSupport")}
-          </a>
+            {t("recoverReference")}
+          </Link>
         </p>
       </div>
     </div>
@@ -305,12 +326,12 @@ function ComplaintTrackPanelInner() {
         <div className="flex flex-col gap-4">
           <p className="font-body-sm text-body-sm text-text-secondary">
             {t("lostReference")}{" "}
-            <a
-              href="mailto:support@mopd.gov.et"
+            <Link
+              href="/complaints/recover"
               className="text-primary underline-offset-4 hover:underline"
             >
-              {t("contactSupport")}
-            </a>
+              {t("recoverReference")}
+            </Link>
           </p>
           <Button
             type="button"

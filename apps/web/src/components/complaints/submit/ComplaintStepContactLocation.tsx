@@ -135,6 +135,7 @@ export function ComplaintStepContactLocation({
             value={data.complainantEmail}
             onChange={(e) => onChange({ complainantEmail: e.target.value })}
             placeholder={t("fields.emailPlaceholder")}
+            hint={t("fields.emailHint")}
           />
           <Input
             label={`${t("fields.phone")} ${t("optional")}`}
@@ -143,6 +144,7 @@ export function ComplaintStepContactLocation({
             value={data.complainantPhone}
             onChange={(e) => onChange({ complainantPhone: e.target.value })}
             placeholder={t("fields.phonePlaceholder")}
+            hint={t("fields.phoneHint")}
           />
         </div>
       </div>

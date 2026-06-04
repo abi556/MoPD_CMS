@@ -184,9 +184,37 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
   - `consentGiven` (must be `true`)
   - `locale` (`en|am`)
   - `requestUploadSession?` (`boolean`) - when `true`, response includes short-lived upload session for optional evidence
-- **Response:** `{ data: { id, referenceNo, status, channel, subject, submittedAt, locale, consentGiven, categoryId?, orgUnitId?, uploadSession? } }`
+- **Response:** `{ data: { id, referenceNo, status, channel, subject, submittedAt, locale, consentGiven, categoryId?, orgUnitId?, uploadSession?, ackEmailQueued } }`
   - `uploadSession`: `{ token, expiresAt, complaintId, maxFiles, maxBytesPerFile }`
+  - `ackEmailQueued`: `true` when `complainantEmail` was provided and the immediate `complaint_submitted_ack` email (reference + track link) was queued — not a later investigator-assignment notice
 - **Errors:** `422`
+
+### POST `/complaints/recovery/request`
+- **Auth:** Public
+- **Body:** `{ channel: 'email' | 'sms', email?, phone?, locale }`
+- **Response:** `204` (always, to avoid contact enumeration)
+- **Throttle:** 5/min per IP; per-contact limit 3/hour
+
+### POST `/complaints/recovery/verify`
+- **Auth:** Public
+- **Body:** `{ channel, email?, phone?, code (6 digits), locale }`
+- **Response:** `{ data: { references: [{ referenceNo, submittedAt }] } }`
+- **Errors:** `400` invalid code, `429` lockout
+
+### POST `/complaints/recovery/inquiries`
+- **Auth:** Public (manual fallback when no email/phone on file)
+- **Body:** `{ subjectFragment, contactEmail, submittedDateGregorian?, submittedDateEthiopian?, categoryId?, orgUnitId?, additionalNotes?, locale }`
+- **Email:** Acknowledgement on create; on staff **RESOLVED** sends reference to `contactEmail`; on **REJECTED** sends unable-to-verify guidance with link to submit anew.
+- **Rate limit:** 15 requests/hour per IP (each submit attempt counts, including validation failures). Max 5 inquiries per `contactEmail` per 24h. Dev: `DISABLE_THROTTLE=true` in API `.env`.
+- **Response:** `{ data: { inquiryId, message } }`
+
+### GET `/complaints/recovery/inquiries` (staff)
+- **Permission:** `complaint:recovery:manage`
+- **Query:** `status?` (`PENDING|IN_REVIEW|RESOLVED|REJECTED`)
+
+### PATCH `/complaints/recovery/inquiries/:id` (staff)
+- **Permission:** `complaint:recovery:manage`
+- **Body:** `{ status, matchedComplaintId?, resolvedReferenceNo? }`
 
 ### GET `/complaints/track/:referenceNo`
 - **Auth:** Public

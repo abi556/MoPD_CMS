@@ -58,6 +58,13 @@ enum CaseTaskStatus {
   CANCELLED
 }
 
+enum ReferenceRecoveryInquiryStatus {
+  PENDING
+  IN_REVIEW
+  RESOLVED
+  REJECTED
+}
+
 enum DocumentScanStatus {
   PENDING
   SCANNING
@@ -139,6 +146,30 @@ model Complaint {
 
   @@index([referenceNo])
   @@index([submittedAt])
+  @@index([categoryId])
+  @@index([orgUnitId])
+  @@index([complainantEmail])
+  @@index([complainantPhone])
+}
+
+model ReferenceRecoveryInquiry {
+  id                       String                         @id @default(uuid())
+  status                   ReferenceRecoveryInquiryStatus @default(PENDING)
+  locale                   ComplaintLocale
+  subjectFragment          String
+  submittedDateGregorian   DateTime?
+  submittedDateEthiopian   String?
+  categoryId               String?
+  orgUnitId                String?
+  contactEmail             String
+  additionalNotes          String?
+  matchedComplaintId       String?
+  resolvedReferenceNo      String?
+  assignedToUserId         String?
+  createdAt                DateTime                       @default(now())
+  updatedAt                DateTime                       @updatedAt
+
+  @@index([status, createdAt])
   @@index([categoryId])
   @@index([orgUnitId])
 }

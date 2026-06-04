@@ -69,6 +69,16 @@ export function buildPublicTrackUrl(referenceNo: string): string {
   return `${getAppPublicUrl()}/track/${encodedRef}`;
 }
 
+export function buildPublicComplaintNewUrl(
+  locale: ComplaintLocale = 'en',
+): string {
+  const prefix = process.env.APP_PUBLIC_COMPLAINT_NEW_URL?.replace(/\/$/, '');
+  if (prefix) {
+    return prefix;
+  }
+  return `${getAppPublicUrl()}/${locale}/complaints/new`;
+}
+
 function getPasswordResetTtlMinutes(): number {
   const raw = process.env.AUTH_PASSWORD_RESET_TOKEN_TTL_MS;
   const ms = raw ? Number.parseInt(raw, 10) : 3_600_000;
@@ -182,6 +192,22 @@ export class NotificationsService implements OnModuleInit {
       variables: {
         resetUrl,
         expiresInMinutes: getPasswordResetTtlMinutes(),
+      },
+    });
+  }
+
+  async queueComplaintRecoveryOtp(
+    to: string,
+    otpCode: string,
+    locale: ComplaintLocale,
+    correlationId?: string,
+  ): Promise<void> {
+    await this.queueEmail('complaint_recovery_otp', to, {
+      locale,
+      correlationId,
+      variables: {
+        otpCode,
+        expiresInMinutes: 10,
       },
     });
   }

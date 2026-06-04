@@ -6,6 +6,8 @@ import { ReferenceDataModule } from '../reference-data/reference-data.module';
 import { SlaModule } from '../sla/sla.module';
 import { ComplaintAccessService } from './complaint-access.service';
 import { ComplaintsController } from './complaints.controller';
+import { ComplaintRecoveryInquiryService } from './complaint-recovery-inquiry.service';
+import { ComplaintRecoveryService } from './complaint-recovery.service';
 import { ComplaintsService } from './complaints.service';
 import { WorkflowPolicyService } from './workflow-policy.service';
 
@@ -18,7 +20,13 @@ import { WorkflowPolicyService } from './workflow-policy.service';
     NotificationsModule,
   ],
   controllers: [ComplaintsController],
-  providers: [ComplaintsService, ComplaintAccessService, WorkflowPolicyService],
+  providers: [
+    ComplaintsService,
+    ComplaintAccessService,
+    ComplaintRecoveryService,
+    ComplaintRecoveryInquiryService,
+    WorkflowPolicyService,
+  ],
   exports: [ComplaintsService],
 })
 export class ComplaintsModule {}

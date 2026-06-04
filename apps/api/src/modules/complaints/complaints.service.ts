@@ -126,6 +126,8 @@ export interface ComplaintUploadSession {
 export interface ComplaintCreateResult {
   complaint: ComplaintRecord;
   uploadSession?: ComplaintUploadSession;
+  /** True when submit acknowledgment email was queued for complainantEmail. */
+  ackEmailQueued: boolean;
 }
 
 interface UploadTokenPayload {
@@ -260,10 +262,11 @@ export class ComplaintsService {
         orgUnitId: record.orgUnitId,
       },
     });
-    if (payload.complainantEmail) {
+    const ackEmailQueued = Boolean(payload.complainantEmail?.trim());
+    if (ackEmailQueued) {
       void this.notificationsService
         .queueComplaintSubmittedAck(
-          payload.complainantEmail,
+          payload.complainantEmail!,
           record.referenceNo,
           payload.locale as PrismaComplaintLocale,
           correlationId,
@@ -275,6 +278,7 @@ export class ComplaintsService {
       uploadSession: payload.requestUploadSession
         ? this.issueUploadSession(record.id)
         : undefined,
+      ackEmailQueued,
     };
   }
 

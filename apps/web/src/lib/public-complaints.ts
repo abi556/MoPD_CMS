@@ -42,6 +42,7 @@ export interface CreatePublicComplaintResult {
   id: string;
   referenceNo: string;
   uploadSession: ComplaintUploadSession | null;
+  ackEmailQueued: boolean;
 }
 
 export function optionLabel(

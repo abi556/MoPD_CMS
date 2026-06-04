@@ -209,6 +209,39 @@ describe('Platform/Public (e2e)', () => {
     expect(body.error.code).toBe('NOT_FOUND');
   });
 
+  it('recovery request returns 204 for unknown and known email without leaking', async () => {
+    await request(asSupertestApp(app))
+      .post('/api/v1/complaints/recovery/request')
+      .send({
+        channel: 'email',
+        email: 'nobody@example.com',
+        locale: 'en',
+      })
+      .expect(204);
+
+    await request(asSupertestApp(app))
+      .post('/api/v1/complaints')
+      .send({
+        subject: 'Water supply interruption',
+        description:
+          'Water supply has been interrupted for five days in the district without official notice.',
+        channel: 'WEB',
+        complainantEmail: 'recovery-citizen@example.com',
+        consentGiven: true,
+        locale: 'en',
+      })
+      .expect(201);
+
+    await request(asSupertestApp(app))
+      .post('/api/v1/complaints/recovery/request')
+      .send({
+        channel: 'email',
+        email: 'recovery-citizen@example.com',
+        locale: 'en',
+      })
+      .expect(204);
+  });
+
   it('queues complaint_submitted_ack delivery when complainant email is present', async () => {
     await request(asSupertestApp(app))
       .post('/api/v1/complaints')

@@ -6,7 +6,11 @@ import { configureApp } from './bootstrap';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   configureApp(app);
+  app.enableShutdownHooks();
 
-  await app.listen(process.env.PORT ?? 3001);
+  const port = Number(process.env.PORT ?? 3001);
+  await app.listen(port);
+  // eslint-disable-next-line no-console -- dev visibility when port conflicts occur
+  console.log(`[api] Listening on http://localhost:${port}`);
 }
 void bootstrap();

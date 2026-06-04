@@ -4,6 +4,7 @@ import {
   ExceptionFilter,
   HttpException,
 } from '@nestjs/common';
+import { ThrottlerException } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { RequestWithCorrelationId } from '../middleware/correlation-id.middleware';
 
@@ -31,9 +32,29 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     code: string;
     message: string;
   } {
+    if (exception instanceof ThrottlerException) {
+      return {
+        statusCode: 429,
+        code: 'RATE_LIMIT_EXCEEDED',
+        message:
+          'Too many requests. Please wait a while before trying again. If you were fixing form errors, each attempt counts toward the limit.',
+      };
+    }
+
     if (exception instanceof HttpException) {
       const statusCode = exception.getStatus();
       const exceptionResponse = exception.getResponse();
+
+      if (statusCode === 429) {
+        return {
+          statusCode: 429,
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: this.extractMessage(
+            exceptionResponse,
+            'Too many requests. Please wait a while before trying again.',
+          ),
+        };
+      }
 
       if (statusCode === 404) {
         return {

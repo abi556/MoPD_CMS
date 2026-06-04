@@ -54,6 +54,10 @@ async function parseEnvelope<T>(res: Response): Promise<T> {
     throw new ApiError(res.status, err);
   }
 
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
   if (body && typeof body === "object" && "data" in body) {
     return (body as Envelope<T> & { data: T }).data;
   }

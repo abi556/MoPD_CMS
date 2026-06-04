@@ -3,24 +3,31 @@
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
+  AlertTriangle,
   BarChart3,
   CheckCircle2,
   ClipboardCopy,
   FileUp,
   Mail,
   Scale,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
+import type { AckContext } from "@/lib/complaint-ack-context";
 
 interface ComplaintSubmitSuccessProps {
   referenceNo: string;
+  ackContext: AckContext;
+  maskedEmail?: string;
   onAttachEvidence: () => void;
   onDone: () => void;
 }
 
 export function ComplaintSubmitSuccess({
   referenceNo,
+  ackContext,
+  maskedEmail,
   onAttachEvidence,
   onDone,
 }: ComplaintSubmitSuccessProps) {
@@ -37,6 +44,20 @@ export function ComplaintSubmitSuccess({
     }
   }, [referenceNo]);
 
+  const next2Message =
+    ackContext === "email" && maskedEmail
+      ? t("success.next2Email", { email: maskedEmail })
+      : ackContext === "phone_only"
+        ? t("success.next2PhoneOnly")
+        : t("success.next2None");
+
+  const Next2Icon =
+    ackContext === "email"
+      ? Mail
+      : ackContext === "phone_only"
+        ? Smartphone
+        : AlertTriangle;
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col items-center rounded-lg border border-border-standard bg-surface p-8 text-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] md:p-12">
       <CheckCircle2
@@ -51,7 +72,7 @@ export function ComplaintSubmitSuccess({
         {t("success.body")}
       </p>
 
-      <div className="relative mb-10 w-full rounded-lg border border-border-standard bg-surface-container p-6">
+      <div className="relative mb-6 w-full rounded-lg border border-border-standard bg-surface-container p-6">
         <span className="mb-2 block text-overline font-semibold uppercase tracking-wider text-text-secondary">
           {t("success.reference")}
         </span>
@@ -78,6 +99,19 @@ export function ComplaintSubmitSuccess({
         </p>
       </div>
 
+      <div
+        className="mb-10 w-full rounded-lg border border-warning/40 bg-warning/10 p-4 text-left"
+        role="note"
+      >
+        <h2 className="mb-1 flex items-center gap-2 text-h3 font-semibold text-on-surface">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-warning" aria-hidden />
+          {t("success.keepSafeTitle")}
+        </h2>
+        <p className="text-body-sm text-on-surface-variant">
+          {t("success.keepSafeBody")}
+        </p>
+      </div>
+
       <div className="mb-10 w-full rounded-lg border border-secondary-container bg-brand-wash p-6 text-left">
         <h2 className="mb-4 flex items-center gap-2 text-h3 font-semibold text-primary-container">
           {t("success.nextTitle")}
@@ -88,8 +122,8 @@ export function ComplaintSubmitSuccess({
             <span>{t("success.next1")}</span>
           </li>
           <li className="flex items-start gap-3">
-            <Mail className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden />
-            <span>{t("success.next2")}</span>
+            <Next2Icon className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden />
+            <span>{next2Message}</span>
           </li>
           <li className="flex items-start gap-3">
             <BarChart3 className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden />

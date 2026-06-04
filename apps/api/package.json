@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "predev": "pnpm prisma:generate",
+    "predev": "node ./scripts/free-api-port.mjs && pnpm prisma:generate",
     "dev": "nest start --watch",
     "prebuild": "pnpm prisma:generate",
     "build": "nest build",

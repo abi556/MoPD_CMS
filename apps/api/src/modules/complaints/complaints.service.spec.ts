@@ -161,6 +161,7 @@ describe('ComplaintsService', () => {
     expect(created.complaint.channel).toBe(ComplaintChannel.WEB);
     expect(complaintCreate).toHaveBeenCalledTimes(1);
     expect(complaintUpdate).toHaveBeenCalledTimes(1);
+    expect(created.ackEmailQueued).toBe(false);
     expect(queueComplaintSubmittedAck).not.toHaveBeenCalled();
   });
 
@@ -191,7 +192,7 @@ describe('ComplaintsService', () => {
       complainantPhone: null,
     });
 
-    await service.create({
+    const created = await service.create({
       subject: 'Road project delay in zone 3',
       description:
         'Road expansion in zone 3 has remained incomplete for over 8 months without clear status updates.',
@@ -201,6 +202,7 @@ describe('ComplaintsService', () => {
       complainantEmail: 'abebe@example.com',
     });
 
+    expect(created.ackEmailQueued).toBe(true);
     expect(queueComplaintSubmittedAck).toHaveBeenCalledTimes(1);
     expect(queueComplaintSubmittedAck).toHaveBeenCalledWith(
       'abebe@example.com',

@@ -20,12 +20,16 @@ import {
   ApiConsumes,
   ApiParam,
   ApiBearerAuth,
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
@@ -56,7 +60,28 @@ import { UploadEvidenceDto } from './dto/upload-evidence.dto';
 import { TransitionComplaintDto } from './dto/transition-complaint.dto';
 import { UpdateComplaintDto } from './dto/update-complaint.dto';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
+import { ComplaintRecoveryInquiryService } from './complaint-recovery-inquiry.service';
+import { ComplaintRecoveryService } from './complaint-recovery.service';
 import { ComplaintsService, type ComplaintRecord } from './complaints.service';
+import {
+  CreateRecoveryInquiryDto,
+  ListRecoveryInquiriesQueryDto,
+  RecoveryInquiryCandidatesEnvelopeDto,
+  RecoveryInquiryCreatedEnvelopeDto,
+  RecoveryInquiryCreatedDataDto,
+  RecoveryInquiryEnvelopeDto,
+  RecoveryInquiryItemDto,
+  RecoveryInquiryListEnvelopeDto,
+  ResolveRecoveryInquiryDto,
+} from './dto/recovery-inquiry.dto';
+import {
+  RecoveryRequestDto,
+  RecoveryVerifyDto,
+} from './dto/recovery-request.dto';
+import {
+  RecoveryVerifyDataDto,
+  RecoveryVerifyEnvelopeDto,
+} from './dto/recovery-response.dto';
 import { getDocumentMaxBytes } from '../documents/document.config';
 import type { UploadedMulterFile } from '../documents/types/uploaded-file';
 import { DocumentEnvelopeDto } from '../documents/dto/document-response.dto';
@@ -100,6 +125,8 @@ export class ComplaintsController {
   constructor(
     private readonly complaintsService: ComplaintsService,
     private readonly referenceDataService: ReferenceDataService,
+    private readonly complaintRecoveryService: ComplaintRecoveryService,
+    private readonly complaintRecoveryInquiryService: ComplaintRecoveryInquiryService,
   ) {}
 
   @Get()
@@ -187,6 +214,157 @@ export class ComplaintsController {
         })),
       },
     };
+  }
+
+  @Post('recovery/request')
+  @ApiTags('reference-recovery')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Request OTP to recover complaint reference numbers',
+    description:
+      'Public self-service recovery. Always returns 204 to avoid contact enumeration. Sends a 6-digit OTP by email when matching complaints exist (SMS when RECOVERY_SMS_ENABLED=true).',
+  })
+  @ApiBody({ type: RecoveryRequestDto })
+  @ApiNoContentResponse({
+    description:
+      'Request accepted. Same response whether or not the contact matches a complaint.',
+  })
+  @ApiBadRequestResponse({ type: ErrorResponseDto })
+  @ApiTooManyRequestsResponse({ type: ErrorResponseDto })
+  @ApiUnprocessableEntityResponse({ type: ErrorResponseDto })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  async requestRecovery(
+    @Body() body: RecoveryRequestDto,
+    @Req() request: RequestWithCorrelationId,
+  ): Promise<void> {
+    await this.complaintRecoveryService.requestRecovery(
+      body,
+      request.correlationId,
+    );
+  }
+
+  @Post('recovery/verify')
+  @ApiTags('reference-recovery')
+  @ApiOperation({
+    summary: 'Verify OTP and list complaint references for a contact',
+    description:
+      'Returns up to 10 reference numbers (no subject/description) after a valid OTP. Invalid codes return 400; lockout returns 429.',
+  })
+  @ApiBody({ type: RecoveryVerifyDto })
+  @ApiOkResponse({
+    description: 'OTP verified; matching complaint references returned.',
+    type: RecoveryVerifyEnvelopeDto,
+  })
+  @ApiBadRequestResponse({ type: ErrorResponseDto })
+  @ApiTooManyRequestsResponse({ type: ErrorResponseDto })
+  @ApiUnprocessableEntityResponse({ type: ErrorResponseDto })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  async verifyRecovery(
+    @Body() body: RecoveryVerifyDto,
+    @Req() request: RequestWithCorrelationId,
+  ): Promise<{ data: RecoveryVerifyDataDto }> {
+    const result = await this.complaintRecoveryService.verifyRecovery(
+      body,
+      request.correlationId,
+    );
+    return { data: result };
+  }
+
+  @Post('recovery/inquiries')
+  @ApiTags('reference-recovery')
+  @ApiOperation({
+    summary:
+      'Submit manual reference recovery inquiry (requires contact email for async staff outcome)',
+    description:
+      'Fallback when the citizen did not provide email or phone at submission. Creates a PENDING staff queue item; does not return a complaint reference.',
+  })
+  @ApiBody({ type: CreateRecoveryInquiryDto })
+  @ApiCreatedResponse({
+    description: 'Inquiry created.',
+    type: RecoveryInquiryCreatedEnvelopeDto,
+  })
+  @ApiUnprocessableEntityResponse({ type: ErrorResponseDto })
+  @ApiTooManyRequestsResponse({ type: ErrorResponseDto })
+  @Throttle({ default: { limit: 15, ttl: 3600000 } })
+  async createRecoveryInquiry(
+    @Body() body: CreateRecoveryInquiryDto,
+    @Req() request: RequestWithCorrelationId,
+  ): Promise<{ data: RecoveryInquiryCreatedDataDto }> {
+    const created = await this.complaintRecoveryInquiryService.createInquiry(
+      body,
+      request.correlationId,
+    );
+    return { data: created };
+  }
+
+  @Get('recovery/inquiries')
+  @ApiTags('reference-recovery')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:recovery:manage')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List reference recovery inquiries (staff)' })
+  @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'IN_REVIEW', 'RESOLVED', 'REJECTED'] })
+  @ApiOkResponse({ type: RecoveryInquiryListEnvelopeDto })
+  @ApiUnauthorizedResponse({ type: ErrorResponseDto })
+  @ApiForbiddenResponse({ type: ErrorResponseDto })
+  async listRecoveryInquiries(
+    @Query() query: ListRecoveryInquiriesQueryDto,
+  ): Promise<{ data: RecoveryInquiryItemDto[] }> {
+    const data = await this.complaintRecoveryInquiryService.listInquiries(query);
+    return { data };
+  }
+
+  @Get('recovery/inquiries/:id/candidates')
+  @ApiTags('reference-recovery')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:recovery:manage')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Search complaint candidates for a recovery inquiry',
+    description:
+      'Pre-filtered complaint search by inquiry subject fragment, optional date window (±3 days), category, and org unit.',
+  })
+  @ApiParam({ name: 'id', description: 'Reference recovery inquiry id' })
+  @ApiOkResponse({ type: RecoveryInquiryCandidatesEnvelopeDto })
+  @ApiNotFoundResponse({ type: ErrorResponseDto })
+  @ApiUnauthorizedResponse({ type: ErrorResponseDto })
+  @ApiForbiddenResponse({ type: ErrorResponseDto })
+  async recoveryInquiryCandidates(@Param('id') id: string) {
+    const data =
+      await this.complaintRecoveryInquiryService.searchComplaintCandidates(id);
+    return { data };
+  }
+
+  @Patch('recovery/inquiries/:id')
+  @ApiTags('reference-recovery')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:recovery:manage')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Resolve or update a reference recovery inquiry',
+    description:
+      'When status is RESOLVED, resolvedReferenceNo is required; emails inquiry contactEmail with the reference. REJECTED emails contactEmail with guidance to submit anew. RESOLVED with matchedComplaintId adds an internal case note.',
+  })
+  @ApiParam({ name: 'id', description: 'Reference recovery inquiry id' })
+  @ApiBody({ type: ResolveRecoveryInquiryDto })
+  @ApiOkResponse({ type: RecoveryInquiryEnvelopeDto })
+  @ApiBadRequestResponse({ type: ErrorResponseDto })
+  @ApiNotFoundResponse({ type: ErrorResponseDto })
+  @ApiUnauthorizedResponse({ type: ErrorResponseDto })
+  @ApiForbiddenResponse({ type: ErrorResponseDto })
+  async resolveRecoveryInquiry(
+    @Param('id') id: string,
+    @Body() body: ResolveRecoveryInquiryDto,
+    @CurrentUser() user: JwtUser,
+    @Req() request: RequestWithCorrelationId,
+  ): Promise<{ data: RecoveryInquiryItemDto }> {
+    const data = await this.complaintRecoveryInquiryService.resolveInquiry(
+      id,
+      body,
+      user.id,
+      request.correlationId,
+    );
+    return { data };
   }
 
   @Get('track/:referenceNo')
@@ -505,6 +683,7 @@ export class ComplaintsController {
         categoryId: created.complaint.categoryId ?? null,
         orgUnitId: created.complaint.orgUnitId ?? null,
         uploadSession: created.uploadSession ?? null,
+        ackEmailQueued: created.ackEmailQueued,
       },
     };
   }
