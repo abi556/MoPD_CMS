@@ -55,7 +55,7 @@ export class ComplaintRecoveryInquiryService {
 
     const inquiry = await this.prisma.referenceRecoveryInquiry.create({
       data: {
-        locale: body.locale as ComplaintLocale,
+        locale: body.locale,
         subjectFragment: body.subjectFragment.trim(),
         submittedDateGregorian,
         submittedDateEthiopian: body.submittedDateEthiopian?.trim() || null,
@@ -68,7 +68,7 @@ export class ComplaintRecoveryInquiryService {
 
     void this.notificationsService
       .queueEmail('complaint_recovery_inquiry_received', contactEmail, {
-        locale: body.locale as ComplaintLocale,
+        locale: body.locale,
         correlationId,
         variables: {},
       })
@@ -140,7 +140,7 @@ export class ComplaintRecoveryInquiryService {
       });
     }
 
-    await this.notifyInquiryOutcome(existing, body, correlationId);
+    this.notifyInquiryOutcome(existing, body, correlationId);
 
     await this.auditService.logEvent({
       eventType: AUDIT_EVENT.COMPLAINT_RECOVERY_INQUIRY_RESOLVED,
@@ -157,7 +157,9 @@ export class ComplaintRecoveryInquiryService {
     return this.toItem(updated);
   }
 
-  private async assertContactEmailRateLimit(contactEmail: string): Promise<void> {
+  private async assertContactEmailRateLimit(
+    contactEmail: string,
+  ): Promise<void> {
     const since = new Date(Date.now() - INQUIRY_EMAIL_WINDOW_MS);
     const recentCount = await this.prisma.referenceRecoveryInquiry.count({
       where: {
@@ -177,14 +179,14 @@ export class ComplaintRecoveryInquiryService {
     }
   }
 
-  private async notifyInquiryOutcome(
+  private notifyInquiryOutcome(
     inquiry: {
       contactEmail: string;
       locale: ComplaintLocale;
     },
     body: ResolveRecoveryInquiryDto,
     correlationId?: string,
-  ): Promise<void> {
+  ): void {
     const email = inquiry.contactEmail;
     const locale = inquiry.locale;
 

@@ -17,9 +17,7 @@ export class AppThrottlerGuard extends ThrottlerGuard {
     }
 
     const forwarded = req.headers as { 'x-forwarded-for'?: string } | undefined;
-    const forwardedIp = forwarded?.['x-forwarded-for']
-      ?.split(',')[0]
-      ?.trim();
+    const forwardedIp = forwarded?.['x-forwarded-for']?.split(',')[0]?.trim();
 
     const ips = req.ips as string[] | undefined;
     const ip =

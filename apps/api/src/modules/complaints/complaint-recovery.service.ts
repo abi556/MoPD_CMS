@@ -5,7 +5,6 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { ComplaintLocale } from '@prisma/client';
 import { createHash, randomInt } from 'node:crypto';
 import Redis from 'ioredis';
 import { normalizeComplainantEmail } from '../../common/utils/contact-normalization';
@@ -125,7 +124,7 @@ export class ComplaintRecoveryService {
         await this.notificationsService.queueComplaintRecoveryOtp(
           normalizeComplainantEmail(body.email),
           code,
-          body.locale as ComplaintLocale,
+          body.locale,
           correlationId,
         );
       } catch (err) {
@@ -153,10 +152,12 @@ export class ComplaintRecoveryService {
       if (stored.attempts >= MAX_VERIFY_ATTEMPTS) {
         await this.clearOtp(contactKey);
         await this.setLockout(contactKey);
-        await this.recordFailedVerify(contactKey, correlationId, 'max_attempts');
-        throw tooManyRequests(
-          'Too many invalid attempts. Try again later.',
+        await this.recordFailedVerify(
+          contactKey,
+          correlationId,
+          'max_attempts',
         );
+        throw tooManyRequests('Too many invalid attempts. Try again later.');
       }
       await this.persistOtp(contactKey, stored);
       await this.recordFailedVerify(contactKey, correlationId, 'invalid_code');
@@ -301,9 +302,7 @@ export class ComplaintRecoveryService {
     }
   }
 
-  private async enforceContactRequestLimit(
-    contactKey: string,
-  ): Promise<void> {
+  private async enforceContactRequestLimit(contactKey: string): Promise<void> {
     const key = this.requestLimitKey(contactKey);
     const now = Date.now();
     if (this.useInMemoryStore) {

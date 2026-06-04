@@ -10,7 +10,6 @@ async function bootstrap() {
 
   const port = Number(process.env.PORT ?? 3001);
   await app.listen(port);
-  // eslint-disable-next-line no-console -- dev visibility when port conflicts occur
   console.log(`[api] Listening on http://localhost:${port}`);
 }
 void bootstrap();

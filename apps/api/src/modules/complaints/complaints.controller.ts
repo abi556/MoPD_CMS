@@ -303,14 +303,19 @@ export class ComplaintsController {
   @Permissions('complaint:recovery:manage')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List reference recovery inquiries (staff)' })
-  @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'IN_REVIEW', 'RESOLVED', 'REJECTED'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['PENDING', 'IN_REVIEW', 'RESOLVED', 'REJECTED'],
+  })
   @ApiOkResponse({ type: RecoveryInquiryListEnvelopeDto })
   @ApiUnauthorizedResponse({ type: ErrorResponseDto })
   @ApiForbiddenResponse({ type: ErrorResponseDto })
   async listRecoveryInquiries(
     @Query() query: ListRecoveryInquiriesQueryDto,
   ): Promise<{ data: RecoveryInquiryItemDto[] }> {
-    const data = await this.complaintRecoveryInquiryService.listInquiries(query);
+    const data =
+      await this.complaintRecoveryInquiryService.listInquiries(query);
     return { data };
   }
 

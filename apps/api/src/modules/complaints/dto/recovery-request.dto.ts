@@ -2,7 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
-  IsOptional,
   IsString,
   Matches,
   ValidateIf,
@@ -36,7 +35,10 @@ export class RecoveryRequestDto {
 }
 
 export class RecoveryVerifyDto extends RecoveryRequestDto {
-  @ApiProperty({ example: '123456', description: 'One-time verification code.' })
+  @ApiProperty({
+    example: '123456',
+    description: 'One-time verification code.',
+  })
   @IsString()
   @Matches(/^\d{6}$/)
   code!: string;

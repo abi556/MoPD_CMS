@@ -48,7 +48,9 @@ describe('ComplaintRecoveryService', () => {
     });
 
     expect(queueComplaintRecoveryOtp).toHaveBeenCalledTimes(1);
-    expect(queueComplaintRecoveryOtp.mock.calls[0][0]).toBe('abebe@example.com');
+    expect(queueComplaintRecoveryOtp.mock.calls[0][0]).toBe(
+      'abebe@example.com',
+    );
   });
 
   it('verifyRecovery returns references after valid OTP flow', async () => {
