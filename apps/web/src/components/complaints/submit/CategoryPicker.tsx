@@ -74,6 +74,7 @@ export function CategoryPicker({
               aria-checked={selected}
               onClick={() => onSelect(selected ? "" : cat.id)}
               style={{ animationDelay: `${index * 40}ms` }}
+              suppressHydrationWarning
               className={`flex w-full cursor-pointer items-center gap-4 rounded-none border px-4 py-3.5 text-left transition-all duration-200 animate-fade-in-up fill-mode-both hover:bg-brand-wash ${
                 selected
                   ? "border-primary bg-brand-wash shadow-sm"
@@ -101,6 +102,7 @@ export function CategoryPicker({
         <button
           type="button"
           onClick={() => onSelect("")}
+          suppressHydrationWarning
           className="text-body-sm font-semibold text-primary underline-offset-4 hover:underline"
         >
           {t("actions.clearCategory")}
@@ -111,6 +113,7 @@ export function CategoryPicker({
         <button
           type="button"
           onClick={() => setExpanded((open) => !open)}
+          suppressHydrationWarning
           className="flex w-full items-center justify-center gap-1.5 rounded-none border border-dashed border-border-standard px-3 py-2.5 text-body-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-brand-wash"
           aria-expanded={expanded}
         >

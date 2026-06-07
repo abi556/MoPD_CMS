@@ -37,6 +37,7 @@ export function ComplaintStepDetails({
   return (
     <form
       className="space-y-8 animate-fade-in-up"
+      suppressHydrationWarning
       onSubmit={(e) => {
         e.preventDefault();
         onNext();
@@ -93,6 +94,7 @@ export function ComplaintStepDetails({
           placeholder={t("fields.subjectPlaceholder")}
           className="w-full rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           required
+          suppressHydrationWarning
         />
       </section>
 
@@ -126,6 +128,7 @@ export function ComplaintStepDetails({
           placeholder={t("fields.descriptionPlaceholder")}
           className="w-full resize-none rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           required
+          suppressHydrationWarning
         />
       </section>
 
@@ -139,6 +142,7 @@ export function ComplaintStepDetails({
         <button
           type="button"
           onClick={onCancel}
+          suppressHydrationWarning
           className="flex cursor-pointer items-center gap-2 text-body font-bold text-text-secondary transition-colors duration-200 hover:text-on-surface"
         >
           {t("actions.cancel")}

@@ -36,6 +36,7 @@ export function ComplaintStepContactLocation({
   return (
     <form
       className="space-y-8 animate-fade-in-up"
+      suppressHydrationWarning
       onSubmit={(e) => {
         e.preventDefault();
         onNext();
@@ -60,6 +61,7 @@ export function ComplaintStepContactLocation({
                 onChange({ region: e.target.value, zone: "" })
               }
               className={selectClassName}
+              suppressHydrationWarning
             >
               <option value="">{t("fields.regionPlaceholder")}</option>
               {COMPLAINT_REGIONS.map((r) => (
@@ -81,6 +83,7 @@ export function ComplaintStepContactLocation({
               disabled={!data.region}
               onChange={(e) => onChange({ zone: e.target.value })}
               className={selectClassName}
+              suppressHydrationWarning
             >
               <option value="">{t("fields.zonePlaceholder")}</option>
               {zones.map((z) => (
@@ -103,6 +106,7 @@ export function ComplaintStepContactLocation({
               onChange={(e) => onChange({ woreda: e.target.value })}
               placeholder={t("fields.woredaPlaceholder")}
               className={selectClassName}
+              suppressHydrationWarning
             />
           </div>
         </div>
@@ -160,6 +164,7 @@ export function ComplaintStepContactLocation({
             checked={data.consentGiven}
             onChange={(e) => onChange({ consentGiven: e.target.checked })}
             className="mt-1 h-4 w-4 cursor-pointer rounded-none border-border-standard text-primary focus:ring-primary"
+            suppressHydrationWarning
           />
           <div className="ml-3">
             <label

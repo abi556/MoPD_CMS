@@ -7,8 +7,17 @@ import { Button } from "@/components/ui/button";
 
 export function ContactForm() {
   const t = useTranslations("contactForm");
-  const formId = process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID || "xgobkwee";
+  const formId = process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID ?? "";
   const [state, handleSubmit] = useForm(formId);
+
+  if (!formId) {
+    return (
+      <div className="rounded-none border border-warning/30 bg-warning/5 p-6 text-body-sm text-text-secondary">
+        Contact form is not configured. Set <code className="font-mono">NEXT_PUBLIC_FORMSPREE_FORM_ID</code> in{" "}
+        <code className="font-mono">.env.local</code>.
+      </div>
+    );
+  }
 
   if (state.succeeded) {
     return (
@@ -37,7 +46,7 @@ export function ContactForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" suppressHydrationWarning>
         <div>
           <label
             htmlFor="name"
@@ -50,6 +59,7 @@ export function ContactForm() {
             type="text"
             name="name"
             placeholder={t("namePlaceholder")}
+            suppressHydrationWarning
             className="mt-1.5 w-full rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <ValidationError prefix="Name" field="name" errors={state.errors} />
@@ -68,6 +78,7 @@ export function ContactForm() {
             name="email"
             required
             placeholder={t("emailPlaceholder")}
+            suppressHydrationWarning
             className="mt-1.5 w-full rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <ValidationError prefix="Email" field="email" errors={state.errors} />
@@ -86,6 +97,7 @@ export function ContactForm() {
             name="subject"
             required
             placeholder={t("subjectPlaceholder")}
+            suppressHydrationWarning
             className="mt-1.5 w-full rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <ValidationError prefix="Subject" field="subject" errors={state.errors} />
@@ -104,6 +116,7 @@ export function ContactForm() {
             required
             rows={5}
             placeholder={t("messagePlaceholder")}
+            suppressHydrationWarning
             className="mt-1.5 w-full resize-none rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <ValidationError prefix="Message" field="message" errors={state.errors} />
