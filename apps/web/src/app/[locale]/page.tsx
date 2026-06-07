@@ -37,6 +37,24 @@ export default async function LandingPage({
 
   const t = await getTranslations("public");
 
+  const trustCards = [
+    {
+      key: "secure",
+      icon: Shield,
+      delay: "100ms",
+    },
+    {
+      key: "tracking",
+      icon: Clock,
+      delay: "200ms",
+    },
+    {
+      key: "citizenCentered",
+      icon: UserCheck,
+      delay: "300ms",
+    },
+  ] as const;
+
   return (
     <PublicShell>
       {/* Hero Section */}
@@ -195,7 +213,7 @@ export default async function LandingPage({
         <div className="relative w-full aspect-1080/281">
           <Image
             src="/aa_landmarks.png"
-            alt="Addis Ababa Landmarks"
+            alt={t("landmarksAlt")}
             fill
             sizes="100vw"
             className="object-cover object-center"
@@ -207,39 +225,25 @@ export default async function LandingPage({
           <div className="absolute inset-0 flex flex-col justify-between py-8">
             <div className="mx-auto w-full max-w-max-width px-gutter">
               <div className="grid gap-6 md:grid-cols-3">
-                <div className="flex gap-4 p-5 border border-white/5 bg-black/15 backdrop-blur-[1px] animate-fade-in-up [animation-delay:100ms] fill-mode-both">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/20 text-primary-fixed">
-                    <Shield className="h-5 w-5" />
+                {trustCards.map(({ key, icon: Icon, delay }) => (
+                  <div
+                    key={key}
+                    className="flex gap-4 p-5 border border-white/5 bg-black/15 backdrop-blur-[1px] animate-fade-in-up fill-mode-both"
+                    style={{ animationDelay: delay }}
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/20 text-primary-fixed">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-h3 text-h3 text-white font-semibold">
+                        {t(`trust.${key}.title`)}
+                      </h4>
+                      <p className="mt-1.5 text-body-sm text-white/90 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                        {t(`trust.${key}.body`)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-h3 text-h3 text-white font-semibold">Secure &amp; Private</h4>
-                    <p className="mt-1.5 text-body-sm text-white/90 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                      Your data is protected under the Ethiopian Personal Data Protection Proclamation No. 1321/2024.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-4 p-5 border border-white/5 bg-black/15 backdrop-blur-[1px] animate-fade-in-up [animation-delay:200ms] fill-mode-both">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/20 text-primary-fixed">
-                    <Clock className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-h3 text-h3 text-white font-semibold">Real-time Tracking</h4>
-                    <p className="mt-1.5 text-body-sm text-white/90 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                      Track your complaint status at any time with your unique, secure reference number.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-4 p-5 border border-white/5 bg-black/15 backdrop-blur-[1px] animate-fade-in-up [animation-delay:300ms] fill-mode-both">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/20 text-primary-fixed">
-                    <UserCheck className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-h3 text-h3 text-white font-semibold">Citizen-Centered</h4>
-                    <p className="mt-1.5 text-body-sm text-white/90 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                      Designed to ensure transparency, fairness, and accountability in administrative processes.
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 

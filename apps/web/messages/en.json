@@ -56,6 +56,21 @@
     "readyTitle": "Ready to start?",
     "readyBody": "File a new complaint or track an existing case with your reference number.",
     "startSubmission": "Start Submission",
+    "landmarksAlt": "Addis Ababa Landmarks",
+    "trust": {
+      "secure": {
+        "title": "Secure & Private",
+        "body": "Your data is protected under the Ethiopian Personal Data Protection Proclamation No. 1321/2024."
+      },
+      "tracking": {
+        "title": "Real-time Tracking",
+        "body": "Track your complaint status at any time with your unique, secure reference number."
+      },
+      "citizenCentered": {
+        "title": "Citizen-Centered",
+        "body": "Designed to ensure transparency, fairness, and accountability in administrative processes."
+      }
+    },
     "footerDescription": "Ministry of Planning and Development (MoPD) Complaint Management System. Building a more responsive administration.",
     "footerDescriptionLine1": "Ministry of Planning and Development (MoPD) Complaint Management",
     "footerDescriptionLine2": "System. Building a more responsive administration.",
