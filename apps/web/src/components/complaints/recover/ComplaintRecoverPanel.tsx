@@ -17,6 +17,14 @@ import { ApiError } from "@/lib/api-client";
 
 type Step = "contact" | "otp" | "results";
 
+type RecoverErrorState =
+  | {
+      kind: "validation";
+      key: "emailInvalid" | "phoneInvalid" | "codeInvalid";
+    }
+  | { kind: "api"; key: "requestFailed" | "verifyFailed"; detail?: string }
+  | null;
+
 export function ComplaintRecoverPanel() {
   const t = useTranslations("complaintRecover");
   const locale = useLocale() as "en" | "am";
@@ -26,8 +34,14 @@ export function ComplaintRecoverPanel() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<RecoverErrorState>(null);
   const [references, setReferences] = useState<RecoveredReference[]>([]);
+
+  const error = errorState
+    ? errorState.kind === "validation"
+      ? t(`errors.${errorState.key}`)
+      : (errorState.detail ?? t(`errors.${errorState.key}`))
+    : null;
 
   const buildPayload = useCallback(() => {
     if (channel === "email") {
@@ -47,17 +61,17 @@ export function ComplaintRecoverPanel() {
 
   const onRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setErrorState(null);
 
     if (channel === "email") {
       if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        setError(t("errors.emailInvalid"));
+        setErrorState({ kind: "validation", key: "emailInvalid" });
         return;
       }
     } else {
       const normalized = normalizePhoneE164(phone.trim());
       if (!normalized || !isValidE164(normalized)) {
-        setError(t("errors.phoneInvalid"));
+        setErrorState({ kind: "validation", key: "phoneInvalid" });
         return;
       }
     }
@@ -67,7 +81,11 @@ export function ComplaintRecoverPanel() {
       await requestRecoveryOtp(buildPayload());
       setStep("otp");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("errors.requestFailed"));
+      setErrorState({
+        kind: "api",
+        key: "requestFailed",
+        detail: err instanceof ApiError ? err.message : undefined,
+      });
     } finally {
       setLoading(false);
     }
@@ -75,9 +93,9 @@ export function ComplaintRecoverPanel() {
 
   const onVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setErrorState(null);
     if (!/^\d{6}$/.test(code.trim())) {
-      setError(t("errors.codeInvalid"));
+      setErrorState({ kind: "validation", key: "codeInvalid" });
       return;
     }
 
@@ -90,7 +108,11 @@ export function ComplaintRecoverPanel() {
       setReferences(result.references);
       setStep("results");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("errors.verifyFailed"));
+      setErrorState({
+        kind: "api",
+        key: "verifyFailed",
+        detail: err instanceof ApiError ? err.message : undefined,
+      });
     } finally {
       setLoading(false);
     }
@@ -206,7 +228,7 @@ export function ComplaintRecoverPanel() {
               onClick={() => {
                 setStep("contact");
                 setCode("");
-                setError(null);
+                setErrorState(null);
               }}
             >
               {t("changeContact")}
@@ -261,7 +283,7 @@ export function ComplaintRecoverPanel() {
               setStep("contact");
               setCode("");
               setReferences([]);
-              setError(null);
+              setErrorState(null);
             }}
           >
             {t("searchAgain")}

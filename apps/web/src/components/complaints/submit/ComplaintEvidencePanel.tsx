@@ -51,7 +51,17 @@ export function ComplaintEvidencePanel({
   const [panelState, setPanelState] = useState<EvidencePanelState>("idle");
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [notes, setNotes] = useState("");
-  const [globalError, setGlobalError] = useState<string | null>(null);
+  const [globalError, setGlobalError] = useState<
+    | { kind: "fileTooLarge"; name: string }
+    | { kind: "partialFailure" }
+    | null
+  >(null);
+
+  const globalErrorMessage = globalError
+    ? globalError.kind === "fileTooLarge"
+      ? t("evidence.fileTooLarge", { name: globalError.name })
+      : t("evidence.partialFailure")
+    : null;
 
   const addFiles = useCallback(
     (incoming: FileList | null) => {
@@ -67,7 +77,7 @@ export function ComplaintEvidencePanel({
         for (let i = 0; i < Math.min(incoming.length, remaining); i++) {
           const file = incoming[i];
           if (file.size > maxBytes) {
-            setGlobalError(t("evidence.fileTooLarge", { name: file.name }));
+            setGlobalError({ kind: "fileTooLarge", name: file.name });
             continue;
           }
           next.push({
@@ -80,7 +90,7 @@ export function ComplaintEvidencePanel({
         return [...prev, ...next];
       });
     },
-    [sessionExpired, uploadSession, t],
+    [sessionExpired, uploadSession],
   );
 
   const removeFile = (id: string) => {
@@ -128,7 +138,7 @@ export function ComplaintEvidencePanel({
     }
 
     if (hadError) {
-      setGlobalError(t("evidence.partialFailure"));
+      setGlobalError({ kind: "partialFailure" });
       setPanelState("idle");
     } else {
       setPanelState("complete");
@@ -321,9 +331,9 @@ export function ComplaintEvidencePanel({
           </p>
         </div>
 
-        {globalError ? (
+        {globalErrorMessage ? (
           <p className="mb-4 text-sm text-danger" role="alert" aria-live="polite">
-            {globalError}
+            {globalErrorMessage}
           </p>
         ) : null}
 

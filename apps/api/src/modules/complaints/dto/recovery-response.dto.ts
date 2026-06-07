@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RecoveredReferenceDto {
-  @ApiProperty({ example: 'CMS-2026-000001' })
+  @ApiProperty({ example: 'CMS-2026-ABCD1234WXYZ' })
   referenceNo!: string;
 
   @ApiProperty({ example: '2026-04-28T18:58:00.000Z' })

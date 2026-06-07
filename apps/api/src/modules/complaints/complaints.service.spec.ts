@@ -132,7 +132,7 @@ describe('ComplaintsService', () => {
     });
     complaintUpdate.mockResolvedValue({
       id: 'cmp_001',
-      referenceNo: 'CMS-2026-000012',
+      referenceNo: 'CMS-2026-ABCDEFGHJKL1',
       status: 'SUBMITTED',
       channel: ComplaintChannel.WEB,
       subject: 'Road project delay in zone 3',
@@ -156,7 +156,9 @@ describe('ComplaintsService', () => {
     });
 
     expect(created.complaint.id).toBe('cmp_001');
-    expect(created.complaint.referenceNo).toMatch(/^CMS-\d{4}-\d{6}$/);
+    expect(created.complaint.referenceNo).toMatch(
+      /^CMS-\d{4}-[A-Z0-9]{12}$/,
+    );
     expect(created.complaint.status).toBe('SUBMITTED');
     expect(created.complaint.channel).toBe(ComplaintChannel.WEB);
     expect(complaintCreate).toHaveBeenCalledTimes(1);
@@ -178,7 +180,7 @@ describe('ComplaintsService', () => {
     });
     complaintUpdate.mockResolvedValue({
       id: 'cmp_001',
-      referenceNo: 'CMS-2026-000012',
+      referenceNo: 'CMS-2026-ABCDEFGHJKL1',
       status: 'SUBMITTED',
       channel: ComplaintChannel.WEB,
       subject: 'Road project delay in zone 3',
@@ -206,7 +208,7 @@ describe('ComplaintsService', () => {
     expect(queueComplaintSubmittedAck).toHaveBeenCalledTimes(1);
     expect(queueComplaintSubmittedAck).toHaveBeenCalledWith(
       'abebe@example.com',
-      'CMS-2026-000012',
+      'CMS-2026-ABCDEFGHJKL1',
       'en',
       undefined,
     );
@@ -215,7 +217,7 @@ describe('ComplaintsService', () => {
   it('returns complaint by reference number', async () => {
     complaintFindUnique.mockResolvedValue({
       id: 'cmp_002',
-      referenceNo: 'CMS-2026-000013',
+      referenceNo: 'CMS-2026-ZYXWVUTSRQ12',
       status: 'SUBMITTED',
       channel: ComplaintChannel.WEB,
       subject: 'Delayed fertilizer delivery',
@@ -229,9 +231,11 @@ describe('ComplaintsService', () => {
       complainantPhone: null,
     });
 
-    const found = await service.getByReference('CMS-2026-000013');
+    const found = await service.getByReference(
+      'CMS-2026-ZYXWVUTSRQ12',
+    );
 
-    expect(found.referenceNo).toBe('CMS-2026-000013');
+    expect(found.referenceNo).toBe('CMS-2026-ZYXWVUTSRQ12');
     expect(found.subject).toBe('Delayed fertilizer delivery');
   });
 
@@ -246,7 +250,7 @@ describe('ComplaintsService', () => {
   it('returns complaint by internal id for staff details view', async () => {
     complaintFindUnique.mockResolvedValue({
       id: 'cmp_099',
-      referenceNo: 'CMS-2026-000099',
+      referenceNo: 'CMS-2026-REFEMAILTOKN1',
       status: 'SUBMITTED',
       channel: ComplaintChannel.EMAIL,
       subject: 'Missing medicine stock',
@@ -263,7 +267,7 @@ describe('ComplaintsService', () => {
     const found = await service.getByIdForStaff('cmp_099', staffUser);
 
     expect(found.id).toBe('cmp_099');
-    expect(found.referenceNo).toBe('CMS-2026-000099');
+    expect(found.referenceNo).toBe('CMS-2026-REFEMAILTOKN1');
     expect(found.complainantEmail).toBe('sami@example.com');
   });
 
@@ -279,7 +283,7 @@ describe('ComplaintsService', () => {
     complaintFindMany.mockResolvedValue([
       {
         id: 'cmp_010',
-        referenceNo: 'CMS-2026-000010',
+        referenceNo: 'CMS-2026-TRACKLIST001',
         status: 'SUBMITTED',
         channel: ComplaintChannel.WEB,
         subject: 'Water service interruption',
@@ -307,7 +311,9 @@ describe('ComplaintsService', () => {
     const result = await service.listForStaff(query, staffUser);
 
     expect(result.data).toHaveLength(1);
-    expect(result.data[0]?.referenceNo).toBe('CMS-2026-000010');
+    expect(result.data[0]?.referenceNo).toBe(
+      'CMS-2026-TRACKLIST001',
+    );
     expect(result.meta).toEqual({
       page: 1,
       pageSize: 10,
@@ -321,7 +327,7 @@ describe('ComplaintsService', () => {
   it('assigns complaint and updates status to ASSIGNED', async () => {
     complaintFindUnique.mockResolvedValue({
       id: 'cmp_011',
-      referenceNo: 'CMS-2026-000011',
+      referenceNo: 'CMS-2026-ASSIGNSTATE0',
       status: 'TRIAGE',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
@@ -335,7 +341,7 @@ describe('ComplaintsService', () => {
     });
     complaintUpdate.mockResolvedValue({
       id: 'cmp_011',
-      referenceNo: 'CMS-2026-000011',
+      referenceNo: 'CMS-2026-ASSIGNSTATE0',
       status: 'ASSIGNED',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
@@ -369,7 +375,7 @@ describe('ComplaintsService', () => {
   it('rejects assignment when complaint is not in TRIAGE or APPEAL', async () => {
     complaintFindUnique.mockResolvedValue({
       id: 'cmp_012',
-      referenceNo: 'CMS-2026-000012',
+      referenceNo: 'CMS-2026-ASSIGNREJECT0',
       status: 'SUBMITTED',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
@@ -395,7 +401,7 @@ describe('ComplaintsService', () => {
   it('transitions complaint from ASSIGNED to IN_INVESTIGATION', async () => {
     complaintFindUnique.mockResolvedValue({
       id: 'cmp_020',
-      referenceNo: 'CMS-2026-000020',
+      referenceNo: 'CMS-2026-TRANSITION01',
       status: 'ASSIGNED',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
@@ -413,7 +419,7 @@ describe('ComplaintsService', () => {
     });
     complaintUpdate.mockResolvedValue({
       id: 'cmp_020',
-      referenceNo: 'CMS-2026-000020',
+      referenceNo: 'CMS-2026-TRANSITION01',
       status: 'IN_INVESTIGATION',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
@@ -454,7 +460,7 @@ describe('ComplaintsService', () => {
 
     complaintFindUnique.mockResolvedValue({
       id: 'cmp_020',
-      referenceNo: 'CMS-2026-000020',
+      referenceNo: 'CMS-2026-TRANSITION01',
       status: 'ASSIGNED',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
@@ -472,7 +478,7 @@ describe('ComplaintsService', () => {
     });
     complaintUpdate.mockResolvedValue({
       id: 'cmp_020',
-      referenceNo: 'CMS-2026-000020',
+      referenceNo: 'CMS-2026-TRANSITION01',
       status: 'IN_INVESTIGATION',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
@@ -502,7 +508,7 @@ describe('ComplaintsService', () => {
 
     expect(queueComplaintTransitionIfApplicable).toHaveBeenCalledWith(
       'hanna@example.com',
-      'CMS-2026-000020',
+      'CMS-2026-TRANSITION01',
       'IN_INVESTIGATION',
       'en',
       'corr-tx',
@@ -514,7 +520,7 @@ describe('ComplaintsService', () => {
   it('rejects invalid workflow transition with unprocessable error', async () => {
     complaintFindUnique.mockResolvedValue({
       id: 'cmp_021',
-      referenceNo: 'CMS-2026-000021',
+      referenceNo: 'CMS-2026-INVALIDSTATE',
       status: 'SUBMITTED',
       channel: ComplaintChannel.WEB,
       subject: 'Road grading incomplete',
@@ -652,7 +658,7 @@ describe('ComplaintsService', () => {
       });
       complaintUpdate.mockResolvedValue({
         id: 'cmp_cat_org',
-        referenceNo: 'CMS-2026-000099',
+        referenceNo: 'CMS-2026-CATORGREF001',
         status: 'SUBMITTED',
         priority: 'NORMAL',
         channel: ComplaintChannel.WEB,

@@ -29,9 +29,22 @@ export function ComplaintRecoverManualPanel() {
   const [contactEmail, setContactEmail] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<
+    | {
+        kind: "validation";
+        key: "subjectMin" | "emailInvalid";
+      }
+    | { kind: "api"; key: "rateLimited" | "submitFailed"; detail?: string }
+    | null
+  >(null);
   const [done, setDone] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  const error = errorState
+    ? errorState.kind === "validation"
+      ? t(`errors.${errorState.key}`)
+      : (errorState.detail ?? t(`errors.${errorState.key}`))
+    : null;
 
   useEffect(() => {
     void loadComplaintFormOptions().then(setOptions).catch(() => setOptions(null));
@@ -39,14 +52,14 @@ export function ComplaintRecoverManualPanel() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setErrorState(null);
     if (subjectFragment.trim().length < 5) {
-      setError(t("errors.subjectMin"));
+      setErrorState({ kind: "validation", key: "subjectMin" });
       return;
     }
     const email = contactEmail.trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError(t("errors.emailInvalid"));
+      setErrorState({ kind: "validation", key: "emailInvalid" });
       return;
     }
 
@@ -66,9 +79,13 @@ export function ComplaintRecoverManualPanel() {
       setDone(true);
     } catch (err) {
       if (err instanceof ApiError && err.code === "RATE_LIMIT_EXCEEDED") {
-        setError(t("errors.rateLimited"));
+        setErrorState({ kind: "api", key: "rateLimited" });
       } else {
-        setError(err instanceof ApiError ? err.message : t("errors.submitFailed"));
+        setErrorState({
+          kind: "api",
+          key: "submitFailed",
+          detail: err instanceof ApiError ? err.message : undefined,
+        });
       }
     } finally {
       setLoading(false);

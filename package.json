@@ -9,7 +9,7 @@
     "docker:app": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker --profile app up -d --build",
     "docker:app:down": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker --profile app down",
     "dev:stack": "pnpm docker:infra && pnpm dev",
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",

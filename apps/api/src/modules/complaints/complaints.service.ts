@@ -223,10 +223,7 @@ export class ComplaintsService {
         },
       });
 
-      const referenceNo = this.buildReferenceNo(
-        inserted.submittedAt,
-        inserted.sequenceNo,
-      );
+      const referenceNo = this.buildReferenceNo(inserted.submittedAt);
 
       return tx.complaint.update({
         where: { id: inserted.id },
@@ -739,10 +736,10 @@ export class ComplaintsService {
     };
   }
 
-  private buildReferenceNo(submittedAt: Date, sequenceNo: number): string {
+  private buildReferenceNo(submittedAt: Date): string {
     const year = submittedAt.getUTCFullYear();
-    const serial = String(sequenceNo).padStart(6, '0');
-    return `CMS-${year}-${serial}`;
+    const token = randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase();
+    return `CMS-${year}-${token}`;
   }
 
   private toComplaintRecord(complaint: ComplaintEntity): ComplaintRecord {

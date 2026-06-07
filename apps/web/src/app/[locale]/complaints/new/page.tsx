@@ -9,12 +9,10 @@ export default async function ComplaintNewPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const resolvedLocale = locale === "am" ? "am" : "en";
-
   return (
     <PublicShell>
-      <div className="mx-auto w-full max-w-max-width px-gutter py-12">
-        <ComplaintSubmitWizard locale={resolvedLocale} />
+      <div className="mx-auto w-full max-w-max-width px-gutter py-6 md:py-8">
+        <ComplaintSubmitWizard />
       </div>
     </PublicShell>
   );

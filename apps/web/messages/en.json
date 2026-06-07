@@ -61,10 +61,105 @@
     "footerTerms": "Terms of Service",
     "footerContact": "Contact Us",
     "footerAccessibility": "Accessibility",
+    "footerFaq": "FAQ",
+    "footerLegalLinks": "Legal",
+    "footerHelpLinks": "Help",
+    "footerPortalLinks": "Portal",
     "footerCopyright": "© 2026 Ministry of Planning and Development (MoPD). All rights reserved.",
     "ctaSubmit": "Submit a complaint",
     "ctaTrack": "Track by reference",
     "phase0Note": "Foundation build in progress — staff and admin surfaces ship in later phases."
+  },
+  "faq": {
+    "eyebrow": "Help centre",
+    "title": "Frequently Asked Questions",
+    "subtitle": "Answers to common questions about submitting, tracking, and resolving complaints through the MoPD Complaint Management System.",
+    "stillNeedHelp": "Still need help?",
+    "stillNeedHelpBody": "You can submit a new complaint or contact the Ministry for further assistance.",
+    "ctaSubmit": "Submit a complaint",
+    "ctaContact": "Contact us",
+    "items": {
+      "types": {
+        "question": "What types of complaints can I submit?",
+        "answer": "You can submit complaints about service delays, administrative errors, misconduct, or accessibility issues within the Ministry of Planning and Development. If your issue falls outside our scope, we will guide you to the appropriate agency."
+      },
+      "requiredInfo": {
+        "question": "What information do I need to provide?",
+        "answer": "You must describe your complaint clearly (subject and details). Location (region, zone, woreda) helps us route it to the right office. Name, email, phone, category, and attachments are optional — but contact details make tracking and recovery much easier."
+      },
+      "whyPersonalInfo": {
+        "question": "Why do you need my personal information?",
+        "answer": "Personal details are optional, not required. If you provide them, we use your name to address you correctly, and your email or phone to send your reference number, status updates, and recovery codes if you lose your reference. We do not use your details for marketing. Without contact information you can still submit, but we cannot notify you directly."
+      },
+      "anonymous": {
+        "question": "Can I submit without giving my name or contact details?",
+        "answer": "Yes. You can submit with only the complaint description and location. However, without email or phone we cannot send updates, and you may not be able to recover a lost reference number. Always save your reference number in a safe place after submitting."
+      },
+      "category": {
+        "question": "Do I have to choose a complaint category?",
+        "answer": "No. Category selection is optional. You can submit a complaint without labelling it if you are unsure which category applies."
+      },
+      "consent": {
+        "question": "What am I agreeing to when I submit?",
+        "answer": "Before submitting, you confirm that the information you provide is accurate to the best of your knowledge and that you agree to our Privacy Policy and Terms of Service. This allows us to process your complaint lawfully and contact you when needed."
+      },
+      "evidenceRequired": {
+        "question": "Is it mandatory to attach evidence or documents?",
+        "answer": "No. Attachments are completely optional. You can submit a complaint with text only. Evidence helps officers investigate faster, but many valid complaints are accepted without files."
+      },
+      "evidence": {
+        "question": "When and how can I attach files or evidence?",
+        "answer": "After you submit, the success screen lets you attach supporting documents. You can also skip attachments and still complete your submission. Only upload files that are relevant to your complaint."
+      },
+      "fileTypes": {
+        "question": "What types of files can I upload?",
+        "answer": "You can upload common document and image formats (such as PDF, Word, and photos). Very large files may be rejected. Do not upload files containing passwords, unrelated personal data, or harmful content."
+      },
+      "track": {
+        "question": "How do I track my complaint?",
+        "answer": "After submission you receive a unique reference number (for example CMS-2026-ABCD1234WXYZ). Enter it on the Track page to see the current status, subject, and submission date."
+      },
+      "lostReference": {
+        "question": "What if I lost my reference number?",
+        "answer": "Go to Reference Recovery from the track area. If you provided email or phone when you submitted, verify with a one-time code to retrieve your reference. If you did not provide contact details and did not save the number, recovery may not be possible — you may need to submit again or contact support@mopd.gov.et for guidance."
+      },
+      "trackingVisibility": {
+        "question": "What will I see when I track my complaint?",
+        "answer": "For your privacy, the public track page shows only limited information: your reference number, current status, complaint subject, and submission date. Sensitive internal notes and officer details are not shown."
+      },
+      "timeline": {
+        "question": "How long does the resolution process take?",
+        "answer": "Most complaints are reviewed within 3 to 5 business days. Complex cases may take longer. You can check the current status at any time using your reference number on the Track page."
+      },
+      "editAfterSubmit": {
+        "question": "Can I edit my complaint after submitting?",
+        "answer": "No. Once submitted, the complaint text cannot be changed online. If you need to add information, attach evidence after submission or contact support with your reference number so staff can note additional details."
+      },
+      "sharedWith": {
+        "question": "Who can see my complaint and personal details?",
+        "answer": "Only authorised MoPD staff involved in handling your case can access your full complaint. Details are shared with relevant departments only when needed to investigate and resolve the issue. See our Privacy Policy for more."
+      },
+      "multipleComplaints": {
+        "question": "Can I submit more than one complaint?",
+        "answer": "Yes. Each submission receives its own reference number. Submit a separate complaint for each distinct issue so they can be tracked and resolved independently."
+      },
+      "languages": {
+        "question": "Which languages are supported?",
+        "answer": "The public portal is available in English and Amharic. You can switch language at any time without losing your form progress."
+      },
+      "privacy": {
+        "question": "How is my personal data protected?",
+        "answer": "Your data is handled in line with Ethiopian data protection law. We collect only what is needed to process your complaint, restrict access to authorised staff, and explain our practices on the Privacy Policy page."
+      },
+      "appeal": {
+        "question": "Can I appeal if I disagree with the outcome?",
+        "answer": "If you believe a decision was wrong, contact us through the Contact page or the support email listed there. Appeal options may depend on the type of complaint and applicable regulations."
+      },
+      "contact": {
+        "question": "How do I contact the Ministry for help?",
+        "answer": "Visit the Contact Us page for phone numbers, office hours, and email addresses. For complaint-specific support, use support@mopd.gov.et."
+      }
+    }
   },
   "auth": {
     "loginTitle": "Staff sign in",
@@ -116,6 +211,7 @@
     "requiredMark": "Required",
     "fields": {
       "category": "Complaint category",
+      "categorySkipHint": "Optional — leave unselected if you are unsure or prefer not to label your complaint.",
       "subject": "Complaint subject",
       "subjectPlaceholder": "Brief summary of the issue…",
       "description": "Detailed description",
@@ -150,6 +246,7 @@
       "retryOptions": "Retry",
       "showMoreCategories": "Show {count} more categories",
       "showFewerCategories": "Show fewer categories",
+      "clearCategory": "Clear category selection",
       "submit": "Submit complaint",
       "submitting": "Submitting…"
     },
@@ -216,7 +313,7 @@
     "title": "Track Complaint Status",
     "intro": "Enter your unique reference number to securely check the status and updates of your submitted complaint.",
     "referenceLabel": "Reference Number",
-    "referencePlaceholder": "e.g., CMS-2026-000001",
+    "referencePlaceholder": "e.g., CMS-2026-ABCD1234WXYZ",
     "search": "Check Status",
     "searching": "Checking…",
     "loading": "Loading…",

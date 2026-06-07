@@ -97,7 +97,7 @@ describe('Platform/Public (e2e)', () => {
     const body = getBody<ComplaintCreateResponse>(response);
 
     expect(typeof body.data.id).toBe('string');
-    expect(body.data.referenceNo).toMatch(/^CMS-\d{4}-\d{6}$/);
+    expect(body.data.referenceNo).toMatch(/^CMS-\d{4}-[A-Z0-9]{12}$/);
     expect(body.data.status).toBe('SUBMITTED');
   });
 

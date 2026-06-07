@@ -55,46 +55,56 @@ export function CategoryPicker({
   );
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+    <div className="space-y-3">
+      <p className="text-body-sm text-text-secondary">{t("fields.categorySkipHint")}</p>
+
+      <div
+        className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+        role="radiogroup"
+        aria-label={t("fields.category")}
+      >
         {shown.map((cat) => {
           const Icon = getCategoryIcon(cat.code);
           const selected = selectedId === cat.id;
           return (
-            <label key={cat.id} className="relative cursor-pointer">
-              <input
-                type="radio"
-                name="categoryId"
-                value={cat.id}
-                checked={selected}
-                onChange={() => onSelect(cat.id)}
-                className="peer sr-only"
-                aria-label={optionLabel(cat, locale)}
-              />
+            <button
+              key={cat.id}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              onClick={() => onSelect(selected ? "" : cat.id)}
+              className={`flex w-full cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors hover:bg-brand-wash ${
+                selected
+                  ? "border-primary bg-brand-wash"
+                  : "border-border-standard bg-surface"
+              }`}
+            >
               <div
-                className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors hover:bg-brand-wash ${
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
                   selected
-                    ? "border-primary bg-brand-wash"
-                    : "border-border-standard bg-surface"
+                    ? "bg-primary text-on-primary"
+                    : "bg-surface-container-low text-text-secondary"
                 }`}
               >
-                <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
-                    selected
-                      ? "bg-primary text-on-primary"
-                      : "bg-surface-container-low text-text-secondary"
-                  }`}
-                >
-                  <Icon className="h-[18px] w-[18px]" aria-hidden />
-                </div>
-                <p className="text-body font-semibold leading-snug text-on-surface">
-                  {optionLabel(cat, locale)}
-                </p>
+                <Icon className="h-[18px] w-[18px]" aria-hidden />
               </div>
-            </label>
+              <p className="text-body font-semibold leading-snug text-on-surface">
+                {optionLabel(cat, locale)}
+              </p>
+            </button>
           );
         })}
       </div>
+
+      {selectedId ? (
+        <button
+          type="button"
+          onClick={() => onSelect("")}
+          className="text-body-sm font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          {t("actions.clearCategory")}
+        </button>
+      ) : null}
 
       {canCollapse ? (
         <button

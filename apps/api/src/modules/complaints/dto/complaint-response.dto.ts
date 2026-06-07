@@ -31,7 +31,7 @@ export class ComplaintCreatedDataDto {
   id!: string;
 
   @ApiProperty({
-    example: 'CMS-2026-000001',
+    example: 'CMS-2026-ABCD1234WXYZ',
     description: 'Public reference used for tracking.',
   })
   referenceNo!: string;
@@ -104,7 +104,7 @@ export class ComplaintCreatedEnvelopeDto {
 
 export class ComplaintTrackingDataDto {
   @ApiProperty({
-    example: 'CMS-2026-000001',
+    example: 'CMS-2026-ABCD1234WXYZ',
     description: 'Public reference used for tracking.',
   })
   referenceNo!: string;
@@ -144,7 +144,7 @@ export class ComplaintListItemDto {
   id!: string;
 
   @ApiProperty({
-    example: 'CMS-2026-000001',
+    example: 'CMS-2026-ABCD1234WXYZ',
     description: 'Public reference used for tracking.',
   })
   referenceNo!: string;
@@ -241,7 +241,7 @@ export class ComplaintDetailDataDto {
   id!: string;
 
   @ApiProperty({
-    example: 'CMS-2026-000001',
+    example: 'CMS-2026-ABCD1234WXYZ',
     description: 'Public reference used for tracking.',
   })
   referenceNo!: string;

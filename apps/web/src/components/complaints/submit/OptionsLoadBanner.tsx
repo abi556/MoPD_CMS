@@ -4,14 +4,14 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 interface OptionsLoadBannerProps {
-  message: string;
+  messageKey: "optionsFailed" | "optionsPartial";
   variant?: "error" | "warning";
   onRetry?: () => void;
   retrying?: boolean;
 }
 
 export function OptionsLoadBanner({
-  message,
+  messageKey,
   variant = "error",
   onRetry,
   retrying = false,
@@ -27,7 +27,7 @@ export function OptionsLoadBanner({
       className={`mb-6 flex flex-col gap-3 rounded-md border px-4 py-3 sm:flex-row sm:items-center sm:justify-between ${styles}`}
       role="alert"
     >
-      <p className="text-body-sm">{message}</p>
+      <p className="text-body-sm">{t(`errors.${messageKey}`)}</p>
       {onRetry ? (
         <Button
           type="button"

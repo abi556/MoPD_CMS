@@ -27,6 +27,12 @@ import { ComplaintTrackResults } from "./ComplaintTrackResults";
 
 const REF_QUERY = "ref";
 
+type TrackErrorCode = "referenceRequired" | "notFound" | "generic";
+
+type TrackErrorState =
+  | { code: TrackErrorCode; detail?: string }
+  | null;
+
 function useIsClient(): boolean {
   return useSyncExternalStore(
     () => () => {},
@@ -88,8 +94,16 @@ function ComplaintTrackPanelInner() {
 
   const [reference, setReference] = useState("");
   const [result, setResult] = useState<ComplaintTrackResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<TrackErrorState>(null);
   const [loading, setLoading] = useState(false);
+
+  const error = errorState
+    ? errorState.code === "notFound"
+      ? t("errors.notFound")
+      : errorState.code === "referenceRequired"
+        ? t("errors.referenceRequired")
+        : (errorState.detail ?? t("errors.generic"))
+    : null;
 
   const urlRef = isClient ? (searchParams.get(REF_QUERY) ?? "") : "";
   const skipUrlFetchRef = useRef(false);
@@ -98,20 +112,20 @@ function ComplaintTrackPanelInner() {
 
   const activeReference = normalizeReferenceInput(reference);
   const showSplitLayout =
-    isClient && (result !== null || error !== null || loading);
+    isClient && (result !== null || errorState !== null || loading);
 
   const runSearch = useCallback(
     async (raw: string) => {
       const normalized = normalizeReferenceInput(raw);
       if (!normalized) {
-        setError(t("errors.referenceRequired"));
+        setErrorState({ code: "referenceRequired" });
         setResult(null);
         return;
       }
 
       skipUrlFetchRef.current = false;
       setLoading(true);
-      setError(null);
+      setErrorState(null);
 
       try {
         const data = await trackComplaintByReference(normalized);
@@ -127,19 +141,23 @@ function ComplaintTrackPanelInner() {
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
       } catch (err) {
         setResult(null);
-        setError(
-          err instanceof ApiError && err.status === 404
-            ? t("errors.notFound")
-            : err instanceof ApiError
-              ? err.message
-              : t("errors.generic"),
-        );
+        if (err instanceof ApiError && err.status === 404) {
+          setErrorState({ code: "notFound" });
+        } else if (err instanceof ApiError) {
+          setErrorState({ code: "generic", detail: err.message });
+        } else {
+          setErrorState({ code: "generic" });
+        }
+
+        const params = new URLSearchParams(searchParams.toString());
+        params.set(REF_QUERY, normalized);
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
       } finally {
         setLoading(false);
         manualSearchInFlightRef.current = null;
       }
     },
-    [pathname, router, searchParams, t],
+    [pathname, router, searchParams],
   );
 
   // Load from ?ref= only when the URL reference actually changes (not when loading toggles).
@@ -194,7 +212,7 @@ function ComplaintTrackPanelInner() {
     manualSearchInFlightRef.current = null;
     prevUrlRef.current = "";
     setResult(null);
-    setError(null);
+    setErrorState(null);
     setReference("");
     setLoading(false);
     router.replace(pathname, { scroll: false });
@@ -249,7 +267,7 @@ function ComplaintTrackPanelInner() {
             <ComplaintTrackProgressVisual mode="loading" />
           ) : result !== null ? (
             <ComplaintTrackProgressVisual mode="progress" status={result.status} />
-          ) : error !== null ? (
+          ) : errorState !== null ? (
             <ComplaintTrackProgressVisual mode="error" />
           ) : null}
         </div>
@@ -350,7 +368,7 @@ function ComplaintTrackPanelInner() {
   );
 
   const splitOutcome =
-    error !== null ? (
+    errorState !== null ? (
       <TrackSplitCard title={t("errors.title")} tone="danger">
         <p className="font-body text-body text-danger">{error}</p>
         {activeReference ? (

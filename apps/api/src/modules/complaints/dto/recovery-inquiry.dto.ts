@@ -69,7 +69,7 @@ export class ResolveRecoveryInquiryDto {
   @IsString()
   matchedComplaintId?: string;
 
-  @ApiPropertyOptional({ example: 'CMS-2026-000001' })
+  @ApiPropertyOptional({ example: 'CMS-2026-ABCD1234WXYZ' })
   @IsOptional()
   @IsString()
   resolvedReferenceNo?: string;
@@ -150,7 +150,7 @@ export class RecoveryInquiryCandidateDto {
   @ApiProperty()
   id!: string;
 
-  @ApiProperty({ example: 'CMS-2026-000001' })
+  @ApiProperty({ example: 'CMS-2026-ABCD1234WXYZ' })
   referenceNo!: string;
 
   @ApiProperty()

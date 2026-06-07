@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { useAppLocale } from "@/hooks/use-locale";
 import { buildDescriptionWithLocation } from "@/lib/build-complaint-description";
 import { isValidE164, normalizePhoneE164 } from "@/lib/normalize-phone";
 import {
@@ -22,7 +23,6 @@ import {
   deriveAckContext,
   maskEmailForDisplay,
 } from "@/lib/complaint-ack-context";
-import { sortCategoriesForPicker } from "./category-picker-order";
 import { ComplaintInfoCards } from "./ComplaintInfoCards";
 import { ComplaintEvidencePanel } from "./ComplaintEvidencePanel";
 import { ComplaintStepContactLocation } from "./ComplaintStepContactLocation";
@@ -39,9 +39,18 @@ import {
   type WizardStep,
 } from "./types";
 
-interface Props {
-  locale: "en" | "am";
-}
+type SubmitErrorState =
+  | {
+      kind: "validation";
+      key:
+        | "subjectMin"
+        | "descriptionMin"
+        | "consentRequired"
+        | "phoneInvalid"
+        | "emailInvalid";
+    }
+  | { kind: "api"; key: "submitFailed"; detail?: string }
+  | null;
 
 interface State {
   phase: SubmitPhase;
@@ -49,7 +58,7 @@ interface State {
   form: WizardFormData;
   submitted: SubmittedComplaint | null;
   evidenceSessionExpired: boolean;
-  error: string | null;
+  error: SubmitErrorState;
 }
 
 type Action =
@@ -57,7 +66,7 @@ type Action =
   | { type: "OPEN_EVIDENCE"; sessionExpired: boolean }
   | { type: "SET_STEP"; step: WizardStep }
   | { type: "PATCH_FORM"; patch: Partial<WizardFormData> }
-  | { type: "SET_ERROR"; error: string | null }
+  | { type: "SET_ERROR"; error: SubmitErrorState }
   | { type: "SET_SUBMITTED"; submitted: SubmittedComplaint }
   | { type: "RESTORE_DRAFT"; draft: Pick<State, "wizardStep" | "form" | "phase"> };
 
@@ -88,7 +97,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         wizardStep: action.draft.wizardStep,
-        form: action.draft.form,
+        form: { ...action.draft.form, categoryId: "" },
         phase: action.draft.phase === "submitting" ? "wizard" : action.draft.phase,
         error: null,
       };
@@ -106,20 +115,18 @@ const initialState: State = {
   error: null,
 };
 
-function defaultCategoryId(
-  categories: ComplaintFormOptions["categories"],
-): string | undefined {
-  const sorted = sortCategoriesForPicker(categories);
-  return sorted[0]?.id;
-}
-
-export function ComplaintSubmitWizard({ locale }: Props) {
+export function ComplaintSubmitWizard() {
   const t = useTranslations("complaintSubmit");
+  const locale = useAppLocale();
   const router = useRouter();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [options, setOptions] = useState<ComplaintFormOptions | null>(null);
-  const [optionsError, setOptionsError] = useState<string | null>(null);
-  const [optionsWarning, setOptionsWarning] = useState<string | null>(null);
+  const [optionsErrorKey, setOptionsErrorKey] = useState<
+    "optionsFailed" | null
+  >(null);
+  const [optionsWarningKey, setOptionsWarningKey] = useState<
+    "optionsPartial" | null
+  >(null);
   /** Always true on server + first client paint so SSR matches hydration. */
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [optionsRetrying, setOptionsRetrying] = useState(false);
@@ -136,38 +143,22 @@ export function ComplaintSubmitWizard({ locale }: Props) {
     } else {
       persistEnabledRef.current = true;
     }
-    const categoryIdAtMount = draft?.form.categoryId ?? "";
-
     void (async () => {
       try {
         const data = await loadComplaintFormOptions({ force: false });
         if (cancelled) return;
         setOptions(data);
-        setOptionsError(null);
-        setOptionsWarning(null);
-        const defaultId = defaultCategoryId(data.categories);
-        if (!categoryIdAtMount && defaultId) {
-          dispatch({
-            type: "PATCH_FORM",
-            patch: { categoryId: defaultId },
-          });
-        }
+        setOptionsErrorKey(null);
+        setOptionsWarningKey(null);
       } catch {
         if (cancelled) return;
         const fallback = getComplaintFormOptionsFromCache();
         if (fallback) {
           setOptions(fallback);
-          setOptionsWarning(t("errors.optionsPartial"));
-          const defaultId = defaultCategoryId(fallback.categories);
-          if (!categoryIdAtMount && defaultId) {
-            dispatch({
-              type: "PATCH_FORM",
-              patch: { categoryId: defaultId },
-            });
-          }
+          setOptionsWarningKey("optionsPartial");
         } else {
           setOptions(null);
-          setOptionsError(t("errors.optionsFailed"));
+          setOptionsErrorKey("optionsFailed");
         }
       } finally {
         if (!cancelled) {
@@ -199,59 +190,89 @@ export function ComplaintSubmitWizard({ locale }: Props) {
   const categories = options?.categories ?? [];
   const optionsUnavailable =
     !optionsLoading &&
-    (Boolean(optionsError) || categories.length === 0);
+    (Boolean(optionsErrorKey) || categories.length === 0);
+
+  const formError = state.error
+    ? state.error.kind === "validation"
+      ? t(`errors.${state.error.key}`)
+      : (state.error.detail ?? t(`errors.${state.error.key}`))
+    : null;
 
   const validateRequiredFields = useCallback((): boolean => {
     if (state.form.subject.trim().length < 5) {
-      dispatch({ type: "SET_ERROR", error: t("errors.subjectMin") });
+      dispatch({
+        type: "SET_ERROR",
+        error: { kind: "validation", key: "subjectMin" },
+      });
       return false;
     }
     if (state.form.description.trim().length < 20) {
-      dispatch({ type: "SET_ERROR", error: t("errors.descriptionMin") });
+      dispatch({
+        type: "SET_ERROR",
+        error: { kind: "validation", key: "descriptionMin" },
+      });
       return false;
     }
     if (!state.form.consentGiven) {
-      dispatch({ type: "SET_ERROR", error: t("errors.consentRequired") });
+      dispatch({
+        type: "SET_ERROR",
+        error: { kind: "validation", key: "consentRequired" },
+      });
       return false;
     }
     dispatch({ type: "SET_ERROR", error: null });
     return true;
-  }, [state.form, t]);
+  }, [state.form]);
 
   const validateStep1 = useCallback((): boolean => {
     if (state.form.subject.trim().length < 5) {
-      dispatch({ type: "SET_ERROR", error: t("errors.subjectMin") });
+      dispatch({
+        type: "SET_ERROR",
+        error: { kind: "validation", key: "subjectMin" },
+      });
       return false;
     }
     if (state.form.description.trim().length < 20) {
-      dispatch({ type: "SET_ERROR", error: t("errors.descriptionMin") });
+      dispatch({
+        type: "SET_ERROR",
+        error: { kind: "validation", key: "descriptionMin" },
+      });
       return false;
     }
     dispatch({ type: "SET_ERROR", error: null });
     return true;
-  }, [state.form, t]);
+  }, [state.form]);
 
   const validateStep2 = useCallback((): boolean => {
     const phoneRaw = state.form.complainantPhone.trim();
     if (phoneRaw) {
       const phone = normalizePhoneE164(phoneRaw);
       if (!phone || !isValidE164(phone)) {
-        dispatch({ type: "SET_ERROR", error: t("errors.phoneInvalid") });
+        dispatch({
+          type: "SET_ERROR",
+          error: { kind: "validation", key: "phoneInvalid" },
+        });
         return false;
       }
     }
     const emailRaw = state.form.complainantEmail.trim();
     if (emailRaw && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw)) {
-      dispatch({ type: "SET_ERROR", error: t("errors.emailInvalid") });
+      dispatch({
+        type: "SET_ERROR",
+        error: { kind: "validation", key: "emailInvalid" },
+      });
       return false;
     }
     if (!state.form.consentGiven) {
-      dispatch({ type: "SET_ERROR", error: t("errors.consentRequired") });
+      dispatch({
+        type: "SET_ERROR",
+        error: { kind: "validation", key: "consentRequired" },
+      });
       return false;
     }
     dispatch({ type: "SET_ERROR", error: null });
     return true;
-  }, [state.form, t]);
+  }, [state.form]);
 
   const submitComplaint = async () => {
     if (!validateRequiredFields()) {
@@ -302,37 +323,33 @@ export function ComplaintSubmitWizard({ locale }: Props) {
       dispatch({ type: "SET_PHASE", phase: "wizard" });
       dispatch({
         type: "SET_ERROR",
-        error:
-          err instanceof ApiError ? err.message : t("errors.submitFailed"),
+        error: {
+          kind: "api",
+          key: "submitFailed",
+          detail: err instanceof ApiError ? err.message : undefined,
+        },
       });
     }
   };
 
   const handleRetryOptions = () => {
     setOptionsRetrying(true);
-    setOptionsError(null);
+    setOptionsErrorKey(null);
     setOptionsLoading(true);
 
     void (async () => {
       try {
         const data = await loadComplaintFormOptions({ force: true });
         setOptions(data);
-        setOptionsError(null);
-        setOptionsWarning(null);
-        const defaultId = defaultCategoryId(data.categories);
-        if (!state.form.categoryId && defaultId) {
-          dispatch({
-            type: "PATCH_FORM",
-            patch: { categoryId: defaultId },
-          });
-        }
+        setOptionsErrorKey(null);
+        setOptionsWarningKey(null);
       } catch {
         const cached = getComplaintFormOptionsFromCache();
         if (cached) {
           setOptions(cached);
-          setOptionsWarning(t("errors.optionsPartial"));
+          setOptionsWarningKey("optionsPartial");
         } else {
-          setOptionsError(t("errors.optionsFailed"));
+          setOptionsErrorKey("optionsFailed");
         }
       } finally {
         setOptionsLoading(false);
@@ -383,17 +400,17 @@ export function ComplaintSubmitWizard({ locale }: Props) {
     <div className="mx-auto max-w-3xl">
       <SubmitProgressBar step={state.wizardStep} />
 
-      {optionsError ? (
+      {optionsErrorKey ? (
         <OptionsLoadBanner
-          message={optionsError}
+          messageKey={optionsErrorKey}
           variant="error"
           onRetry={handleRetryOptions}
           retrying={optionsRetrying}
         />
       ) : null}
 
-      {optionsWarning && !optionsError ? (
-        <OptionsLoadBanner message={optionsWarning} variant="warning" />
+      {optionsWarningKey && !optionsErrorKey ? (
+        <OptionsLoadBanner messageKey={optionsWarningKey} variant="warning" />
       ) : null}
 
       <div className="rounded-xl border border-border-standard bg-surface p-8 shadow-sm">
@@ -414,7 +431,7 @@ export function ComplaintSubmitWizard({ locale }: Props) {
               clearComplaintSubmitDraft();
               router.push("/");
             }}
-            error={state.error}
+            error={formError}
           />
         ) : null}
 
@@ -429,7 +446,7 @@ export function ComplaintSubmitWizard({ locale }: Props) {
               }
             }}
             onBack={() => dispatch({ type: "SET_STEP", step: 1 })}
-            error={state.error}
+            error={formError}
           />
         ) : null}
 
@@ -441,7 +458,7 @@ export function ComplaintSubmitWizard({ locale }: Props) {
             onBack={() => dispatch({ type: "SET_STEP", step: 2 })}
             onSubmit={submitComplaint}
             isSubmitting={state.phase === "submitting"}
-            error={state.error}
+            error={formError}
           />
         ) : null}
       </div>
