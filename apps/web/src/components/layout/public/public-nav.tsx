@@ -11,25 +11,21 @@ export function PublicNav() {
   const nav = useTranslations("nav");
   const pathname = usePathname();
   const normalizedPath = normalizePath(pathname);
-  const isPublicHome = normalizedPath === "" || normalizedPath === "/";
   const isSubmit = normalizedPath.startsWith("/complaints/new");
   const isTrack = normalizedPath.startsWith("/complaints/track");
 
   const linkClass = (active: boolean) =>
-    `font-body text-body pb-1 transition-colors cursor-pointer ${
+    `font-body text-body py-1.5 transition-colors cursor-pointer border-y-2 border-t-transparent ${
       active
-        ? "text-primary font-bold border-b-2 border-primary"
-        : "text-text-secondary border-b-2 border-transparent hover:text-primary"
+        ? "text-primary font-bold border-b-primary"
+        : "text-text-secondary font-medium border-b-transparent hover:text-primary hover:border-b-primary/30"
     }`;
 
   return (
     <nav
       className="hidden items-center gap-6 md:flex"
-      aria-label={nav("publicPortal")}
+      aria-label={nav("submitComplaint")}
     >
-      <Link className={linkClass(isPublicHome)} href="/">
-        {nav("publicPortal")}
-      </Link>
       <Link className={linkClass(isSubmit)} href="/complaints/new">
         {nav("submitComplaint")}
       </Link>

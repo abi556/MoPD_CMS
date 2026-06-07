@@ -22,13 +22,13 @@ export function SubmitProgressBar({ step }: SubmitProgressBarProps) {
   const progressPercent = step === 1 ? 33 : step === 2 ? 66 : 100;
 
   return (
-    <div className="mb-12">
+    <div className="mb-12 animate-fade-in-up">
       <div className="mb-4 flex items-end justify-between">
         <div>
           <span className="mb-1 block text-overline font-semibold uppercase tracking-wider text-primary">
             {t("overline")}
           </span>
-          <h1 className="text-h1 font-semibold text-on-surface">
+          <h1 className="text-h1 font-semibold text-on-surface tracking-tight">
             {step === 1
               ? t("headings.step1")
               : step === 2
@@ -40,9 +40,9 @@ export function SubmitProgressBar({ step }: SubmitProgressBarProps) {
           {t("progress", { percent: progressPercent })}
         </span>
       </div>
-      <div className="relative h-1 overflow-hidden rounded-full bg-border-standard">
+      <div className="relative h-1 overflow-hidden rounded-none bg-border-standard">
         <div
-          className="absolute left-0 top-0 h-full rounded-full bg-primary transition-[width] duration-500 ease-in-out"
+          className="absolute left-0 top-0 h-full rounded-none bg-primary transition-[width] duration-500 ease-in-out"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
@@ -66,7 +66,7 @@ export function SubmitProgressBar({ step }: SubmitProgressBarProps) {
         {STEPS.map((s) => (
           <div key={s} className="flex flex-col items-center gap-2">
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-label font-semibold shadow-sm ${
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-label font-semibold shadow-sm transition-all duration-300 ${
                 s < step
                   ? "bg-primary text-on-primary"
                   : s === step

@@ -1,6 +1,31 @@
 import { setRequestLocale } from "next-intl/server";
 import { PublicShell } from "@/components/layout/public-shell";
-import { FileText, Scale, UserCheck, AlertTriangle, HelpCircle } from "lucide-react";
+import { PublicLegalHero } from "@/components/public/public-legal-hero";
+import { PublicLegalSection } from "@/components/public/public-legal-section";
+import {
+  PublicLegalDocumentLayout,
+  type LegalNavSection,
+} from "@/components/public/public-legal-document-layout";
+
+const EN_SECTIONS: LegalNavSection[] = [
+  { id: "acceptance", title: "Acceptance of terms" },
+  { id: "user-conduct", title: "User responsibilities" },
+  { id: "ministry", title: "Ministry commitments" },
+  { id: "prohibited", title: "Prohibited activities" },
+  { id: "ip", title: "Intellectual property" },
+  { id: "law", title: "Governing law" },
+  { id: "support", title: "Support & contact" },
+];
+
+const AM_SECTIONS: LegalNavSection[] = [
+  { id: "acceptance", title: "ውሎችን ስለመቀበል" },
+  { id: "user-conduct", title: "የተጠቃሚ ኃላፊነት" },
+  { id: "ministry", title: "የሚኒስቴር ግዴታዎች" },
+  { id: "prohibited", title: "የተከለከሉ ተግባራት" },
+  { id: "ip", title: "የአዕምሮ ንብረት" },
+  { id: "law", title: "ተፈጻሚነት ያለው ሕግ" },
+  { id: "support", title: "እርዳታ እና ግንኙነት" },
+];
 
 export default async function TermsPage({
   params,
@@ -13,203 +38,180 @@ export default async function TermsPage({
 
   return (
     <PublicShell>
-      <div className="mx-auto w-full max-w-max-width px-gutter py-12 md:py-20">
-        {isAm ? (
-          // Amharic Version
-          <article className="mx-auto max-w-4xl space-y-12">
-            <header className="space-y-4 border-b border-border-standard pb-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-brand-surface px-3 py-1 text-primary">
-                <FileText className="h-4 w-4" />
-                <span className="text-label font-label uppercase">የአገልግሎት ውሎች</span>
-              </div>
-              <h1 className="font-display text-4xl font-semibold text-on-background md:text-5xl">
-                የአገልግሎት ውሎች እና ደንቦች
-              </h1>
-              <p className="text-body text-text-secondary">
-                የፕላንና ልማት ሚኒስቴር (MoPD) የቅሬታ ማስተናገጃ ሥርዓት (CMS) የህዝብ መተግበሪያን ለመጠቀም የተቀመጡ የአገልግሎት ውሎች እና ደንቦች።
-              </p>
-            </header>
+      <PublicLegalHero
+        title={isAm ? "የአገልግሎት ውሎች" : "Terms of Service"}
+        subtitle={
+          isAm
+            ? "MoPD የቅሬታ አስተዳደር ስርዓት · የተሻሻለ · ጁን 2026"
+            : "MoPD Complaint Management System · Effective June 2026"
+        }
+      />
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፩. ውሎችን ስለመቀበል
-              </h2>
-              <p className="text-body text-text-secondary leading-relaxed">
-                ይህን የቅሬታ ማስተናገጃ መድረክ በመጠቀም፣ በእነዚህ የአገልግሎት ውሎች እና ደንቦች ለመገዛት መስማማትዎን ያረጋግጣሉ። በእነዚህ ውሎች ካልተስማሙ፣ እባክዎ መድረኩን አይጠቀሙ።
-              </p>
-            </section>
+      {isAm ? (
+        <PublicLegalDocumentLayout navLabel="ይዘት" sections={AM_SECTIONS}>
+          <PublicLegalSection id="acceptance" title="ውሎችን ስለመቀበል">
+            <p>
+              ይህን የቅሬታ ማስተናገጃ መድረክ በመጠቀም፣ በእነዚህ የአገልግሎት ውሎች ለመገዛት
+              መስማማትዎን ያረጋግጣሉ። በእነዚህ ውሎች ካልተስማሙ፣ እባክዎ መድረኩን አይጠቀሙ።
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፪. የተጠቃሚ ኃላፊነት እና ተገቢ አጠቃቀም
-              </h2>
-              <p className="text-body text-text-secondary">
-                ይህን መድረክ ሲጠቀሙ የሚከተሉትን ኃላፊነቶች ለመወጣት ይስማማሉ፦
-              </p>
-              <ul className="list-disc pl-6 space-y-3 text-body-sm text-text-secondary">
-                <li><strong>ትክክለኛ መረጃ ማቅረብ፦</strong> የሚያቀርቡት ቅሬታ እና የግል መረጃ ሙሉ በሙሉ እውነተኛ፣ ትክክለኛ እና ያልተዛባ መሆን አለበት። ሆን ብሎ የሐሰት መረጃ ማቅረብ በኢትዮጵያ ሕግ ያስቀጣል።</li>
-                <li><strong>ሕጋዊ አጠቃቀም፦</strong> መድረኩን ለሕገ-ወጥ፣ ለተንኮል አዘል ወይም ለማጭበርበር ዓላማዎች መጠቀም በጥብቅ የተከለከለ ነው።</li>
-                <li><strong>የማጣቀሻ ቁጥርን መጠበቅ፦</strong> ቅሬታዎን ካስገቡ በኋላ የሚሰጥዎትን የሚስጥር ማጣቀሻ ቁጥር (Reference Number) ደህንነቱ በተጠበቀ ቦታ የመጠበቅ ሙሉ ኃላፊነት የእርስዎ ነው። ይህ ቁጥር ከጠፋብዎ ቅሬታዎን ለመከታተል አስቸጋሪ ሊሆን ይችላል።</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="user-conduct" title="የተጠቃሚ ኃላፊነት">
+            <p>ይህን መድረክ ሲጠቀሙ የሚከተሉትን ኃላፊነቶች ለመወጣት ይስማማሉ፦</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>
+                <strong>ትክክለኛ መረጃ፦</strong> የሚያቀርቡት ቅሬታ እና መረጃ እውነተኛ
+                እና ትክክለኛ መሆን አለበት። ሆን ብሎ የሐሰት መረጃ ማቅረብ በሕግ
+                ይቀጣል።
+              </li>
+              <li>
+                <strong>ሕጋዊ አጠቃቀም፦</strong> መድረኩን ለሕገ-ወጥ፣ ለተንኮል አዘል ወይም
+                ለማጭበርበር ዓላማዎች መጠቀም የተከለከለ ነው።
+              </li>
+              <li>
+                <strong>ማጣቀሻ ቁጥር፦</strong> ከመላክ በኋላ የሚሰጥዎትን ማጣቀሻ ቁጥር
+                በደህንነት መጠበቅ የእርስዎ ኃላፊነት ነው።
+              </li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፫. የሚኒስቴሩ ኃላፊነቶች እና የአገልግሎት ደረጃ (SLA)
-              </h2>
-              <p className="text-body text-text-secondary">
-                የፕላንና ልማት ሚኒስቴር (MoPD) የሚከተሉትን ለማከናወን ይተጋል፦
-              </p>
-              <ul className="list-disc pl-6 space-y-3 text-body-sm text-text-secondary">
-                <li>ያቀረቡትን ቅሬታ በቅንነት፣ በገለልተኝነት እና በምስጢራዊነት ለመገምገም እና ለመመርመር።</li>
-                <li>በአገልግሎት ደረጃ ስምምነታችን (SLA) መሠረት ለቅሬታዎ በተቻለ ፍጥነት ምላሽ ለመስጠት (በተለምዶ እንደ ቅሬታው ዓይነት ከ3 እስከ 5 የሥራ ቀናት ውስጥ)።</li>
-                <li>የእርስዎን የግል መረጃዎች በሀገሪቱ የግል ዳታ ጥበቃ አዋጅ ቁጥር 1321/2016 መሠረት ሙሉ በሙሉ ለመጠበቅ።</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="ministry" title="የሚኒስቴር ግዴታዎች">
+            <p>የፕላንና ልማት ሚኒስቴር (MoPD) የሚከተሉትን ለማከናወን ይተጋል፦</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>
+                ቅሬታዎን በቅንነት፣ በገለልተኝነት እና በምስጢራዊነት ለመገምገም።
+              </li>
+              <li>
+                በተለምዶ ከ3 እስከ 5 የሥራ ቀናት ውስጥ ምላሽ ለመስጠት (በቅሬታው
+                ዓይነት ሊለወጥ ይችላል)።
+              </li>
+              <li>
+                የግል መረጃዎችን በአዋጅ 1321/2024 መሠረት ለመጠበቅ።
+              </li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፬. የተከለከሉ ተግባራት
-              </h2>
-              <p className="text-body text-text-secondary">
-                በዚህ መድረክ ላይ የሚከተሉትን ማድረግ በጥብቅ የተከለከለ ነው፦
-              </p>
-              <ul className="list-disc pl-6 space-y-3 text-body-sm text-text-secondary">
-                <li>የማስፈራሪያ፣ የስድብ፣ የጥላቻ ንግግር ወይም የሌሎችን መብት የሚጥሱ ቃላትን በቅሬታ መግለጫ ውስጥ መጠቀም።</li>
-                <li>ሆን ብሎ የተበከሉ ፋይሎችን (ቫይረሶችን) ወይም ተንኮል አዘል ሶፍትዌሮችን ለማያያዝ መሞከር።</li>
-                <li>በስርዓቱ ላይ ተደጋጋሚ የሐሰት ጥያቄዎችን በመላክ የአገልግሎት መቋረጥ (DDoS) ለመፍጠር መሞከር።</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="prohibited" title="የተከለከሉ ተግባራት">
+            <p>በዚህ መድረክ ላይ የሚከተሉትን ማድረግ የተከለከለ ነው፦</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>የማስፈራሪያ፣ የስድብ ወይም የጥላቻ ንግግር በቅሬታ ውስጥ መጠቀም።</li>
+              <li>ተንኮል አዘል ፋይሎችን ለማያያዝ መሞከር።</li>
+              <li>በተደጋጋሚ የሐሰት ጥያቄዎች አገልግሎትን ለመቋረጥ መሞከር።</li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፭. የአዕምሯዊ ንብረት መብት
-              </h2>
-              <p className="text-body text-text-secondary leading-relaxed">
-                በዚህ መድረክ ላይ የሚገኙ ማናቸውም ይዘቶች፣ አርማዎች፣ ዲዛይኖች እና ቴክኖሎጂዎች የፕላንና ልማት ሚኒስቴር (MoPD) ንብረቶች ናቸው። ያለ ሚኒስቴሩ ፈቃድ እነዚህን ይዘቶች ለሌላ ዓላማ ማባዛት ወይም መጠቀም የተከለከለ ነው።
-              </p>
-            </section>
+          <PublicLegalSection id="ip" title="የአዕምሮ ንብረት">
+            <p>
+              በዚህ መድረክ ላይ የሚገኙ ይዘቶች፣ አርማዎች እና ዲዛይኖች የMoPD ንብረት
+              ናቸው። ያለ ፈቃድ ማባዛት ወይም መጠቀም የተከለከለ ነው።
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፮. ተፈጻሚነት ያለው ሕግ
-              </h2>
-              <p className="text-body text-text-secondary leading-relaxed">
-                እነዚህ ውሎች እና ደንቦች በኢትዮጵያ ፌደራላዊ ዲሞክራሲያዊ ሪፐብሊክ ሕጎች መሠረት የሚተረጎሙ እና የሚመሩ ይሆናሉ። ከዚህ መድረክ አጠቃቀም ጋር ተያይዞ የሚነሱ ማናቸውም አለመግባባቶች በኢትዮጵያ ፍርድ ቤቶች ብቻ የሚታዩ ይሆናል።
-              </p>
-            </section>
+          <PublicLegalSection id="law" title="ተፈጻሚነት ያለው ሕግ">
+            <p>
+              እነዚህ ውሎች በኢትዮጵያ ፌደራላዊ ዲሞክራሲያዊ ሪፐብሊክ ሕጎች መሠረት
+              የሚተረጎሙ ይሆናሉ። ከመድረኩ አጠቃቀም ጋር የሚነሱ አለመግባባቶች በኢትዮጵያ
+              ፍርድ ቤቶች ብቻ ይታያሉ።
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6 border-t border-border-standard pt-8">
-              <h2 className="font-h2 text-h2 text-brand-deep">
-                እርዳታ እና ግንኙነት
-              </h2>
-              <p className="text-body text-text-secondary">
-                ስለ አገልግሎት ውሎቹ ማንኛውም ጥያቄ ካለዎት እባክዎ በኢሜይል አድራሻችን ያግኙን፦{" "}
-                <a href="mailto:support@mopd.gov.et" className="text-primary font-semibold underline">
-                  support@mopd.gov.et
-                </a>
-              </p>
-            </section>
-          </article>
-        ) : (
-          // English Version
-          <article className="mx-auto max-w-4xl space-y-12">
-            <header className="space-y-4 border-b border-border-standard pb-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-brand-surface px-3 py-1 text-primary">
-                <FileText className="h-4 w-4" />
-                <span className="text-label font-label uppercase">Terms of Service</span>
-              </div>
-              <h1 className="font-display text-4xl font-semibold text-on-background md:text-5xl">
-                Terms of Service
-              </h1>
-              <p className="text-body text-text-secondary">
-                Terms, conditions, and user responsibilities governing the use of the Ministry of Planning and Development (MoPD) Complaint Management System (CMS).
-              </p>
-            </header>
+          <PublicLegalSection id="support" title="እርዳታ እና ግንኙነት">
+            <p>
+              ስለ አገልግሎት ውሎቹ ጥያቄ ካለዎት{" "}
+              <a
+                href="mailto:support@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                support@mopd.gov.et
+              </a>{" "}
+              ያግኙን።
+            </p>
+          </PublicLegalSection>
+        </PublicLegalDocumentLayout>
+      ) : (
+        <PublicLegalDocumentLayout navLabel="Contents" sections={EN_SECTIONS}>
+          <PublicLegalSection id="acceptance" title="Acceptance of terms">
+            <p>
+              By using this Complaint Management System, you agree to be bound
+              by these Terms of Service. If you do not agree, please do not use
+              the system.
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                1. Acceptance of Terms
-              </h2>
-              <p className="text-body text-text-secondary leading-relaxed">
-                By accessing and using this Complaint Management System public portal, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree with any of these terms, please do not use the system.
-              </p>
-            </section>
+          <PublicLegalSection id="user-conduct" title="User responsibilities">
+            <p>When submitting a complaint, you agree to:</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>
+                <strong>Provide accurate information:</strong> All details must
+                be truthful and complete. Deliberately false claims may carry
+                legal consequences under Ethiopian law.
+              </li>
+              <li>
+                <strong>Use the portal lawfully:</strong> For legitimate,
+                non-malicious purposes only.
+              </li>
+              <li>
+                <strong>Keep your reference number secure:</strong> Required for
+                tracking and recovery.
+              </li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                2. User Conduct &amp; Responsibilities
-              </h2>
-              <p className="text-body text-text-secondary">
-                When submitting a complaint, you agree to fulfill the following responsibilities:
-              </p>
-              <ul className="list-disc pl-6 space-y-3 text-body-sm text-text-secondary">
-                <li><strong>Provide Accurate Information:</strong> All information, descriptions, and personal details provided must be truthful, accurate, and complete. Submitting deliberately false or misleading claims is prohibited and may carry legal consequences under Ethiopian law.</li>
-                <li><strong>Lawful Use:</strong> You must use this portal solely for legitimate, non-malicious, and lawful purposes.</li>
-                <li><strong>Secure Reference Number:</strong> You are solely responsible for keeping your unique complaint reference number secure. This number is required to track status or request recovery.</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="ministry" title="Ministry commitments">
+            <p>The Ministry of Planning and Development (MoPD) commits to:</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>
+                Reviewing complaints with fairness, impartiality, and
+                confidentiality.
+              </li>
+              <li>
+                Responding within established timelines (typically 3–5 business
+                days, depending on complexity).
+              </li>
+              <li>
+                Protecting personal data under Proclamation No. 1321/2024.
+              </li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                3. Ministry Commitments &amp; Service Levels (SLA)
-              </h2>
-              <p className="text-body text-text-secondary">
-                The Ministry of Planning and Development (MoPD) is committed to:
-              </p>
-              <ul className="list-disc pl-6 space-y-3 text-body-sm text-text-secondary">
-                <li>Reviewing and processing all submitted complaints with fairness, impartiality, and confidentiality.</li>
-                <li>Adhering to established Service Level Agreements (SLAs) to provide timely responses (typically within 3 to 5 business days, depending on complaint complexity).</li>
-                <li>Protecting your personal data in strict compliance with the Ethiopian Personal Data Protection Proclamation No. 1321/2024.</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="prohibited" title="Prohibited activities">
+            <p>The following are strictly prohibited:</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>Abusive, offensive, or threatening language in complaints.</li>
+              <li>Uploading malware or harmful files.</li>
+              <li>Attempting to disrupt system availability through spam or abuse.</li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                4. Prohibited Activities
-              </h2>
-              <p className="text-body text-text-secondary">
-                The following activities are strictly prohibited on this platform:
-              </p>
-              <ul className="list-disc pl-6 space-y-3 text-body-sm text-text-secondary">
-                <li>Using abusive, offensive, defamatory, or threatening language in your complaint description.</li>
-                <li>Uploading files containing viruses, malware, or any other harmful code.</li>
-                <li>Attempting to disrupt system availability through automated spamming or Denial of Service (DDoS) attacks.</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="ip" title="Intellectual property">
+            <p>
+              All content, logos, and designs on this portal are the property
+              of MoPD. Unauthorized reproduction or distribution is prohibited.
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                5. Intellectual Property
-              </h2>
-              <p className="text-body text-text-secondary leading-relaxed">
-                All software, designs, logos, text, and graphics on this portal are the intellectual property of the Ministry of Planning and Development (MoPD). Unauthorized reproduction, modification, or distribution of this content is strictly prohibited.
-              </p>
-            </section>
+          <PublicLegalSection id="law" title="Governing law">
+            <p>
+              These terms are governed by the laws of the Federal Democratic
+              Republic of Ethiopia. Disputes shall be subject to the exclusive
+              jurisdiction of Ethiopian courts.
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                6. Governing Law
-              </h2>
-              <p className="text-body text-text-secondary leading-relaxed">
-                These Terms of Service are governed by and construed in accordance with the laws of the Federal Democratic Republic of Ethiopia. Any disputes arising from the use of this system shall be subject to the exclusive jurisdiction of the courts of Ethiopia.
-              </p>
-            </section>
-
-            <section className="space-y-6 border-t border-border-standard pt-8">
-              <h2 className="font-h2 text-h2 text-brand-deep">
-                Support &amp; Contact
-              </h2>
-              <p className="text-body text-text-secondary">
-                If you have any questions regarding these Terms of Service, please contact our support team at:{" "}
-                <a href="mailto:support@mopd.gov.et" className="text-primary font-semibold underline">
-                  support@mopd.gov.et
-                </a>
-              </p>
-            </section>
-          </article>
-        )}
-      </div>
+          <PublicLegalSection id="support" title="Support & contact">
+            <p>
+              Questions about these terms? Contact{" "}
+              <a
+                href="mailto:support@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                support@mopd.gov.et
+              </a>
+              .
+            </p>
+          </PublicLegalSection>
+        </PublicLegalDocumentLayout>
+      )}
     </PublicShell>
   );
 }

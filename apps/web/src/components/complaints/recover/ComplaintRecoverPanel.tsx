@@ -119,7 +119,7 @@ export function ComplaintRecoverPanel() {
   };
 
   return (
-    <div className="w-full px-gutter py-12 pb-20 md:py-16 md:pb-28">
+    <div className="w-full px-gutter py-12 pb-20 md:py-16 md:pb-28 animate-fade-in-up">
       <header className="relative mx-auto mb-8 w-full max-w-lg md:mb-10 md:max-w-max-width">
         <Link
           href="/complaints/track"
@@ -130,21 +130,21 @@ export function ComplaintRecoverPanel() {
           {t("back")}
         </Link>
         <div className="w-full text-left md:mx-auto md:max-w-lg">
-          <h1 className="text-display font-semibold leading-tight text-on-surface">
+          <h1 className="text-display font-semibold leading-tight text-on-surface tracking-tight">
             {t("title")}
           </h1>
-          <p className="mt-4 text-body text-text-secondary">{t("intro")}</p>
+          <p className="mt-4 text-body text-text-secondary leading-relaxed">{t("intro")}</p>
         </div>
       </header>
 
       <div className="mx-auto w-full max-w-lg">
       {step === "contact" ? (
-        <form className="space-y-6" onSubmit={onRequestOtp}>
-          <div className="flex gap-2">
+        <form className="space-y-6 animate-fade-in-up" onSubmit={onRequestOtp}>
+          <div className="flex gap-3">
             <Button
               type="button"
               variant={channel === "email" ? "primary" : "secondary"}
-              className="flex-1 gap-2"
+              className="rounded-none flex-1 gap-2 py-3 transition-all duration-200"
               onClick={() => setChannel("email")}
             >
               <Mail className="h-4 w-4" aria-hidden />
@@ -153,7 +153,7 @@ export function ComplaintRecoverPanel() {
             <Button
               type="button"
               variant={channel === "sms" ? "primary" : "secondary"}
-              className="flex-1 gap-2"
+              className="rounded-none flex-1 gap-2 py-3 transition-all duration-200"
               onClick={() => setChannel("sms")}
             >
               <Smartphone className="h-4 w-4" aria-hidden />
@@ -169,6 +169,7 @@ export function ComplaintRecoverPanel() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t("emailPlaceholder")}
               hint={t("emailHint")}
+              className="rounded-none"
             />
           ) : (
             <Input
@@ -179,24 +180,25 @@ export function ComplaintRecoverPanel() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder={t("phonePlaceholder")}
               hint={t("phoneSmsHint")}
+              className="rounded-none"
             />
           )}
-          <p className="border-t border-border-standard pt-4 text-body-sm text-text-secondary">
+          <p className="border-t border-border-standard pt-4 text-body-sm text-text-secondary leading-relaxed">
             {t("manualFallback")}{" "}
             <Link
               href="/complaints/recover/manual"
-              className="font-medium text-primary underline-offset-4 hover:underline"
+              className="font-semibold text-primary underline-offset-4 hover:underline"
             >
               {t("manualLink")}
             </Link>
           </p>
-          <p className="text-body-sm text-text-secondary">{t("requestNote")}</p>
+          <p className="text-body-sm text-text-secondary leading-relaxed">{t("requestNote")}</p>
           {error ? (
-            <p className="text-sm text-danger" role="alert">
+            <p className="text-sm text-danger animate-fade-in-up" role="alert">
               {error}
             </p>
           ) : null}
-          <Button type="submit" className="w-full gap-2" disabled={loading}>
+          <Button type="submit" className="rounded-none w-full gap-2 py-3.5 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]" disabled={loading}>
             {loading ? t("sending") : t("sendCode")}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
@@ -204,8 +206,8 @@ export function ComplaintRecoverPanel() {
       ) : null}
 
       {step === "otp" ? (
-        <form className="space-y-6" onSubmit={onVerifyOtp}>
-          <p className="text-body text-text-secondary">{t("otpIntro")}</p>
+        <form className="space-y-6 animate-fade-in-up" onSubmit={onVerifyOtp}>
+          <p className="text-body text-text-secondary leading-relaxed">{t("otpIntro")}</p>
           <Input
             label={t("codeLabel")}
             name="code"
@@ -214,9 +216,10 @@ export function ComplaintRecoverPanel() {
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
             placeholder="000000"
+            className="rounded-none font-mono tracking-widest text-center text-lg"
           />
           {error ? (
-            <p className="text-sm text-danger" role="alert">
+            <p className="text-sm text-danger animate-fade-in-up" role="alert">
               {error}
             </p>
           ) : null}
@@ -224,7 +227,7 @@ export function ComplaintRecoverPanel() {
             <Button
               type="button"
               variant="secondary"
-              className="w-full"
+              className="rounded-none w-full transition-all duration-200 active:scale-[0.98]"
               onClick={() => {
                 setStep("contact");
                 setCode("");
@@ -233,7 +236,7 @@ export function ComplaintRecoverPanel() {
             >
               {t("changeContact")}
             </Button>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="rounded-none w-full transition-all duration-200 active:scale-[0.98]" disabled={loading}>
               {loading ? t("verifying") : t("verifyCode")}
             </Button>
           </div>
@@ -241,19 +244,20 @@ export function ComplaintRecoverPanel() {
       ) : null}
 
       {step === "results" ? (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-in-up">
           {references.length === 0 ? (
-            <p className="rounded-lg border border-border-standard bg-surface-container p-4 text-body text-on-surface-variant">
+            <p className="rounded-none border border-border-standard bg-surface-container p-4 text-body text-on-surface-variant animate-fade-in-up">
               {t("noReferences")}
             </p>
           ) : (
             <ul className="space-y-4">
-              {references.map((ref) => (
+              {references.map((ref, index) => (
                 <li
                   key={ref.referenceNo}
-                  className="rounded-lg border border-border-standard bg-surface-container p-4"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  className="rounded-none border border-border-standard bg-surface-container p-5 transition-all duration-200 hover:shadow-sm animate-fade-in-up fill-mode-both"
                 >
-                  <p className="font-mono text-h3 text-brand-deep">
+                  <p className="font-mono text-h3 font-bold text-brand-deep">
                     {ref.referenceNo}
                   </p>
                   <p className="mt-1 text-body-sm text-text-secondary">
@@ -265,29 +269,17 @@ export function ComplaintRecoverPanel() {
                   </p>
                   <Link
                     href={`/complaints/track?ref=${encodeURIComponent(ref.referenceNo)}`}
-                    className="mt-3 inline-block"
+                    className="mt-4 inline-block"
                   >
-                    <Button type="button" variant="secondary" className="w-full sm:w-auto">
-                      {t("trackThis")}
+                    <Button variant="primary" className="rounded-none gap-2 transition-all duration-200 active:scale-[0.98]">
+                      {t("trackLink")}
+                      <ArrowRight className="h-4 w-4" aria-hidden />
                     </Button>
                   </Link>
                 </li>
               ))}
             </ul>
           )}
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-full"
-            onClick={() => {
-              setStep("contact");
-              setCode("");
-              setReferences([]);
-              setErrorState(null);
-            }}
-          >
-            {t("searchAgain")}
-          </Button>
         </div>
       ) : null}
       </div>

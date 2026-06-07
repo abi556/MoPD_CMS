@@ -14,9 +14,9 @@ export function PublicFooter() {
 
   return (
     <footer className="mt-auto w-full border-t border-border-standard bg-inverse-surface text-inverse-on-surface">
-      <div className="mx-auto w-full max-w-max-width space-y-10 px-gutter py-12">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 font-label text-label font-bold tracking-widest text-primary">
+      <div className="mx-auto flex w-full max-w-max-width flex-col gap-10 px-gutter py-12 md:flex-row md:items-start md:justify-between">
+        <div className="shrink-0 space-y-4">
+          <Link href="/" className="flex items-center gap-2 font-label text-label font-bold tracking-widest text-primary cursor-pointer">
             <Image
               src="/mopd_logo.png"
               alt=""
@@ -29,13 +29,18 @@ export function PublicFooter() {
               suffix=" CMS"
               className="text-sm font-semibold tracking-widest text-on-primary"
             />
-          </div>
-          <p className="max-w-md font-body-sm text-body-sm text-inverse-on-surface/70">
-            {pub("footerDescription")}
+          </Link>
+          <p className="font-body-sm text-body-sm leading-snug text-inverse-on-surface/70">
+            <span className="block md:whitespace-nowrap">
+              {pub("footerDescriptionLine1")}
+            </span>
+            <span className="block md:whitespace-nowrap">
+              {pub("footerDescriptionLine2")}
+            </span>
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-6 sm:gap-10 md:gap-16">
+        <div className="flex w-full flex-row items-start justify-between gap-6 sm:gap-8 md:ml-10 md:w-auto md:min-w-[22rem] md:max-w-2xl md:flex-1 md:justify-between lg:ml-16 lg:gap-12 xl:ml-20 xl:gap-16">
           <nav aria-label={pub("footerLegalLinks")} className="flex flex-col gap-3">
             <Link className={footerLinkClass} href="/privacy">
               {pub("footerPrivacy")}

@@ -12,6 +12,7 @@ import {
   NextIntlClientProvider,
   type AbstractIntlMessages,
 } from "next-intl";
+import { useRouter, usePathname } from "next/navigation";
 import type { AppLocale } from "@/i18n/routing";
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
@@ -41,19 +42,6 @@ function applyDocumentLocale(locale: AppLocale) {
   }
 }
 
-function replaceUrlLocale(nextLocale: AppLocale) {
-  const { pathname, search, hash } = window.location;
-  const segments = pathname.split("/");
-  if (segments.length > 1 && (segments[1] === "en" || segments[1] === "am")) {
-    segments[1] = nextLocale;
-  } else {
-    segments.splice(1, 0, nextLocale);
-  }
-  const nextPath = segments.join("/") || `/${nextLocale}`;
-  window.history.replaceState(window.history.state, "", `${nextPath}${search}${hash}`);
-  document.cookie = `${LOCALE_COOKIE}=${nextLocale};path=/;max-age=31536000;samesite=lax`;
-}
-
 interface ClientIntlProviderProps {
   initialLocale: AppLocale;
   initialMessages: AbstractIntlMessages;
@@ -67,6 +55,8 @@ export function ClientIntlProvider({
 }: ClientIntlProviderProps) {
   const [locale, setLocale] = useState<AppLocale>(initialLocale);
   const [messages, setMessages] = useState<AbstractIntlMessages>(initialMessages);
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Reload message bundles so JSON edits (and client locale switches) stay in sync.
   useEffect(() => {
@@ -91,10 +81,27 @@ export function ClientIntlProvider({
       const nextMessages = await loadMessages(nextLocale);
       setLocale(nextLocale);
       setMessages(nextMessages);
-      replaceUrlLocale(nextLocale);
+      
+      // Set cookie so the server knows the preference on future requests
+      document.cookie = `${LOCALE_COOKIE}=${nextLocale};path=/;max-age=31536000;samesite=lax`;
+      
       applyDocumentLocale(nextLocale);
+
+      // Construct the new URL with the updated locale segment
+      const segments = pathname.split("/");
+      if (segments.length > 1 && (segments[1] === "en" || segments[1] === "am")) {
+        segments[1] = nextLocale;
+      } else {
+        segments.splice(1, 0, nextLocale);
+      }
+      const nextPath = segments.join("/") || `/${nextLocale}`;
+
+      // Trigger Next.js router transition to fetch the Server Components in the new locale
+      const search = window.location.search;
+      const url = search ? `${nextPath}${search}` : nextPath;
+      router.replace(url);
     },
-    [locale],
+    [locale, pathname, router],
   );
 
   return (

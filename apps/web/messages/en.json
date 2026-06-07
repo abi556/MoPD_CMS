@@ -29,7 +29,7 @@
     "heroEyebrow": "Ministry of Planning and Development",
     "heroTitle": "Complaint Management System",
     "officialPortal": "Official Government Portal",
-    "heroHeading": "Submit or track a complaint to the Ministry of Planning and Development.",
+    "heroHeading": "Submit or track a <highlight>complaint</highlight> to the Ministry of Planning and Development.",
     "heroBody": "Submit a complaint, receive a reference number, and track progress online.",
     "heroBodyExtended": "Our citizen-centered platform ensures transparency and accountability in administrative processes.",
     "complaintIdLabel": "Complaint ID",
@@ -57,6 +57,8 @@
     "readyBody": "File a new complaint or track an existing case with your reference number.",
     "startSubmission": "Start Submission",
     "footerDescription": "Ministry of Planning and Development (MoPD) Complaint Management System. Building a more responsive administration.",
+    "footerDescriptionLine1": "Ministry of Planning and Development (MoPD) Complaint Management",
+    "footerDescriptionLine2": "System. Building a more responsive administration.",
     "footerPrivacy": "Privacy Policy",
     "footerTerms": "Terms of Service",
     "footerContact": "Contact Us",
@@ -71,12 +73,18 @@
     "phase0Note": "Foundation build in progress — staff and admin surfaces ship in later phases."
   },
   "faq": {
-    "eyebrow": "Help centre",
     "title": "Frequently Asked Questions",
-    "subtitle": "Answers to common questions about submitting, tracking, and resolving complaints through the MoPD Complaint Management System.",
-    "stillNeedHelp": "Still need help?",
-    "stillNeedHelpBody": "You can submit a new complaint or contact the Ministry for further assistance.",
-    "ctaSubmit": "Submit a complaint",
+    "subtitle": "Find answers to common questions about submitting, tracking, and resolving complaints through the MoPD Complaint Management System.",
+    "categoriesHeading": "Categories",
+    "categories": {
+      "general": "General Information",
+      "submitting": "Submitting a Complaint",
+      "tracking": "Tracking & Status",
+      "privacy": "Privacy & Security",
+      "support": "Support & Appeals"
+    },
+    "stillNeedHelp": "Still have a question?",
+    "stillNeedHelpBody": "If you didn't find your answer, feel free to reach out.",
     "ctaContact": "Contact us",
     "items": {
       "types": {
@@ -463,5 +471,23 @@
     "errors": {
       "loadFailed": "Could not load inquiries."
     }
+  },
+  "contactForm": {
+    "title": "Send us a message",
+    "subtitle": "Fill out the form below and our team will get back to you as soon as possible.",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "Enter your full name",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "What is this regarding?",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Type your message here...",
+    "submit": "Send Message",
+    "submitting": "Sending...",
+    "successTitle": "Message Sent Successfully!",
+    "successBody": "Thank you for contacting the Ministry of Planning and Development. We have received your message and will get back to you shortly.",
+    "errorTitle": "Submission Failed",
+    "errorBody": "There was an error submitting your message. Please try again."
   }
 }

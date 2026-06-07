@@ -1,6 +1,30 @@
 import { setRequestLocale } from "next-intl/server";
 import { PublicShell } from "@/components/layout/public-shell";
-import { Mail, Phone, MapPin, Clock, Shield, Globe } from "lucide-react";
+import { PublicLegalHero } from "@/components/public/public-legal-hero";
+import { PublicLegalSection } from "@/components/public/public-legal-section";
+import {
+  PublicLegalDocumentLayout,
+  type LegalNavSection,
+} from "@/components/public/public-legal-document-layout";
+import { ContactForm } from "@/components/public/contact-form";
+
+const EN_SECTIONS: LegalNavSection[] = [
+  { id: "message-form", title: "Send a message" },
+  { id: "address", title: "Physical address" },
+  { id: "hours", title: "Office hours" },
+  { id: "phone", title: "Phone" },
+  { id: "email", title: "Email" },
+  { id: "website", title: "Official website" },
+];
+
+const AM_SECTIONS: LegalNavSection[] = [
+  { id: "message-form", title: "መልዕክት ይላኩ" },
+  { id: "address", title: "አካላዊ አድራሻ" },
+  { id: "hours", title: "የሥራ ሰዓታት" },
+  { id: "phone", title: "ስልክ" },
+  { id: "email", title: "ኢሜይል" },
+  { id: "website", title: "ይፋዊ ድረ-ገጽ" },
+];
 
 export default async function ContactPage({
   params,
@@ -13,167 +37,172 @@ export default async function ContactPage({
 
   return (
     <PublicShell>
-      <div className="mx-auto w-full max-w-max-width px-gutter py-12 md:py-20">
-        {isAm ? (
-          // Amharic Version
-          <article className="mx-auto max-w-4xl space-y-12">
-            <header className="space-y-4 border-b border-border-standard pb-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-brand-surface px-3 py-1 text-primary">
-                <Mail className="h-4 w-4" />
-                <span className="text-label font-label uppercase">አግኙን</span>
-              </div>
-              <h1 className="font-display text-4xl font-semibold text-on-background md:text-5xl">
-                የፕላንና ልማት ሚኒስቴር (MoPD)
-              </h1>
-              <p className="text-body text-text-secondary">
-                ለማንኛውም ጥያቄ፣ አስተያየት ወይም ድጋፍ በሚከተሉት አድራሻዎች ሊያገኙን ይችላሉ።
-              </p>
-            </header>
+      <PublicLegalHero
+        title={isAm ? "ያግኙን" : "Contact Us"}
+        subtitle={
+          isAm
+            ? "MoPD የቅሬታ አስተዳደር ስርዓት · ለጥያቄ፣ አስተያየት ወይም ድጋፍ"
+            : "MoPD Complaint Management System · Inquiries, feedback, and support"
+        }
+      />
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border-standard p-6 space-y-4">
-                <h2 className="text-h3 font-semibold text-brand-deep flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  አካላዊ አድራሻ
-                </h2>
-                <p className="text-body-sm text-text-secondary leading-relaxed">
-                  የፕላንና ልማት ሚኒስቴር (MoPD)<br />
-                  አራት ኪሎ (ከጠቅላይ ሚኒስትር ጽሕፈት ቤት አጠገብ)<br />
-                  አዲስ አበባ፣ ኢትዮጵያ
-                </p>
-              </div>
+      {isAm ? (
+        <PublicLegalDocumentLayout navLabel="ይዘት" sections={AM_SECTIONS}>
+          <PublicLegalSection id="message-form" title="መልዕክት ይላኩ">
+            <ContactForm />
+          </PublicLegalSection>
 
-              <div className="rounded-2xl border border-border-standard p-6 space-y-4">
-                <h2 className="text-h3 font-semibold text-brand-deep flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  የሥራ ሰዓታት
-                </h2>
-                <p className="text-body-sm text-text-secondary leading-relaxed">
-                  ከሰኞ እስከ ሐሙስ፦ ከጠዋቱ 2:30 - 6:30 እና ከሰዓት 7:30 - 11:30<br />
-                  አርብ፦ ከጠዋቱ 2:30 - 5:30 እና ከሰዓት 7:30 - 11:30<br />
-                  ቅዳሜ እና እሁድ፦ ዝግ ነው
-                </p>
-              </div>
+          <PublicLegalSection id="address" title="አካላዊ አድራሻ">
+            <p>
+              የፕላንና ልማት ሚኒስቴር (MoPD)
+              <br />
+              አራት ኪሎ (ከጠቅላይ ሚኒስትር ጽሕፈት ቤት አጠገብ)
+              <br />
+              አዲስ አበባ፣ ኢትዮጵያ
+            </p>
+          </PublicLegalSection>
 
-              <div className="rounded-2xl border border-border-standard p-6 space-y-4">
-                <h2 className="text-h3 font-semibold text-brand-deep flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-primary" />
-                  የስልክ አድራሻዎች
-                </h2>
-                <p className="text-body-sm text-text-secondary leading-relaxed">
-                  ዋና መሥሪያ ቤት፦ +251 11 122 8200<br />
-                  የህዝብ ግንኙነት፦ +251 11 122 8215<br />
-                  ፋክስ፦ +251 11 122 8300
-                </p>
-              </div>
+          <PublicLegalSection id="hours" title="የሥራ ሰዓታት">
+            <p>
+              ከሰኞ እስከ ሐሙስ፦ 8:30 – 12:30 እና 1:30 – 5:30
+              <br />
+              አርብ፦ 8:30 – 11:30 እና 1:30 – 5:30
+              <br />
+              ቅዳሜ እና እሁድ፦ ዝግ
+            </p>
+          </PublicLegalSection>
 
-              <div className="rounded-2xl border border-border-standard p-6 space-y-4">
-                <h2 className="text-h3 font-semibold text-brand-deep flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-primary" />
-                  የኢሜይል አድራሻዎች
-                </h2>
-                <p className="text-body-sm text-text-secondary leading-relaxed">
-                  አጠቃላይ መረጃ፦ <a href="mailto:info@mopd.gov.et" className="text-primary font-semibold underline">info@mopd.gov.et</a><br />
-                  የቅሬታ ድጋፍ፦ <a href="mailto:support@mopd.gov.et" className="text-primary font-semibold underline">support@mopd.gov.et</a><br />
-                  የዳታ ጥበቃ (DPO)፦ <a href="mailto:dpo@mopd.gov.et" className="text-primary font-semibold underline">dpo@mopd.gov.et</a>
-                </p>
-              </div>
-            </div>
+          <PublicLegalSection id="phone" title="ስልክ">
+            <p>
+              ዋና መሥሪያ ቤት፦ +251 11 122 8200
+              <br />
+              የህዝብ ግንኙነት፦ +251 11 122 8215
+              <br />
+              ፋክስ፦ +251 11 122 8300
+            </p>
+          </PublicLegalSection>
 
-            <section className="rounded-2xl border border-primary/10 bg-brand-wash p-6 space-y-3">
-              <h2 className="flex items-center gap-2 text-h3 font-semibold text-on-surface">
-                <Globe className="h-5 w-5 text-primary" />
-                ኦፊሴላዊ ድረ-ገጾች
-              </h2>
-              <p className="text-body-sm text-text-secondary leading-relaxed">
-                ሚኒስቴሩን በተመለከተ ተጨማሪ መረጃዎችን ለማግኘት ዋናውን ድረ-ገጽ መጎብኘት ይችላሉ፦{" "}
-                <a href="https://www.mopd.gov.et" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
-                  www.mopd.gov.et
-                </a>
-              </p>
-            </section>
-          </article>
-        ) : (
-          // English Version
-          <article className="mx-auto max-w-4xl space-y-12">
-            <header className="space-y-4 border-b border-border-standard pb-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-brand-surface px-3 py-1 text-primary">
-                <Mail className="h-4 w-4" />
-                <span className="text-label font-label uppercase">Contact Us</span>
-              </div>
-              <h1 className="font-display text-4xl font-semibold text-on-background md:text-5xl">
-                Ministry of Planning &amp; Development
-              </h1>
-              <p className="text-body text-text-secondary">
-                For any inquiries, feedback, or support regarding the Complaint Management System, please reach out to us through the channels below.
-              </p>
-            </header>
+          <PublicLegalSection id="email" title="ኢሜይል">
+            <p>
+              አጠቃላይ መረጃ፦{" "}
+              <a
+                href="mailto:info@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                info@mopd.gov.et
+              </a>
+              <br />
+              የቅሬታ ድጋፍ፦{" "}
+              <a
+                href="mailto:support@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                support@mopd.gov.et
+              </a>
+              <br />
+              የዳታ ጥበቃ (DPO)፦{" "}
+              <a
+                href="mailto:dpo@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                dpo@mopd.gov.et
+              </a>
+            </p>
+          </PublicLegalSection>
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border-standard p-6 space-y-4">
-                <h2 className="text-h3 font-semibold text-brand-deep flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  Physical Address
-                </h2>
-                <p className="text-body-sm text-text-secondary leading-relaxed">
-                  Ministry of Planning and Development (MoPD)<br />
-                  Arat Kilo (Next to the Prime Minister's Office)<br />
-                  Addis Ababa, Ethiopia
-                </p>
-              </div>
+          <PublicLegalSection id="website" title="ይፋዊ ድረ-ገጽ">
+            <p>
+              ስለ ሚኒስቴሩ ተጨማሪ መረጃ{" "}
+              <a
+                href="https://www.mopd.gov.et"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                www.mopd.gov.et
+              </a>
+            </p>
+          </PublicLegalSection>
+        </PublicLegalDocumentLayout>
+      ) : (
+        <PublicLegalDocumentLayout navLabel="Contents" sections={EN_SECTIONS}>
+          <PublicLegalSection id="message-form" title="Send us a message">
+            <ContactForm />
+          </PublicLegalSection>
 
-              <div className="rounded-2xl border border-border-standard p-6 space-y-4">
-                <h2 className="text-h3 font-semibold text-brand-deep flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Office Hours
-                </h2>
-                <p className="text-body-sm text-text-secondary leading-relaxed">
-                  Monday to Thursday: 8:30 AM - 12:30 PM &amp; 1:30 PM - 5:30 PM<br />
-                  Friday: 8:30 AM - 11:30 AM &amp; 1:30 PM - 5:30 PM<br />
-                  Saturday &amp; Sunday: Closed
-                </p>
-              </div>
+          <PublicLegalSection id="address" title="Physical address">
+            <p>
+              Ministry of Planning and Development (MoPD)
+              <br />
+              Arat Kilo (Next to the Prime Minister&apos;s Office)
+              <br />
+              Addis Ababa, Ethiopia
+            </p>
+          </PublicLegalSection>
 
-              <div className="rounded-2xl border border-border-standard p-6 space-y-4">
-                <h2 className="text-h3 font-semibold text-brand-deep flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-primary" />
-                  Phone Contacts
-                </h2>
-                <p className="text-body-sm text-text-secondary leading-relaxed">
-                  Main Office: +251 11 122 8200<br />
-                  Public Relations: +251 11 122 8215<br />
-                  Fax: +251 11 122 8300
-                </p>
-              </div>
+          <PublicLegalSection id="hours" title="Office hours">
+            <p>
+              Monday to Thursday: 8:30 AM – 12:30 PM &amp; 1:30 PM – 5:30 PM
+              <br />
+              Friday: 8:30 AM – 11:30 AM &amp; 1:30 PM – 5:30 PM
+              <br />
+              Saturday &amp; Sunday: Closed
+            </p>
+          </PublicLegalSection>
 
-              <div className="rounded-2xl border border-border-standard p-6 space-y-4">
-                <h2 className="text-h3 font-semibold text-brand-deep flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-primary" />
-                  Email Addresses
-                </h2>
-                <p className="text-body-sm text-text-secondary leading-relaxed">
-                  General Info: <a href="mailto:info@mopd.gov.et" className="text-primary font-semibold underline">info@mopd.gov.et</a><br />
-                  CMS Support: <a href="mailto:support@mopd.gov.et" className="text-primary font-semibold underline">support@mopd.gov.et</a><br />
-                  Data Protection (DPO): <a href="mailto:dpo@mopd.gov.et" className="text-primary font-semibold underline">dpo@mopd.gov.et</a>
-                </p>
-              </div>
-            </div>
+          <PublicLegalSection id="phone" title="Phone">
+            <p>
+              Main office: +251 11 122 8200
+              <br />
+              Public relations: +251 11 122 8215
+              <br />
+              Fax: +251 11 122 8300
+            </p>
+          </PublicLegalSection>
 
-            <section className="rounded-2xl border border-primary/10 bg-brand-wash p-6 space-y-3">
-              <h2 className="flex items-center gap-2 text-h3 font-semibold text-on-surface">
-                <Globe className="h-5 w-5 text-primary" />
-                Official Website
-              </h2>
-              <p className="text-body-sm text-text-secondary leading-relaxed">
-                To learn more about the Ministry of Planning and Development, please visit our main official website at:{" "}
-                <a href="https://www.mopd.gov.et" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
-                  www.mopd.gov.et
-                </a>
-              </p>
-            </section>
-          </article>
-        )}
-      </div>
+          <PublicLegalSection id="email" title="Email">
+            <p>
+              General inquiries:{" "}
+              <a
+                href="mailto:info@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                info@mopd.gov.et
+              </a>
+              <br />
+              CMS support:{" "}
+              <a
+                href="mailto:support@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                support@mopd.gov.et
+              </a>
+              <br />
+              Data protection (DPO):{" "}
+              <a
+                href="mailto:dpo@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                dpo@mopd.gov.et
+              </a>
+            </p>
+          </PublicLegalSection>
+
+          <PublicLegalSection id="website" title="Official website">
+            <p>
+              Learn more about the Ministry at{" "}
+              <a
+                href="https://www.mopd.gov.et"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                www.mopd.gov.et
+              </a>
+            </p>
+          </PublicLegalSection>
+        </PublicLegalDocumentLayout>
+      )}
     </PublicShell>
   );
 }

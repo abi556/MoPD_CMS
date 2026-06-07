@@ -24,9 +24,9 @@ interface ComplaintStepReviewProps {
 function ReviewRow({ label, value }: { label: string; value: string }) {
   if (!value.trim()) return null;
   return (
-    <div className="border-b border-border-standard py-3 last:border-0">
+    <div className="border-b border-border-standard py-3.5 last:border-0">
       <dt className="text-label font-semibold text-text-secondary">{label}</dt>
-      <dd className="mt-1 text-body text-on-surface">{value}</dd>
+      <dd className="mt-1 text-body text-on-surface leading-relaxed">{value}</dd>
     </div>
   );
 }
@@ -56,11 +56,11 @@ export function ComplaintStepReview({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in-up">
       <p className="text-body text-text-secondary">{t("reviewIntro")}</p>
 
-      <section className="rounded-lg border border-border-standard bg-surface-container-low p-6">
-        <h2 className="mb-4 text-h3 font-semibold text-brand-deep">
+      <section className="rounded-none border border-border-standard bg-surface-container-low p-6 transition-all duration-200 hover:shadow-sm animate-fade-in-up">
+        <h2 className="mb-4 text-h3 font-semibold text-brand-deep border-b border-border-standard/60 pb-2">
           {t("reviewSections.complaint")}
         </h2>
         <dl>
@@ -73,8 +73,8 @@ export function ComplaintStepReview({
         </dl>
       </section>
 
-      <section className="rounded-lg border border-border-standard bg-surface-container-low p-6">
-        <h2 className="mb-4 text-h3 font-semibold text-brand-deep">
+      <section className="rounded-none border border-border-standard bg-surface-container-low p-6 transition-all duration-200 hover:shadow-sm animate-fade-in-up [animation-delay:100ms] fill-mode-both">
+        <h2 className="mb-4 text-h3 font-semibold text-brand-deep border-b border-border-standard/60 pb-2">
           {t("reviewSections.personalLocation")}
         </h2>
         <dl>
@@ -90,7 +90,7 @@ export function ComplaintStepReview({
 
       {error ? (
         <p
-          className="rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger"
+          className="rounded-none border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger animate-fade-in-up"
           role="alert"
           aria-live="polite"
         >
@@ -98,13 +98,13 @@ export function ComplaintStepReview({
         </p>
       ) : null}
 
-      <div className="flex flex-col-reverse items-center justify-between gap-4 border-t border-border-standard pt-6 md:flex-row">
+      <div className="flex flex-col-reverse items-center justify-between gap-4 border-t border-border-standard pt-6 md:flex-row animate-fade-in-up [animation-delay:150ms] fill-mode-both">
         <Button
           type="button"
           variant="secondary"
           onClick={onBack}
           disabled={isSubmitting}
-          className="w-full md:w-auto"
+          className="rounded-none w-full md:w-auto transition-all duration-200 active:scale-[0.98]"
         >
           {t("actions.back")}
         </Button>
@@ -112,7 +112,7 @@ export function ComplaintStepReview({
           type="button"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="w-full gap-2 md:w-auto"
+          className="rounded-none w-full gap-2 md:w-auto transition-all duration-200 hover:shadow-md active:scale-[0.98]"
         >
           {isSubmitting ? t("actions.submitting") : t("actions.submit")}
           <Send className="h-4 w-4" aria-hidden />

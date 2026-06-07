@@ -36,7 +36,7 @@ export function ComplaintStepDetails({
 
   return (
     <form
-      className="space-y-8"
+      className="space-y-8 animate-fade-in-up"
       onSubmit={(e) => {
         e.preventDefault();
         onNext();
@@ -51,16 +51,16 @@ export function ComplaintStepDetails({
           </span>
         </legend>
         {categoriesLoading ? (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" aria-busy="true">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-busy="true">
             {[1, 2, 3, 4].map((key) => (
               <div
                 key={key}
-                className="h-14 animate-pulse rounded-lg bg-surface-container-high"
+                className="h-14 animate-pulse rounded-none bg-surface-container-high"
               />
             ))}
           </div>
         ) : categoriesUnavailable || categories.length === 0 ? (
-          <p className="rounded-lg border border-border-standard bg-surface-container-low p-4 text-body-sm text-text-secondary">
+          <p className="rounded-none border border-border-standard bg-surface-container-low p-4 text-body-sm text-text-secondary animate-fade-in-up">
             {t("errors.categoriesUnavailable")}
           </p>
         ) : (
@@ -73,7 +73,7 @@ export function ComplaintStepDetails({
         )}
       </fieldset>
 
-      <section className="space-y-2">
+      <section className="space-y-2 animate-fade-in-up [animation-delay:100ms] fill-mode-both">
         <label
           htmlFor="subject"
           className="flex items-center gap-2 text-label font-semibold uppercase tracking-wide text-on-surface-variant"
@@ -91,12 +91,12 @@ export function ComplaintStepDetails({
           value={data.subject}
           onChange={(e) => onChange({ subject: e.target.value })}
           placeholder={t("fields.subjectPlaceholder")}
-          className="w-full rounded-lg border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           required
         />
       </section>
 
-      <section className="space-y-2">
+      <section className="space-y-2 animate-fade-in-up [animation-delay:150ms] fill-mode-both">
         <div className="flex items-center justify-between">
           <label
             htmlFor="description"
@@ -124,26 +124,26 @@ export function ComplaintStepDetails({
           value={data.description}
           onChange={(e) => onChange({ description: e.target.value })}
           placeholder={t("fields.descriptionPlaceholder")}
-          className="w-full resize-none rounded-lg border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full resize-none rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           required
         />
       </section>
 
       {error ? (
-        <p className="rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
+        <p className="rounded-none border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger animate-fade-in-up" role="alert">
           {error}
         </p>
       ) : null}
 
-      <div className="flex items-center justify-between border-t border-border-standard pt-6">
+      <div className="flex items-center justify-between border-t border-border-standard pt-6 animate-fade-in-up [animation-delay:200ms] fill-mode-both">
         <button
           type="button"
           onClick={onCancel}
-          className="flex cursor-pointer items-center gap-2 text-body font-bold text-text-secondary transition-colors hover:text-on-surface"
+          className="flex cursor-pointer items-center gap-2 text-body font-bold text-text-secondary transition-colors duration-200 hover:text-on-surface"
         >
           {t("actions.cancel")}
         </button>
-        <Button type="submit" className="gap-2 px-10 py-3 shadow-md">
+        <Button type="submit" className="rounded-none gap-2 px-10 py-3 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]">
           {t("actions.next")}
           <ArrowRight className="h-5 w-5" aria-hidden />
         </Button>

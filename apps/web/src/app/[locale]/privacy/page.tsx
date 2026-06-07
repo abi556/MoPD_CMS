@@ -1,6 +1,34 @@
 import { setRequestLocale } from "next-intl/server";
 import { PublicShell } from "@/components/layout/public-shell";
-import { FileDown, Shield, Info } from "lucide-react";
+import { PublicLegalHero } from "@/components/public/public-legal-hero";
+import { PublicLegalSection } from "@/components/public/public-legal-section";
+import {
+  PublicLegalDocumentLayout,
+  type LegalNavSection,
+} from "@/components/public/public-legal-document-layout";
+import { FileDown } from "lucide-react";
+
+const EN_SECTIONS: LegalNavSection[] = [
+  { id: "legal-basis", title: "Legal basis" },
+  { id: "data-collection", title: "Data we collect" },
+  { id: "data-use", title: "How we use data" },
+  { id: "data-security", title: "Data security" },
+  { id: "your-rights", title: "Your rights" },
+  { id: "retention", title: "Data retention" },
+  { id: "contact", title: "Contact" },
+  { id: "documents", title: "Related documents" },
+];
+
+const AM_SECTIONS: LegalNavSection[] = [
+  { id: "legal-basis", title: "የሕግ መሠረት" },
+  { id: "data-collection", title: "የምንሰበስባቸው መረጃዎች" },
+  { id: "data-use", title: "መረጃን የምንጠቀምበት መንገድ" },
+  { id: "data-security", title: "የመረጃ ደህንነት" },
+  { id: "your-rights", title: "የእርስዎ መብቶች" },
+  { id: "retention", title: "የመረጃ ማቆያ" },
+  { id: "contact", title: "ግንኙነት" },
+  { id: "documents", title: "ተዛማጅ ሰነዶች" },
+];
 
 export default async function PrivacyPage({
   params,
@@ -13,281 +41,261 @@ export default async function PrivacyPage({
 
   return (
     <PublicShell>
-      <div className="mx-auto w-full max-w-max-width px-gutter py-12 md:py-20">
-        {isAm ? (
-          // Amharic Version
-          <article className="mx-auto max-w-4xl space-y-12">
-            <header className="space-y-4 border-b border-border-standard pb-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-brand-surface px-3 py-1 text-primary">
-                <Shield className="h-4 w-4" />
-                <span className="text-label font-label uppercase">የዳታ ጥበቃ</span>
-              </div>
-              <h1 className="font-display text-4xl font-semibold text-on-background md:text-5xl">
-                የግላዊነት እና የዳታ ጥበቃ ማስታወቂያ
-              </h1>
-              <p className="text-body text-text-secondary">
-                የፕላንና ልማት ሚኒስቴር (MoPD) የቅሬታ ማስተናገጃ ሥርዓት (CMS) የግል መረጃዎን ደህንነት እና ምስጢራዊነት ለመጠበቅ ሙሉ በሙሉ ቁርጠኛ ነው።
-              </p>
-            </header>
+      <PublicLegalHero
+        title={
+          isAm
+            ? "የግላዊነት እና የዳታ ጥበቃ ማስታወቂያ"
+            : "Privacy Policy"
+        }
+        subtitle={
+          isAm
+            ? "MoPD የቅሬታ አስተዳደር ስርዓት · የተሻሻለ · ጁን 2026"
+            : "MoPD Complaint Management System · Effective June 2026"
+        }
+      />
 
-            <section className="rounded-2xl border border-warning/20 bg-warning/5 p-6 space-y-3">
-              <h2 className="flex items-center gap-2 text-h3 font-semibold text-on-surface">
-                <Info className="h-5 w-5 text-warning" />
-                የሕግ ተገዢነት ማረጋገጫ
-              </h2>
-              <p className="text-body-sm text-text-secondary leading-relaxed">
-                ይህ የግላዊነት ማስታወቂያ በኢትዮጵያ ፌደራላዊ ዲሞክራሲያዊ ሪፐብሊክ <strong>የግል ዳታ ጥበቃ አዋጅ ቁጥር 1321/2016 (Proclamation No. 1321/2024)</strong> እና <strong>የዲጂታል መታወቂያ አዋጅ ቁጥር 1284/2015 (Proclamation No. 1284/2023)</strong> መሠረት የተዘጋጀ ነው።
-              </p>
-            </section>
+      {isAm ? (
+        <PublicLegalDocumentLayout navLabel="ይዘት" sections={AM_SECTIONS}>
+          <PublicLegalSection id="legal-basis" title="የሕግ መሠረት">
+            <p>
+              የፕላንና ልማት ሚኒስቴር (MoPD) የቅሬታ ማስተናገጃ ሥርዓት (CMS) የግል መረጃዎን
+              ደህንነት እና ምስጢራዊነት ለመጠበቅ ቁርጠኛ ነው። ይህ ማስታወቂያ በኢትዮጵያ ፌደራላዊ
+              ዲሞክራሲያዊ ሪፐብሊክ{" "}
+              <strong>የግል ዳታ ጥበቃ አዋጅ ቁጥር 1321/2024</strong> እና{" "}
+              <strong>የዲጂታል መታወቂያ አዋጅ ቁጥር 1284/2023</strong> መሠረት
+              የተዘጋጀ ነው።
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፩. የምንሰበስባቸው መረጃዎች (Data Minimization)
-              </h2>
-              <p className="text-body text-text-secondary">
-                አገልግሎቱን ለመስጠት የግድ አስፈላጊ የሆኑትን መረጃዎች ብቻ እንሰበስባለን (Data Minimization Principle)፦
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-body-sm text-text-secondary">
-                <li><strong>የቅሬታ ዝርዝር፦</strong> የቅሬታው ርዕስ፣ ዝርዝር መግለጫ እና ቅሬታው የተፈጠረበት ቦታ (ክልል፣ ዞን፣ ወረዳ)።</li>
-                <li><strong>የግንኙነት መረጃ (አማራጭ)፦</strong> ሙሉ ስም፣ የኢሜይል አድራሻ እና የስልክ ቁጥር። እነዚህ መረጃዎች ቅሬታዎን ለመከታተል እና ምላሽ ለመስጠት ብቻ ያገለግላሉ።</li>
-                <li><strong>አስረጅ ሰነዶች (አማራጭ)፦</strong> ከቅሬታዎ ጋር የሚያያይዟቸው ፋይሎች ወይም ማስረጃዎች።</li>
-              </ul>
-            </section>
+          <PublicLegalSection
+            id="data-collection"
+            title="የምንሰበስባቸው መረጃዎች"
+          >
+            <p>
+              አገልግሎቱን ለመስጠት የግድ አስፈላጊ የሆኑትን መረጃዎች ብቻ እንሰበስባለን፦
+            </p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>
+                <strong>የቅሬታ ዝርዝር፦</strong> የቅሬታው ርዕስ፣ ዝርዝር መግለጫ እና
+                ቦታ (ክልል፣ ዞን፣ ወረዳ)።
+              </li>
+              <li>
+                <strong>የግንኙነት መረጃ (አማራጭ)፦</strong> ሙሉ ስም፣ ኢሜይል እና
+                ስልክ — ለመከታተል እና ምላሽ ብቻ።
+              </li>
+              <li>
+                <strong>አስረጅ ሰነዶች (አማራጭ)፦</strong> ከቅሬታዎ ጋር የሚያያዩ
+                ፋይሎች ወይም ማስረጃዎች።
+              </li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፪. መረጃዎችን የምንጠቀምበት መንገድ (Purpose Limitation)
-              </h2>
-              <p className="text-body text-text-secondary">
-                የተሰበሰቡ የግል መረጃዎች ለተወሰነ ዓላማ ብቻ ያገለግላሉ (Purpose Limitation Principle)፦
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-body-sm text-text-secondary">
-                <li>ቅሬታዎን ለመመርመር፣ ለመገምገም እና ተገቢውን ምላሽ ለመስጠት።</li>
-                <li>የቅሬታዎን ሁኔታ ማሻሻያዎችን በኢሜይል ወይም በኤስኤምኤስ (SMS) ለእርስዎ ለማሳወቅ።</li>
-                <li>በሚስጥር ማጣቀሻ ቁጥርዎ አማካኝነት የቅሬታዎን ሁኔታ በራስዎ እንዲከታተሉ ለማስቻል።</li>
-              </ul>
-            </section>
+          <PublicLegalSection
+            id="data-use"
+            title="መረጃን የምንጠቀምበት መንገድ"
+          >
+            <p>የተሰበሰቡ የግል መረጃዎች ለተወሰነ ዓላማ ብቻ ያገለግላሉ፦</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>ቅሬታዎን ለመመርመር፣ ለመገምገም እና ተገቢውን ምላሽ ለመስጠት።</li>
+              <li>የቅሬታ ሁኔታ ማሻሻያዎችን በኢሜይል ወይም SMS ለማሳወቅ።</li>
+              <li>በማጣቀሻ ቁጥር ቅሬታዎን በራስዎ እንዲከታተሉ ለማስቻል።</li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፫. የመረጃ ደህንነት ጥበቃ (Data Security)
-              </h2>
-              <p className="text-body text-text-secondary leading-relaxed">
-                የግል መረጃዎን ለመጠበቅ የሚያስፈልጉትን የተገቢ መጠበቅ እርምጃዎች እንወስዳለን። ይህ የሚከተሉትን ያካትታል፦ መረጃ በሚላክበትና በሚቀመጥበት ጊዜ ምስጠራ፣ ለተፈቀዱ ሰራተኞች ብቻ የሚደረግ መዳረሻ ቁጥጥር፣ የተጠቃሚ መለያዎችን ማስጠበቅ፣ እና የሚያያዙትን ሰነዶች ከመቀበላቸው በፊት ለደህንነት ምርመራ መድረግ።
-              </p>
-              <p className="text-body-sm text-text-secondary leading-relaxed">
-                የስርዓቱ ውስጥ የሚከናወኑ የመረጃ መዳረሻዎች እና ለውጦች በሕግ የሚጠይቀው መሠረት ይመዘገባሉ።
-              </p>
-            </section>
+          <PublicLegalSection id="data-security" title="የመረጃ ደህንነት">
+            <p>
+              የግል መረጃዎን ለመጠበቅ የሚያስፈልጉትን ቴክኒካል እና ድርጅታዊ መጠበቅ እርምጃዎች
+              እንወስዳለን — ምስጠራ፣ ለተፈቀዱ ሰራተኞች ብቻ መዳረሻ፣ መለያ ጥበቃ፣ እና
+              የሚያያዙትን ፋይሎች ከመቀበል በፊት ደህንነት ምርመራ።
+            </p>
+            <p>
+              የመረጃ መዳረሻዎች እና ለውጦች በሕግ የሚጠይቀው መሠረት ይመዘገባሉ።
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፬. የእርስዎ መብቶች (Data Subject Rights)
-              </h2>
-              <p className="text-body text-text-secondary">
-                በአዋጅ ቁጥር 1321/2016 መሠረት የሚከተሉት መብቶች አሉዎት፦
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-body-sm text-text-secondary">
-                <li>ስለ መረጃዎ አሰባሰብ እና አጠቃቀም የመረዳት መብት።</li>
-                <li>የግል መረጃዎን የማየት እና የማግኘት መብት።</li>
-                <li>ስህተት የሆኑ መረጃዎችን የማስተካከል ወይም የማረም መብት።</li>
-                <li>መረጃዎ እንዲሰረዝ የመጠየቅ መብት (በሕግ በተቀመጠው የመረጃ ማቆያ ጊዜ ገደብ መሠረት)።</li>
-                <li>በመረጃ አጠቃቀሙ ላይ ተቃውሞ የማቅረብ መብት።</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="your-rights" title="የእርስዎ መብቶች">
+            <p>በአዋጅ ቁጥር 1321/2024 መሠረት የሚከተሉት መብቶች አሉዎት፦</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>ስለ መረጃ አሰባሰብ እና አጠቃቀም የመረዳት መብት።</li>
+              <li>የግል መረጃዎን የማየት እና የማግኘት መብት።</li>
+              <li>ስህተት የሆኑ መረጃዎችን የማስተካከል መብት።</li>
+              <li>መረጃዎ እንዲሰረዝ የመጠየቅ መብት (በሕግ ገደብ መሠረት)።</li>
+              <li>በመረጃ አጠቃቀም ላይ ተቃውሞ የማቅረብ መብት።</li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፭. የመረጃ ማቆያ ጊዜ (Data Retention)
-              </h2>
-              <p className="text-body text-text-secondary">
-                የእርስዎን ቅሬታ እና የግል መረጃዎች የምናቆየው ቅሬታዎን ለመፍታት ለሚያስፈልገው ጊዜ ብቻ ነው። ከዚያ በኋላ መረጃዎቹ በሕግ በተደነገገው መሠረት ደህንነቱ በተጠበቀ ሁኔታ ወደ ማህደር (Archive) ይዛወራሉ ወይም ሙሉ በሙሉ ይደመሰሳሉ።
-              </p>
-            </section>
+          <PublicLegalSection id="retention" title="የመረጃ ማቆያ">
+            <p>
+              ቅሬታዎን እና የግል መረጃዎችን ቅሬታዎን ለመፍታት ለሚያስፈልገው ጊዜ ብቻ
+              እናቆያለን። ከዚያ በኋላ መረጃው ወደ ማህደር ይዛወራል ወይም በሕግ መሠረት
+              ሙሉ በሙሉ ይደመሰሳል።
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                ፮. ግንኙነት እና ጥያቄዎች
-              </h2>
-              <p className="text-body text-text-secondary">
-                ከግላዊነት ወይም ከዳታ ጥበቃ ጋር የተያያዙ ማናቸውም ጥያቄዎች ወይም ቅሬታዎች ካሉዎት በሚከተለው የኢሜይል አድራሻ የዳታ ጥበቃ መኮንናችንን (DPO) ማግኘት ይችላሉ፦{" "}
-                <a href="mailto:dpo@mopd.gov.et" className="text-primary font-semibold underline">
-                  dpo@mopd.gov.et
-                </a>
-              </p>
-            </section>
+          <PublicLegalSection id="contact" title="ግንኙነት">
+            <p>
+              ከግላዊነት ጋር የተያያዙ ጥያቄዎች ወይም ቅሬታዎች ካሉዎት የዳታ ጥበቃ
+              መኮንናችንን በ{" "}
+              <a
+                href="mailto:dpo@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                dpo@mopd.gov.et
+              </a>{" "}
+              ያግኙ።
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6 border-t border-border-standard pt-8">
-              <h2 className="font-h2 text-h2 text-brand-deep">
-                ተዛማጅ የሕግ ሰነዶች
-              </h2>
-              <p className="text-body-sm text-text-secondary">
-                ስለ መብቶችዎ ለበለጠ መረጃ የሚከተሉትን ኦፊሴላዊ አዋጆች ማውረድ ይችላሉ፦
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
+          <PublicLegalSection id="documents" title="ተዛማጅ የሕግ ሰነዶች">
+            <p>ስለ መብቶችዎ ለበለጠ መረጃ የሚከተሉትን ኦፊሴላዊ አዋጆች ማውረድ ይችላሉ፦</p>
+            <ul className="space-y-3">
+              <li>
                 <a
                   href="/documents/Ethiopian Personal Data Protection No. Proclamation No. 1321 2024.pdf"
                   download
-                  className="flex items-center justify-between rounded-xl border border-border-standard p-4 hover:bg-brand-wash hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-2 font-medium text-primary underline-offset-2 hover:underline"
                 >
-                  <div className="space-y-1">
-                    <p className="font-body text-sm font-semibold text-on-surface">የግል ዳታ ጥበቃ አዋጅ</p>
-                    <p className="text-label text-text-placeholder">አዋጅ ቁጥር 1321/2016 (PDF)</p>
-                  </div>
-                  <FileDown className="h-5 w-5 text-primary" />
+                  <FileDown className="h-4 w-4 shrink-0" aria-hidden />
+                  የግል ዳታ ጥበቃ አዋጅ · 1321/2024
                 </a>
+              </li>
+              <li>
                 <a
                   href="/documents/Ethiopian Digital  ID Proclamation No. 1284 2023.pdf"
                   download
-                  className="flex items-center justify-between rounded-xl border border-border-standard p-4 hover:bg-brand-wash hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-2 font-medium text-primary underline-offset-2 hover:underline"
                 >
-                  <div className="space-y-1">
-                    <p className="font-body text-sm font-semibold text-on-surface">የዲጂታል መታወቂያ አዋጅ</p>
-                    <p className="text-label text-text-placeholder">አዋጅ ቁጥር 1284/2015 (PDF)</p>
-                  </div>
-                  <FileDown className="h-5 w-5 text-primary" />
+                  <FileDown className="h-4 w-4 shrink-0" aria-hidden />
+                  የዲጂታል መታወቂያ አዋጅ · 1284/2023
                 </a>
-              </div>
-            </section>
-          </article>
-        ) : (
-          // English Version
-          <article className="mx-auto max-w-4xl space-y-12">
-            <header className="space-y-4 border-b border-border-standard pb-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-brand-surface px-3 py-1 text-primary">
-                <Shield className="h-4 w-4" />
-                <span className="text-label font-label uppercase">Data Protection</span>
-              </div>
-              <h1 className="font-display text-4xl font-semibold text-on-background md:text-5xl">
-                Privacy Policy &amp; Data Protection Notice
-              </h1>
-              <p className="text-body text-text-secondary">
-                The Ministry of Planning and Development (MoPD) Complaint Management System (CMS) is committed to protecting the privacy, confidentiality, and security of your personal data.
-              </p>
-            </header>
+              </li>
+            </ul>
+          </PublicLegalSection>
+        </PublicLegalDocumentLayout>
+      ) : (
+        <PublicLegalDocumentLayout navLabel="Contents" sections={EN_SECTIONS}>
+          <PublicLegalSection id="legal-basis" title="Legal basis">
+            <p>
+              The Ministry of Planning and Development (MoPD) Complaint
+              Management System is committed to protecting the privacy,
+              confidentiality, and security of your personal data. This policy
+              is established in accordance with the Federal Democratic Republic
+              of Ethiopia{" "}
+              <strong>Personal Data Protection Proclamation No. 1321/2024</strong>{" "}
+              and <strong>Digital ID Proclamation No. 1284/2023</strong>.
+            </p>
+          </PublicLegalSection>
 
-            <section className="rounded-2xl border border-warning/20 bg-warning/5 p-6 space-y-3">
-              <h2 className="flex items-center gap-2 text-h3 font-semibold text-on-surface">
-                <Info className="h-5 w-5 text-warning" />
-                Regulatory &amp; Compliance Conformance
-              </h2>
-              <p className="text-body-sm text-text-secondary leading-relaxed">
-                This Privacy Policy is established in accordance with the Federal Democratic Republic of Ethiopia <strong>Personal Data Protection Proclamation No. 1321/2024</strong> and <strong>Digital ID Proclamation No. 1284/2023</strong>.
-              </p>
-            </section>
+          <PublicLegalSection id="data-collection" title="Data we collect">
+            <p>
+              We collect only the information necessary to process and resolve
+              your complaint:
+            </p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>
+                <strong>Complaint details:</strong> Subject, description, and
+                location (region, zone, woreda) for correct routing.
+              </li>
+              <li>
+                <strong>Contact information (optional):</strong> Name, email,
+                and phone — recommended for status updates and reference
+                recovery.
+              </li>
+              <li>
+                <strong>Supporting documents (optional):</strong> Files you
+                choose to upload as evidence.
+              </li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                1. Data We Collect (Data Minimization)
-              </h2>
-              <p className="text-body text-text-secondary">
-                We adhere strictly to the principle of data minimization, collecting only the information necessary to process and resolve your complaint:
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-body-sm text-text-secondary">
-                <li><strong>Complaint Details:</strong> Subject, detailed description, and location of the issue (Region, Zone, Woreda) for correct routing.</li>
-                <li><strong>Contact Information (Optional):</strong> Full name, email address, and phone number. Providing contact details is highly recommended for status tracking and reference recovery.</li>
-                <li><strong>Supporting Documents (Optional):</strong> Any files, images, or documents you choose to upload as evidence.</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="data-use" title="How we use data">
+            <p>Your personal data is processed solely for complaint resolution:</p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>To evaluate, route, investigate, and resolve your complaint.</li>
+              <li>To send status updates via email or SMS.</li>
+              <li>To let you track your complaint using your reference number.</li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                2. How We Use Your Data (Purpose Limitation)
-              </h2>
-              <p className="text-body text-text-secondary">
-                Your personal data is processed solely for the specific purposes of complaint resolution:
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-body-sm text-text-secondary">
-                <li>To evaluate, route, investigate, and resolve your submitted complaint.</li>
-                <li>To send you automated status updates and notifications via email or SMS.</li>
-                <li>To allow you to securely track your complaint status using your unique reference number.</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="data-security" title="Data security">
+            <p>
+              We apply appropriate technical and organisational measures —
+              including encryption in transit and at rest, access controls for
+              authorised staff, account protection, and security checks on
+              uploaded files.
+            </p>
+            <p>
+              Access to and changes within the system are recorded as required
+              for accountability.
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                3. How We Protect Your Data (Data Security)
-              </h2>
-              <p className="text-body text-text-secondary leading-relaxed">
-                We take appropriate technical and organisational measures to protect your personal data. This includes encrypting data when it is sent and stored, restricting access to authorised staff who need it for their work, protecting user accounts, and checking uploaded files for security risks before they are accepted.
-              </p>
-              <p className="text-body-sm text-text-secondary leading-relaxed">
-                Access to and changes within the system are recorded as required for accountability and oversight.
-              </p>
-            </section>
+          <PublicLegalSection id="your-rights" title="Your rights">
+            <p>
+              Under Proclamation No. 1321/2024, you have the right to:
+            </p>
+            <ul className="list-disc space-y-2 pl-5">
+              <li>Be informed about how your data is collected and used.</li>
+              <li>Access and receive a copy of your personal data.</li>
+              <li>Rectify inaccurate or incomplete information.</li>
+              <li>Request erasure, subject to legal retention requirements.</li>
+              <li>Object to or restrict processing under applicable law.</li>
+            </ul>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                4. Your Rights (Data Subject Rights)
-              </h2>
-              <p className="text-body text-text-secondary">
-                Under Proclamation No. 1321/2024, you have the following rights regarding your personal data:
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-body-sm text-text-secondary">
-                <li>The right to be informed about how your data is collected and processed.</li>
-                <li>The right to access and receive a copy of your personal data.</li>
-                <li>The right to rectify inaccurate or incomplete information.</li>
-                <li>The right to request erasure (deletion) of your data, subject to regulatory retention schedules.</li>
-                <li>The right to object to or restrict processing under specific legal grounds.</li>
-              </ul>
-            </section>
+          <PublicLegalSection id="retention" title="Data retention">
+            <p>
+              We retain your complaint and personal data only as long as needed
+              to resolve your case and meet legal obligations. Thereafter, data
+              is securely archived or permanently deleted per our retention
+              schedule.
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                5. Data Retention
-              </h2>
-              <p className="text-body text-text-secondary">
-                We retain your personal data and complaint records only for as long as necessary to resolve your case and fulfill legal or administrative obligations. Once resolved, data is securely archived or permanently deleted in accordance with our records retention schedule.
-              </p>
-            </section>
+          <PublicLegalSection id="contact" title="Contact">
+            <p>
+              For privacy questions or to exercise your data protection rights,
+              contact our Data Protection Officer at{" "}
+              <a
+                href="mailto:dpo@mopd.gov.et"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                dpo@mopd.gov.et
+              </a>
+              .
+            </p>
+          </PublicLegalSection>
 
-            <section className="space-y-6">
-              <h2 className="font-h2 text-h2 text-brand-deep border-b border-border-standard pb-2">
-                6. Contact &amp; Inquiries
-              </h2>
-              <p className="text-body text-text-secondary">
-                If you have any questions, concerns, or wish to exercise your data protection rights, please contact our Data Protection Officer (DPO) at:{" "}
-                <a href="mailto:dpo@mopd.gov.et" className="text-primary font-semibold underline">
-                  dpo@mopd.gov.et
-                </a>
-              </p>
-            </section>
-
-            <section className="space-y-6 border-t border-border-standard pt-8">
-              <h2 className="font-h2 text-h2 text-brand-deep">
-                Related legal documents
-              </h2>
-              <p className="text-body-sm text-text-secondary">
-                You can download the official proclamations that govern how your data is handled:
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
+          <PublicLegalSection id="documents" title="Related documents">
+            <p>
+              Download the official proclamations that govern how your data is
+              handled:
+            </p>
+            <ul className="space-y-3">
+              <li>
                 <a
                   href="/documents/Ethiopian Personal Data Protection No. Proclamation No. 1321 2024.pdf"
                   download
-                  className="flex items-center justify-between rounded-xl border border-border-standard p-4 hover:bg-brand-wash hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-2 font-medium text-primary underline-offset-2 hover:underline"
                 >
-                  <div className="space-y-1">
-                    <p className="font-body text-sm font-semibold text-on-surface">Personal Data Protection</p>
-                    <p className="text-label text-text-placeholder">Proclamation No. 1321/2024 (PDF)</p>
-                  </div>
-                  <FileDown className="h-5 w-5 text-primary" />
+                  <FileDown className="h-4 w-4 shrink-0" aria-hidden />
+                  Personal Data Protection · Proclamation 1321/2024
                 </a>
+              </li>
+              <li>
                 <a
                   href="/documents/Ethiopian Digital  ID Proclamation No. 1284 2023.pdf"
                   download
-                  className="flex items-center justify-between rounded-xl border border-border-standard p-4 hover:bg-brand-wash hover:border-primary transition-colors"
+                  className="inline-flex items-center gap-2 font-medium text-primary underline-offset-2 hover:underline"
                 >
-                  <div className="space-y-1">
-                    <p className="font-body text-sm font-semibold text-on-surface">Ethiopian Digital ID</p>
-                    <p className="text-label text-text-placeholder">Proclamation No. 1284/2023 (PDF)</p>
-                  </div>
-                  <FileDown className="h-5 w-5 text-primary" />
+                  <FileDown className="h-4 w-4 shrink-0" aria-hidden />
+                  Ethiopian Digital ID · Proclamation 1284/2023
                 </a>
-              </div>
-            </section>
-          </article>
-        )}
-      </div>
+              </li>
+            </ul>
+          </PublicLegalSection>
+        </PublicLegalDocumentLayout>
+      )}
     </PublicShell>
   );
 }

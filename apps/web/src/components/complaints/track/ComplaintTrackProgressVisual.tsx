@@ -66,7 +66,7 @@ function ProgressRing({
           fill="none"
           className={`${strokeClass} transition-[stroke-dashoffset] duration-700 ease-out`}
           strokeWidth={STROKE}
-          strokeLinecap="round"
+          strokeLinecap="square"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={offset}
         />
@@ -86,12 +86,12 @@ function StepDots({ status }: { status: ComplaintTrackStatus }) {
       {states.map((state, i) => (
         <span
           key={TRACK_TIMELINE_STEPS[i].key}
-          className={`rounded-full transition-colors ${
+          className={`transition-all duration-300 ${
             state === "completed"
-              ? "h-1.5 w-1.5 bg-primary"
+              ? "h-1.5 w-1.5 bg-primary rounded-full"
               : state === "current"
-                ? "h-2 w-2 bg-primary ring-2 ring-primary/20"
-                : "h-1.5 w-1.5 bg-border-standard"
+                ? "h-2 w-2 bg-primary ring-2 ring-primary/20 rounded-full"
+                : "h-1.5 w-1.5 bg-border-standard rounded-full"
           }`}
         />
       ))}
@@ -106,7 +106,7 @@ export function ComplaintTrackProgressVisual(
 
   if (props.mode === "loading") {
     return (
-      <div className="flex w-full flex-col items-center py-2">
+      <div className="flex w-full flex-col items-center py-2 animate-fade-in-up">
         <ProgressRing percent={35} tone="muted">
           <Loader2
             className="h-7 w-7 animate-spin text-primary"
@@ -122,7 +122,7 @@ export function ComplaintTrackProgressVisual(
 
   if (props.mode === "error") {
     return (
-      <div className="flex w-full flex-col items-center py-2">
+      <div className="flex w-full flex-col items-center py-2 animate-fade-in-up">
         <ProgressRing percent={0} tone="danger">
           <AlertCircle className="h-7 w-7 text-danger" aria-hidden />
           <p className="mt-2 max-w-[200px] font-body-sm text-body-sm leading-snug text-text-secondary">
@@ -143,14 +143,14 @@ export function ComplaintTrackProgressVisual(
 
   return (
     <div
-      className="flex w-full flex-col items-center rounded-lg border border-border-standard/80 bg-surface-container-low/50 px-3 py-4"
+      className="flex w-full flex-col items-center rounded-none border border-border-standard/80 bg-surface-container-low/50 px-3 py-4 animate-fade-in-up"
       aria-live="polite"
     >
       <p className="mb-2 font-overline text-overline uppercase text-text-secondary">
         {t("progress.label")}
       </p>
       <ProgressRing percent={percent} tone="brand">
-        <span className="font-h3 text-h3 text-brand-deep">{percent}%</span>
+        <span className="font-h3 text-h3 font-bold text-brand-deep">{percent}%</span>
         <span className="mt-0.5 font-body-sm text-body-sm text-text-secondary">
           {t("progress.stepOf", {
             current: stepIndex,

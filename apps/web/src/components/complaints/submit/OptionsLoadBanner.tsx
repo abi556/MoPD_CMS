@@ -24,17 +24,17 @@ export function OptionsLoadBanner({
 
   return (
     <div
-      className={`mb-6 flex flex-col gap-3 rounded-md border px-4 py-3 sm:flex-row sm:items-center sm:justify-between ${styles}`}
+      className={`mb-6 flex flex-col gap-3 rounded-none border px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between animate-fade-in-up ${styles}`}
       role="alert"
     >
-      <p className="text-body-sm">{t(`errors.${messageKey}`)}</p>
+      <p className="text-body-sm leading-relaxed">{t(`errors.${messageKey}`)}</p>
       {onRetry ? (
         <Button
           type="button"
           variant="secondary"
           onClick={onRetry}
           disabled={retrying}
-          className="shrink-0"
+          className="rounded-none shrink-0 transition-all duration-200 active:scale-[0.98]"
         >
           {retrying ? t("loading") : t("actions.retryOptions")}
         </Button>

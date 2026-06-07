@@ -56,7 +56,7 @@ function TrackSplitCard({
 
   return (
     <div
-      className={`flex h-full min-h-[320px] flex-col overflow-hidden rounded-lg border shadow-sm ${
+      className={`flex h-full min-h-[320px] flex-col overflow-hidden rounded-none border shadow-sm transition-all duration-200 animate-fade-in-up ${
         isDanger
           ? "border-danger/40 bg-danger/5"
           : "border-border-standard bg-surface"
@@ -67,7 +67,7 @@ function TrackSplitCard({
           isDanger ? "border-danger/30" : "border-border-standard"
         }`}
       >
-        <h2 className="flex items-center gap-2.5 font-h2 text-h2 text-brand-deep">
+        <h2 className="flex items-center gap-2.5 font-h2 text-h2 text-brand-deep tracking-tight">
           {title}
         </h2>
       </div>
@@ -222,13 +222,13 @@ function ComplaintTrackPanelInner() {
     <div>
       <label
         htmlFor="referenceNumber"
-        className="mb-1 block font-label text-label text-on-surface"
+        className="mb-1.5 block font-label text-label text-on-surface"
       >
         {t("referenceLabel")}
       </label>
       <div className="relative">
         <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-text-placeholder"
+          className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-placeholder"
           aria-hidden
         />
         <input
@@ -241,7 +241,7 @@ function ComplaintTrackPanelInner() {
           value={reference}
           onChange={(e) => setReference(e.target.value.toUpperCase())}
           placeholder={t("referencePlaceholder")}
-          className="w-full rounded-lg border border-border-standard bg-surface py-3 pl-10 pr-4 font-body text-body uppercase text-on-surface placeholder:normal-case placeholder:text-text-placeholder transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="w-full rounded-none border border-border-standard bg-surface py-3 pl-11 pr-4 font-body text-body uppercase text-on-surface placeholder:normal-case placeholder:text-text-placeholder transition-all duration-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
     </div>
@@ -255,7 +255,7 @@ function ComplaintTrackPanelInner() {
       <div className="flex flex-col gap-4">
         {referenceField}
         {options?.showIntro ? (
-          <p className="font-body-sm text-body-sm text-text-secondary">
+          <p className="font-body-sm text-body-sm text-text-secondary leading-relaxed">
             {t("intro")}
           </p>
         ) : null}
@@ -277,7 +277,7 @@ function ComplaintTrackPanelInner() {
         type="submit"
         disabled={loading}
         suppressHydrationWarning
-        className={`w-full gap-2 py-3 shadow-sm ${options?.showProgressSlot ? "" : "mt-6"}`}
+        className={`rounded-none w-full gap-2 py-3.5 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] ${options?.showProgressSlot ? "" : "mt-6"}`}
       >
         {loading ? t("searching") : t("search")}
         <ArrowRight className="h-4 w-4" aria-hidden />
@@ -286,18 +286,18 @@ function ComplaintTrackPanelInner() {
   );
 
   const centeredSearchCard = (
-    <div className="overflow-hidden rounded-lg border border-border-standard bg-surface shadow-sm">
+    <div className="overflow-hidden rounded-none border border-border-standard bg-surface shadow-sm animate-fade-in-up">
       <div className="flex flex-col items-center p-8 text-center md:p-12">
         <Image
           src="/mopd_logo.png"
           alt=""
           width={96}
           height={96}
-          className="mb-8 h-24 w-auto object-contain"
+          className="mb-8 h-24 w-auto object-contain animate-scale-in"
           priority
         />
-        <h1 className="font-h1 text-h1 text-brand-deep">{t("title")}</h1>
-        <p className="mb-8 mt-2 max-w-lg font-body text-body text-text-secondary">
+        <h1 className="font-h1 text-h1 text-brand-deep tracking-tight">{t("title")}</h1>
+        <p className="mb-8 mt-2 max-w-lg font-body text-body text-text-secondary leading-relaxed">
           {t("intro")}
         </p>
 
@@ -305,7 +305,7 @@ function ComplaintTrackPanelInner() {
 
         {error ? (
           <p
-            className="mt-6 w-full rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-left text-sm text-danger"
+            className="mt-6 w-full rounded-none border border-danger/40 bg-danger/10 px-4 py-3 text-left text-sm text-danger animate-fade-in-up"
             role="alert"
           >
             {error}
@@ -316,7 +316,7 @@ function ComplaintTrackPanelInner() {
           {t("lostReference")}{" "}
           <Link
             href="/complaints/recover"
-            className="text-primary underline-offset-4 hover:underline"
+            className="text-primary font-semibold underline-offset-4 hover:underline"
           >
             {t("recoverReference")}
           </Link>
@@ -346,7 +346,7 @@ function ComplaintTrackPanelInner() {
             {t("lostReference")}{" "}
             <Link
               href="/complaints/recover"
-              className="text-primary underline-offset-4 hover:underline"
+              className="text-primary font-semibold underline-offset-4 hover:underline"
             >
               {t("recoverReference")}
             </Link>
@@ -354,7 +354,7 @@ function ComplaintTrackPanelInner() {
           <Button
             type="button"
             variant="secondary"
-            className="w-full"
+            className="rounded-none w-full transition-all duration-200 active:scale-[0.98]"
             suppressHydrationWarning
             onClick={onSearchAnother}
           >
@@ -370,9 +370,9 @@ function ComplaintTrackPanelInner() {
   const splitOutcome =
     errorState !== null ? (
       <TrackSplitCard title={t("errors.title")} tone="danger">
-        <p className="font-body text-body text-danger">{error}</p>
+        <p className="font-body text-body text-danger leading-relaxed">{error}</p>
         {activeReference ? (
-          <p className="mt-4 font-body-sm text-body-sm text-text-secondary">
+          <p className="mt-4 font-body-sm text-body-sm text-text-secondary leading-relaxed">
             {t("errors.referenceAttempted", { reference: activeReference })}
           </p>
         ) : null}

@@ -12,6 +12,12 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+export const metadata = {
+  icons: {
+    icon: "/mopd_fav.png",
+  },
+};
+
 export default async function LocaleLayout({
   children,
   params,

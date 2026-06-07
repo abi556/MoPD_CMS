@@ -158,7 +158,7 @@ export function ComplaintEvidencePanel({
 
   if (sessionExpired) {
     return (
-      <div className="mx-auto max-w-3xl rounded-lg border border-border-standard bg-surface p-8">
+      <div className="mx-auto max-w-3xl rounded-none border border-border-standard bg-surface p-8 animate-fade-in-up">
         <p className="text-body text-danger" role="alert">
           {t("evidence.sessionExpired")}
         </p>
@@ -166,7 +166,7 @@ export function ComplaintEvidencePanel({
           {t("evidence.sessionExpiredHint", { reference: referenceNo })}
         </p>
         <div className="mt-6">
-          <Button type="button" variant="secondary" onClick={onFinish}>
+          <Button type="button" variant="secondary" onClick={onFinish} className="rounded-none transition-all duration-200 active:scale-[0.98]">
             {t("evidence.done")}
           </Button>
         </div>
@@ -176,13 +176,13 @@ export function ComplaintEvidencePanel({
 
   if (panelState === "complete") {
     return (
-      <div className="mx-auto max-w-3xl rounded-lg border border-border-standard bg-surface p-8 md:p-10">
+      <div className="mx-auto max-w-3xl rounded-none border border-border-standard bg-surface p-8 md:p-10 animate-fade-in-up">
         <div className="flex flex-col items-center text-center" aria-live="polite">
-          <CheckCircle2 className="mb-4 h-14 w-14 text-success" aria-hidden />
-          <h2 className="mb-2 text-h2 font-semibold text-on-surface">
+          <CheckCircle2 className="mb-4 h-14 w-14 text-success animate-scale-in" aria-hidden />
+          <h2 className="mb-2 text-h2 font-semibold text-on-surface tracking-tight">
             {t("evidence.completeTitle")}
           </h2>
-          <p className="mb-6 max-w-md text-body text-text-secondary">
+          <p className="mb-6 max-w-md text-body text-text-secondary leading-relaxed">
             {t("evidence.completeBody", { reference: referenceNo })}
           </p>
           {files.length > 0 ? (
@@ -190,7 +190,7 @@ export function ComplaintEvidencePanel({
               {files.map((f) => (
                 <li
                   key={f.id}
-                  className="flex items-center gap-3 rounded border border-border-standard bg-surface-bright p-3"
+                  className="flex items-center gap-3 rounded-none border border-border-standard bg-surface-bright p-3.5"
                 >
                   <FileText className="h-5 w-5 text-text-secondary" aria-hidden />
                   <span className="text-body-sm font-semibold">{f.file.name}</span>
@@ -202,7 +202,7 @@ export function ComplaintEvidencePanel({
             </ul>
           ) : null}
           <div className="flex flex-wrap justify-center gap-4">
-            <Button type="button" onClick={onFinish}>
+            <Button type="button" onClick={onFinish} className="rounded-none transition-all duration-200 active:scale-[0.98]">
               {t("evidence.done")}
             </Button>
           </div>
@@ -212,9 +212,9 @@ export function ComplaintEvidencePanel({
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div className="mx-auto w-full max-w-3xl animate-fade-in-up">
       <div className="mb-8">
-        <h1 className="mb-2 text-h2 font-semibold text-on-surface">
+        <h1 className="mb-2 text-h2 font-semibold text-on-surface tracking-tight">
           {t("evidence.title")}
         </h1>
         <p className="text-body text-text-secondary">{t("evidence.intro")}</p>
@@ -223,7 +223,7 @@ export function ComplaintEvidencePanel({
         </p>
       </div>
 
-      <div className="rounded-lg border border-border-standard bg-surface p-6 shadow-sm md:p-8">
+      <div className="rounded-none border border-border-standard bg-surface p-6 shadow-sm md:p-8">
         <div
           role="button"
           tabIndex={0}
@@ -233,9 +233,9 @@ export function ComplaintEvidencePanel({
           onClick={() => inputRef.current?.click()}
           onDrop={onDrop}
           onDragOver={onDragOver}
-          className="mb-8 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-standard bg-surface-container-low p-8 text-center transition-colors hover:border-primary hover:bg-surface-container-high"
+          className="mb-8 flex cursor-pointer flex-col items-center justify-center rounded-none border-2 border-dashed border-border-standard bg-surface-container-low p-8 text-center transition-colors duration-200 hover:border-primary hover:bg-surface-container-high"
         >
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-surface text-primary">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-none bg-brand-surface text-primary">
             <Upload className="h-8 w-8" aria-hidden />
           </div>
           <h3 className="mb-2 text-h3 font-semibold text-on-surface">
@@ -264,7 +264,7 @@ export function ComplaintEvidencePanel({
             {files.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between gap-3 rounded border border-border-standard bg-surface-bright p-3"
+                className="flex items-center justify-between gap-3 rounded-none border border-border-standard bg-surface-bright p-3.5 animate-fade-in-up"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   {entry.file.type.startsWith("image/") ? (
@@ -277,16 +277,16 @@ export function ComplaintEvidencePanel({
                       {entry.file.name}
                     </p>
                     {entry.status === "uploading" ? (
-                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded bg-surface-container-highest">
+                      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-none bg-surface-container-highest">
                         <div
-                          className="h-full rounded bg-primary transition-[width]"
+                          className="h-full rounded-none bg-primary transition-[width]"
                           style={{ width: `${entry.progress}%` }}
                         />
                       </div>
                     ) : entry.error ? (
-                      <p className="text-overline text-danger">{entry.error}</p>
+                      <p className="text-overline text-danger mt-0.5">{entry.error}</p>
                     ) : (
-                      <p className="text-overline text-text-placeholder">
+                      <p className="text-overline text-text-placeholder mt-0.5">
                         {(entry.file.size / (1024 * 1024)).toFixed(1)} MB
                       </p>
                     )}
@@ -296,7 +296,7 @@ export function ComplaintEvidencePanel({
                   <button
                     type="button"
                     onClick={() => removeFile(entry.id)}
-                    className="cursor-pointer p-1 text-text-secondary transition-colors hover:text-danger"
+                    className="cursor-pointer p-1 text-text-secondary transition-colors duration-200 hover:text-danger"
                     aria-label={t("evidence.removeFile")}
                   >
                     {entry.status === "error" ? (
@@ -324,7 +324,7 @@ export function ComplaintEvidencePanel({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder={t("evidence.notesPlaceholder")}
-            className="w-full rounded-lg border border-border-standard p-3 text-body focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full rounded-none border border-border-standard p-3.5 text-body focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <p className="mt-1 text-body-sm text-text-placeholder">
             {t("evidence.notesHint")}
@@ -332,7 +332,7 @@ export function ComplaintEvidencePanel({
         </div>
 
         {globalErrorMessage ? (
-          <p className="mb-4 text-sm text-danger" role="alert" aria-live="polite">
+          <p className="mb-4 text-sm text-danger animate-fade-in-up" role="alert" aria-live="polite">
             {globalErrorMessage}
           </p>
         ) : null}
@@ -343,7 +343,7 @@ export function ComplaintEvidencePanel({
             variant="secondary"
             onClick={onBack}
             disabled={panelState === "uploading"}
-            className="gap-2"
+            className="rounded-none gap-2 w-full md:w-auto transition-all duration-200 active:scale-[0.98]"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
             {t("actions.back")}
@@ -354,6 +354,7 @@ export function ComplaintEvidencePanel({
               variant="secondary"
               onClick={onFinish}
               disabled={panelState === "uploading"}
+              className="rounded-none transition-all duration-200 active:scale-[0.98]"
             >
               {t("evidence.skip")}
             </Button>
@@ -361,7 +362,7 @@ export function ComplaintEvidencePanel({
               type="button"
               onClick={uploadAll}
               disabled={panelState === "uploading" || files.length === 0}
-              className="gap-2"
+              className="rounded-none gap-2 transition-all duration-200 hover:shadow-md active:scale-[0.98]"
             >
               {panelState === "uploading"
                 ? t("evidence.uploading")

@@ -413,7 +413,7 @@ export function ComplaintSubmitWizard() {
         <OptionsLoadBanner messageKey={optionsWarningKey} variant="warning" />
       ) : null}
 
-      <div className="rounded-xl border border-border-standard bg-surface p-8 shadow-sm">
+      <div className="rounded-none border border-border-standard bg-surface p-8 shadow-sm animate-fade-in-up">
         {state.wizardStep === 1 ? (
           <ComplaintStepDetails
             locale={locale}

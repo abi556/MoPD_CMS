@@ -15,7 +15,7 @@ import {
 import { ApiError } from "@/lib/api-client";
 
 const selectClassName =
-  "min-h-11 w-full rounded-md border border-border-standard bg-surface-container-lowest px-3 py-2 text-body text-on-surface shadow-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2";
+  "min-h-11 w-full rounded-none border border-border-standard bg-surface-container-lowest px-3 py-2 text-body text-on-surface shadow-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2";
 
 export function ComplaintRecoverManualPanel() {
   const t = useTranslations("complaintRecoverManual");
@@ -94,21 +94,21 @@ export function ComplaintRecoverManualPanel() {
 
   if (done) {
     return (
-      <div className="mx-auto w-full max-w-lg px-gutter py-12 pb-20 text-center md:py-16 md:pb-28">
-        <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-success" aria-hidden />
-        <h1 className="mb-2 text-display font-semibold text-on-surface">
+      <div className="mx-auto w-full max-w-lg px-gutter py-12 pb-20 text-center md:py-16 md:pb-28 animate-fade-in-up">
+        <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-success animate-scale-in" aria-hidden />
+        <h1 className="mb-2 text-display font-semibold text-on-surface tracking-tight">
           {t("successTitle")}
         </h1>
-        <p className="mb-8 text-body text-text-secondary">{successMessage || t("successBody")}</p>
+        <p className="mb-8 text-body text-text-secondary leading-relaxed">{successMessage || t("successBody")}</p>
         <Link href="/complaints/track">
-          <Button variant="secondary">{t("backToRecover")}</Button>
+          <Button variant="secondary" className="rounded-none transition-all duration-200 active:scale-[0.98]">{t("backToRecover")}</Button>
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="w-full px-gutter py-12 pb-20 md:py-16 md:pb-28">
+    <div className="w-full px-gutter py-12 pb-20 md:py-16 md:pb-28 animate-fade-in-up">
       <header className="relative mx-auto mb-8 w-full max-w-lg md:mb-10 md:max-w-max-width">
         <Link
           href="/complaints/recover"
@@ -119,112 +119,127 @@ export function ComplaintRecoverManualPanel() {
           {t("back")}
         </Link>
         <div className="w-full text-left md:mx-auto md:max-w-lg">
-          <h1 className="text-display font-semibold leading-tight text-on-surface">
+          <h1 className="text-display font-semibold leading-tight text-on-surface tracking-tight">
             {t("title")}
           </h1>
-          <p className="mt-4 text-body text-text-secondary">{t("intro")}</p>
+          <p className="mt-4 text-body text-text-secondary leading-relaxed">{t("intro")}</p>
         </div>
       </header>
 
-      <form className="mx-auto w-full max-w-lg space-y-6" onSubmit={onSubmit}>
-        <Input
-          label={t("contactEmailLabel")}
-          name="contactEmail"
-          type="email"
-          autoComplete="email"
-          value={contactEmail}
-          onChange={(e) => setContactEmail(e.target.value)}
-          placeholder={t("contactEmailPlaceholder")}
-          hint={t("contactEmailHint")}
-          required
-        />
-        <Input
-          label={t("subjectLabel")}
-          name="subject"
-          value={subjectFragment}
-          onChange={(e) => setSubjectFragment(e.target.value)}
-          placeholder={t("subjectPlaceholder")}
-          required
-        />
-        <Input
-          label={t("dateGregorianLabel")}
-          name="dateGregorian"
-          type="date"
-          value={submittedDateGregorian}
-          onChange={(e) => setSubmittedDateGregorian(e.target.value)}
-        />
-        <Input
-          label={t("dateEthiopianLabel")}
-          name="dateEthiopian"
-          value={submittedDateEthiopian}
-          onChange={(e) => setSubmittedDateEthiopian(e.target.value)}
-          placeholder={t("dateEthiopianPlaceholder")}
-        />
-        {options ? (
-          <>
-            <div className="space-y-1">
-              <label htmlFor="categoryId" className="text-sm font-medium text-on-surface">
-                {t("categoryLabel")}
-              </label>
-              <select
-                id="categoryId"
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                suppressHydrationWarning
-                className={selectClassName}
-              >
-                <option value="">—</option>
-                {options.categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {optionLabel(c, locale)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="orgUnitId" className="text-sm font-medium text-on-surface">
-                {t("orgUnitLabel")}
-              </label>
-              <select
-                id="orgUnitId"
-                value={orgUnitId}
-                onChange={(e) => setOrgUnitId(e.target.value)}
-                suppressHydrationWarning
-                className={selectClassName}
-              >
-                <option value="">—</option>
-                {options.orgUnits.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {optionLabel(o, locale)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </>
-        ) : null}
-        <div className="space-y-1">
-          <label htmlFor="notes" className="text-sm font-medium text-on-surface">
-            {t("notesLabel")}
-          </label>
-          <textarea
-            id="notes"
-            name="notes"
-            rows={3}
-            value={additionalNotes}
-            onChange={(e) => setAdditionalNotes(e.target.value)}
-            suppressHydrationWarning
-            className={selectClassName}
+      <div className="mx-auto w-full max-w-lg">
+        <form className="space-y-6" onSubmit={onSubmit}>
+          <Input
+            label={t("fields.subjectFragment")}
+            name="subjectFragment"
+            value={subjectFragment}
+            onChange={(e) => setSubjectFragment(e.target.value)}
+            placeholder={t("fields.subjectFragmentPlaceholder")}
+            hint={t("fields.subjectFragmentHint")}
+            required
+            className="rounded-none"
           />
-        </div>
-        {error ? (
-          <p className="text-sm text-danger" role="alert">
-            {error}
-          </p>
-        ) : null}
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? t("submitting") : t("submit")}
-        </Button>
-      </form>
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <Input
+              label={t("fields.submittedDateGregorian")}
+              name="submittedDateGregorian"
+              type="date"
+              value={submittedDateGregorian}
+              onChange={(e) => setSubmittedDateGregorian(e.target.value)}
+              className="rounded-none"
+            />
+            <Input
+              label={t("fields.submittedDateEthiopian")}
+              name="submittedDateEthiopian"
+              value={submittedDateEthiopian}
+              onChange={(e) => setSubmittedDateEthiopian(e.target.value)}
+              placeholder={t("fields.submittedDateEthiopianPlaceholder")}
+              hint={t("fields.submittedDateEthiopianHint")}
+              className="rounded-none"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="categoryId" className="text-label font-semibold text-on-surface">
+              {t("fields.category")}{" "}
+              <span className="font-normal text-text-secondary">{t("optional")}</span>
+            </label>
+            <select
+              id="categoryId"
+              name="categoryId"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className={selectClassName}
+            >
+              <option value="">{t("fields.categoryPlaceholder")}</option>
+              {options?.categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {optionLabel(cat, locale)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="orgUnitId" className="text-label font-semibold text-on-surface">
+              {t("fields.orgUnit")}{" "}
+              <span className="font-normal text-text-secondary">{t("optional")}</span>
+            </label>
+            <select
+              id="orgUnitId"
+              name="orgUnitId"
+              value={orgUnitId}
+              onChange={(e) => setOrgUnitId(e.target.value)}
+              className={selectClassName}
+            >
+              <option value="">{t("fields.orgUnitPlaceholder")}</option>
+              {options?.orgUnits.map((ou) => (
+                <option key={ou.id} value={ou.id}>
+                  {optionLabel(ou, locale)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Input
+            label={t("fields.contactEmail")}
+            name="contactEmail"
+            type="email"
+            value={contactEmail}
+            onChange={(e) => setContactEmail(e.target.value)}
+            placeholder={t("fields.contactEmailPlaceholder")}
+            hint={t("fields.contactEmailHint")}
+            required
+            className="rounded-none"
+          />
+
+          <div className="space-y-1">
+            <label htmlFor="additionalNotes" className="text-label font-semibold text-on-surface">
+              {t("fields.additionalNotes")}{" "}
+              <span className="font-normal text-text-secondary">{t("optional")}</span>
+            </label>
+            <textarea
+              id="additionalNotes"
+              name="additionalNotes"
+              rows={4}
+              value={additionalNotes}
+              onChange={(e) => setAdditionalNotes(e.target.value)}
+              placeholder={t("fields.additionalNotesPlaceholder")}
+              className="w-full resize-none rounded-none border border-border-standard p-3 text-body focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          {error ? (
+            <p className="text-sm text-danger animate-fade-in-up" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          <Button type="submit" className="rounded-none w-full py-3.5 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]" disabled={loading}>
+            {loading ? t("submitting") : t("submit")}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

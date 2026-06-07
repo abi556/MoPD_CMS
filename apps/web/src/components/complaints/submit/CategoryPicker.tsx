@@ -55,15 +55,15 @@ export function CategoryPicker({
   );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <p className="text-body-sm text-text-secondary">{t("fields.categorySkipHint")}</p>
 
       <div
-        className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2"
         role="radiogroup"
         aria-label={t("fields.category")}
       >
-        {shown.map((cat) => {
+        {shown.map((cat, index) => {
           const Icon = getCategoryIcon(cat.code);
           const selected = selectedId === cat.id;
           return (
@@ -73,20 +73,21 @@ export function CategoryPicker({
               role="radio"
               aria-checked={selected}
               onClick={() => onSelect(selected ? "" : cat.id)}
-              className={`flex w-full cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors hover:bg-brand-wash ${
+              style={{ animationDelay: `${index * 40}ms` }}
+              className={`flex w-full cursor-pointer items-center gap-4 rounded-none border px-4 py-3.5 text-left transition-all duration-200 animate-fade-in-up fill-mode-both hover:bg-brand-wash ${
                 selected
-                  ? "border-primary bg-brand-wash"
+                  ? "border-primary bg-brand-wash shadow-sm"
                   : "border-border-standard bg-surface"
               }`}
             >
               <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${
                   selected
                     ? "bg-primary text-on-primary"
                     : "bg-surface-container-low text-text-secondary"
                 }`}
               >
-                <Icon className="h-[18px] w-[18px]" aria-hidden />
+                <Icon className="h-5 w-5" aria-hidden />
               </div>
               <p className="text-body font-semibold leading-snug text-on-surface">
                 {optionLabel(cat, locale)}
@@ -110,7 +111,7 @@ export function CategoryPicker({
         <button
           type="button"
           onClick={() => setExpanded((open) => !open)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border-standard px-3 py-2 text-body-sm font-semibold text-primary transition-colors hover:border-primary hover:bg-brand-wash"
+          className="flex w-full items-center justify-center gap-1.5 rounded-none border border-dashed border-border-standard px-3 py-2.5 text-body-sm font-semibold text-primary transition-colors duration-200 hover:border-primary hover:bg-brand-wash"
           aria-expanded={expanded}
         >
           {expanded ? (

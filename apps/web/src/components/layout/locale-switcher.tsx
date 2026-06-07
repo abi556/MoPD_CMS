@@ -8,20 +8,36 @@ export function LocaleSwitcher() {
   const locale = useLocale() as AppLocale;
   const switchLocale = useClientIntlSwitch();
   const t = useTranslations("common");
-  const nextLocale: AppLocale = locale === "en" ? "am" : "en";
-  const label = locale === "en" ? t("localeAm") : t("localeEn");
+
+  const btnClass = (active: boolean) =>
+    active
+      ? "rounded-none bg-primary px-3.5 py-1.5 font-label text-label text-on-primary shadow-sm transition-all duration-200 active:scale-95 cursor-pointer"
+      : "rounded-none px-3.5 py-1.5 font-label text-label text-text-secondary hover:text-primary transition-all duration-200 active:scale-95 cursor-pointer";
 
   return (
-    <button
-      type="button"
-      onClick={() => {
-        void switchLocale(nextLocale);
-      }}
-      suppressHydrationWarning
-      className="min-h-9 cursor-pointer rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-body-sm text-text-secondary transition-all duration-200 hover:border-brand-surface hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-      aria-label="Switch language"
-    >
-      {label}
-    </button>
+    <div className="flex items-center gap-0.5 border border-border-standard p-0.5 rounded-none bg-surface-container-low">
+      <button
+        type="button"
+        onClick={() => {
+          if (locale !== "en") void switchLocale("en");
+        }}
+        suppressHydrationWarning
+        className={btnClass(locale === "en")}
+        aria-label="Switch to English"
+      >
+        {t("localeEn")}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          if (locale !== "am") void switchLocale("am");
+        }}
+        suppressHydrationWarning
+        className={btnClass(locale === "am")}
+        aria-label="Switch to Amharic"
+      >
+        {t("localeAm")}
+      </button>
+    </div>
   );
 }

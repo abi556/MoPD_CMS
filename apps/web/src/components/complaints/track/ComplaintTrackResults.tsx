@@ -53,27 +53,27 @@ export function ComplaintTrackResults({
 
   const detailsBlock = (
     <>
-      <div className={isSplit ? "space-y-4" : "border-b border-border-standard p-6 md:p-8"}>
+      <div className={isSplit ? "space-y-4 animate-fade-in-up" : "border-b border-border-standard p-6 md:p-8 animate-fade-in-up"}>
         <div className="space-y-2">
           <p className="font-overline text-overline uppercase text-text-secondary">
             {t("currentStatus")}
           </p>
-          <Badge tone={statusBadgeTone(status)}>{statusLabel(status)}</Badge>
+          <Badge tone={statusBadgeTone(status)} className="rounded-none px-3 py-1 text-xs font-semibold uppercase tracking-wider">{statusLabel(status)}</Badge>
         </div>
       </div>
 
       <div
         className={
           isSplit
-            ? "grid gap-6 sm:grid-cols-2"
-            : "grid gap-6 border-b border-border-standard p-6 md:grid-cols-2 md:p-8"
+            ? "grid gap-6 sm:grid-cols-2 animate-fade-in-up [animation-delay:100ms] fill-mode-both"
+            : "grid gap-6 border-b border-border-standard p-6 md:grid-cols-2 md:p-8 animate-fade-in-up [animation-delay:100ms] fill-mode-both"
         }
       >
         <div>
           <p className="font-overline text-overline uppercase text-text-secondary">
             {t("subject")}
           </p>
-          <p className="mt-1 font-body text-body text-on-surface">
+          <p className="mt-1 font-body text-body font-semibold text-on-surface leading-relaxed">
             {result.subject}
           </p>
         </div>
@@ -86,13 +86,14 @@ export function ComplaintTrackResults({
               value={result.submittedAt}
               locale={locale}
               dateStyle="long"
+              className="font-body text-body font-semibold text-on-surface"
             />
           </div>
         </div>
       </div>
 
-      <div className={isSplit ? "mt-6" : "p-6 md:p-8"}>
-        <h3 className="mb-6 font-h3 text-h3 text-on-surface">
+      <div className={isSplit ? "mt-6 animate-fade-in-up [animation-delay:150ms] fill-mode-both" : "p-6 md:p-8 animate-fade-in-up [animation-delay:150ms] fill-mode-both"}>
+        <h3 className="mb-6 font-h3 text-h3 text-on-surface font-semibold tracking-tight">
           {t("timelineTitle")}
         </h3>
         <ol className="relative space-y-0 border-l border-border-standard pl-6">
@@ -101,11 +102,11 @@ export function ComplaintTrackResults({
             const isLast = index === TRACK_TIMELINE_STEPS.length - 1;
             const icon =
               state === "completed" ? (
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-success text-on-primary">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-success text-on-primary animate-scale-in">
                   <Check className="h-3.5 w-3.5" aria-hidden />
                 </span>
               ) : state === "current" ? (
-                <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-success bg-surface" />
+                <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-success bg-surface animate-pulse" />
               ) : (
                 <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-border-standard bg-surface-container-low">
                   <Circle className="h-2 w-2 fill-text-placeholder text-text-placeholder" />
@@ -115,7 +116,8 @@ export function ComplaintTrackResults({
             return (
               <li
                 key={step.key}
-                className={`relative ${isLast ? "" : "pb-8"}`}
+                style={{ animationDelay: `${200 + index * 100}ms` }}
+                className={`relative ${isLast ? "" : "pb-8"} animate-fade-in-up fill-mode-both`}
               >
                 <span className="absolute left-[-1.85rem] top-0.5 flex">
                   {icon}
@@ -130,7 +132,7 @@ export function ComplaintTrackResults({
                   {timelineTitle(step.key)}
                 </p>
                 <p
-                  className={`mt-1 font-body-sm text-body-sm ${
+                  className={`mt-1 font-body-sm text-body-sm leading-relaxed ${
                     state === "current"
                       ? "text-on-surface"
                       : "text-text-secondary"
@@ -158,9 +160,9 @@ export function ComplaintTrackResults({
 
   if (isSplit) {
     return (
-      <div className="flex h-full min-h-[320px] flex-col overflow-hidden rounded-lg border border-border-standard bg-surface shadow-sm">
+      <div className="flex h-full min-h-[320px] flex-col overflow-hidden rounded-none border border-border-standard bg-surface shadow-sm animate-fade-in-up">
         <div className="shrink-0 border-b border-border-standard px-6 py-5 md:px-8">
-          <h2 className="font-h2 text-h2 text-brand-deep">
+          <h2 className="font-h2 text-h2 text-brand-deep tracking-tight">
             {t("resultsHeading", { reference: result.referenceNo })}
           </h2>
         </div>
@@ -171,18 +173,18 @@ export function ComplaintTrackResults({
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="font-h2 text-h2 text-brand-deep">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between animate-fade-in-up">
+        <h2 className="font-h2 text-h2 text-brand-deep tracking-tight">
           {t("resultsHeading", { reference: result.referenceNo })}
         </h2>
         {onSearchAnother ? (
-          <Button type="button" variant="secondary" onClick={onSearchAnother}>
+          <Button type="button" variant="secondary" onClick={onSearchAnother} className="rounded-none transition-all duration-200 active:scale-[0.98]">
             {t("searchAnother")}
           </Button>
         ) : null}
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border-standard bg-surface shadow-sm">
+      <div className="overflow-hidden rounded-none border border-border-standard bg-surface shadow-sm">
         {detailsBlock}
       </div>
     </div>

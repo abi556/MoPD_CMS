@@ -29,7 +29,7 @@
     "heroEyebrow": "የእቅድ እና ልማት ሚኒስቴር",
     "heroTitle": "የቅሬታ አስተዳደር ስርዓት",
     "officialPortal": "ይፋዊ የመንግስት ፖርታል",
-    "heroHeading": "ወደ የእቅድ እና ልማት ሚኒስቴር ቅሬታ ያስገቡ ወይም ይከታተሉ።",
+    "heroHeading": "ወደ የእቅድ እና ልማት ሚኒስቴር <highlight>ቅሬታ</highlight> ያስገቡ ወይም ይከታተሉ።",
     "heroBody": "ቅሬታ ያስገቡ፣ የመከታተያ ቁጥር ይቀበሉ፣ እና ሂደቱን በመስመር ይከታተሉ።",
     "heroBodyExtended": "ለዜጎች ያተኮረ መድረካችን በአስተዳደራዊ ሂደቶች ግልጽነትን እና ተጠያቂነትን ያረጋግጣል።",
     "complaintIdLabel": "የቅሬታ መለያ",
@@ -57,6 +57,8 @@
     "readyBody": "አዲስ ቅሬታ ያስገቡ ወይም ነባር ጉዳይን በማጣቀሻ ቁጥርዎ ይከታተሉ።",
     "startSubmission": "ማስገባት ጀምር",
     "footerDescription": "የእቅድ እና ልማት ሚኒስቴር (MoPD) የቅሬታ አስተዳደር ስርዓት። ይበልጥ ፈጣን እና ምላሽ ሰጪ አስተዳደር በመገንባት ላይ።",
+    "footerDescriptionLine1": "የእቅድ እና ልማት ሚኒስቴር (MoPD) የቅሬታ አስተዳደር",
+    "footerDescriptionLine2": "ስርዓት። ይበልጥ ፈጣን እና ምላሽ ሰጪ አስተዳደር በመገንባት ላይ።",
     "footerPrivacy": "የግላዊነት ፖሊሲ",
     "footerTerms": "የአገልግሎት ውሎች",
     "footerContact": "ያግኙን",
@@ -71,12 +73,18 @@
     "phase0Note": "መሠረት በመገንባት ላይ — የሰራተኛ እና አስተዳደር ገጾች በቀጣይ ደረጃዎች ይመጣሉ።"
   },
   "faq": {
-    "eyebrow": "የእርዳታ ማዕከል",
     "title": "ተደጋጋሚ ጥያቄዎች",
     "subtitle": "በMoPD የቅሬታ አስተዳደር ስርዓት ቅሬታ ለመስጠት፣ ለመከታተል እና ለመፍታት የሚነሱ ተደጋጋሚ ጥያቄዎች መልሶች።",
-    "stillNeedHelp": "አሁንም እርዳታ ይፈልጋሉ?",
-    "stillNeedHelpBody": "አዲስ ቅሬታ ሊያስገቡ ወይም ለተጨማሪ እርዳታ ሚኒስቴሩን ሊያግኙ ይችላሉ።",
-    "ctaSubmit": "ቅሬታ አስገባ",
+    "categoriesHeading": "ምድቦች",
+    "categories": {
+      "general": "አጠቃላይ መረጃ",
+      "submitting": "ቅሬታ ማስገባት",
+      "tracking": "መከታተል እና ሁኔታ",
+      "privacy": "ግላዊነት እና ደህንነት",
+      "support": "ድጋፍ እና ግልጽ ውሳኔ"
+    },
+    "stillNeedHelp": "ጥያቄ አሁንም አለዎት?",
+    "stillNeedHelpBody": "መልስዎን ካላገኙ በነጻ ያግኙን።",
     "ctaContact": "ያግኙን",
     "items": {
       "types": {
@@ -463,5 +471,23 @@
     "errors": {
       "loadFailed": "መጫን አልተቻለም።"
     }
+  },
+  "contactForm": {
+    "title": "መልዕክት ይላኩልን",
+    "subtitle": "ከታች ያለውን ቅጽ ይሙሉ እና ቡድናችን በተቻለ ፍጥነት ያነጋግርዎታል።",
+    "nameLabel": "ሙሉ ስም",
+    "namePlaceholder": "ሙሉ ስምዎን ያስገቡ",
+    "emailLabel": "የኢሜይል አድራሻ",
+    "emailPlaceholder": "you@example.com",
+    "subjectLabel": "ርዕሰ ጉዳይ",
+    "subjectPlaceholder": "ጉዳዩ ምንድን ነው?",
+    "messageLabel": "መልዕክት",
+    "messagePlaceholder": "መልዕክትዎን እዚህ ይጻፉ...",
+    "submit": "መልዕክት ላክ",
+    "submitting": "በመላክ ላይ...",
+    "successTitle": "መልዕክትዎ በተሳካ ሁኔታ ተልኳል!",
+    "successBody": "የእቅድ እና ልማት ሚኒስቴርን ስላነጋገሩ እናመሰግናለን። መልዕክትዎ ደርሶናል እና በቅርቡ ምላሽ እንሰጥዎታለን።",
+    "errorTitle": "መላክ አልተሳካም",
+    "errorBody": "መልዕክትዎን በመላክ ላይ ስህተት አጋጥሟል። እባክዎ እንደገና ይሞክሩ።"
   }
 }

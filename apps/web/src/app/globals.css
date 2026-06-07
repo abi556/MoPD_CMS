@@ -15,11 +15,11 @@
   --color-on-primary: #ffffff;
   --color-secondary-container: #bdf1a8;
   --color-surface-bright: #fcf9f8;
-  --color-on-tertiary-fixed-variant: #20511d;
+  --color-on-tertiary-fixed-variant: #22521f;
   --color-surface-container-lowest: #ffffff;
   --color-tertiary-fixed-dim: #9ed592;
   --color-error-container: #ffdad6;
-  --color-on-primary-fixed-variant: #20511e;
+  --color-on-primary-fixed-variant: #22521f;
   --color-on-primary-container: #b2eaa6;
   --color-on-error-container: #93000a;
   --color-surface: #fcf9f8;
@@ -57,14 +57,14 @@
   --color-success: #15803D;
   --color-text-secondary: #475569;
   --color-on-secondary-fixed-variant: #25501a;
-  --color-primary: #22521f;
+  --color-primary: #58874b;
   --color-inverse-primary: #9ed493;
   --color-secondary-fixed: #bdf1a8;
   --color-on-tertiary-fixed: #002202;
   --color-on-surface: #1c1b1b;
-  --color-brand-deep: #1E4620;
+  --color-brand-deep: #22521f;
   --color-on-tertiary-container: #b2eaa5;
-  --color-surface-tint: #386933;
+  --color-surface-tint: #58874b;
   --color-on-secondary: #ffffff;
   --color-primary-fixed-dim: #9ed493;
 
@@ -177,3 +177,74 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Custom Elegant Animations */
+@keyframes wave-slow {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes wave-slower {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-wave-slow {
+  animation: wave-slow 20s linear infinite;
+}
+
+.animate-wave-slower {
+  animation: wave-slower 25s linear infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
