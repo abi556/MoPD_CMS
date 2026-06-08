@@ -77,9 +77,7 @@ describe('ComplaintRecoveryService', () => {
     });
 
     expect(result.references).toHaveLength(1);
-    expect(result.references[0].referenceNo).toBe(
-      'CMS-2026-RECOVERREF01',
-    );
+    expect(result.references[0].referenceNo).toBe('CMS-2026-RECOVERREF01');
   });
 
   it('verifyRecovery rejects invalid code', async () => {
