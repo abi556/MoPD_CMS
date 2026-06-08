@@ -156,9 +156,7 @@ describe('ComplaintsService', () => {
     });
 
     expect(created.complaint.id).toBe('cmp_001');
-    expect(created.complaint.referenceNo).toMatch(
-      /^CMS-\d{4}-[A-Z0-9]{12}$/,
-    );
+    expect(created.complaint.referenceNo).toMatch(/^CMS-\d{4}-[A-Z0-9]{12}$/);
     expect(created.complaint.status).toBe('SUBMITTED');
     expect(created.complaint.channel).toBe(ComplaintChannel.WEB);
     expect(complaintCreate).toHaveBeenCalledTimes(1);
@@ -231,9 +229,7 @@ describe('ComplaintsService', () => {
       complainantPhone: null,
     });
 
-    const found = await service.getByReference(
-      'CMS-2026-ZYXWVUTSRQ12',
-    );
+    const found = await service.getByReference('CMS-2026-ZYXWVUTSRQ12');
 
     expect(found.referenceNo).toBe('CMS-2026-ZYXWVUTSRQ12');
     expect(found.subject).toBe('Delayed fertilizer delivery');
@@ -311,9 +307,7 @@ describe('ComplaintsService', () => {
     const result = await service.listForStaff(query, staffUser);
 
     expect(result.data).toHaveLength(1);
-    expect(result.data[0]?.referenceNo).toBe(
-      'CMS-2026-TRACKLIST001',
-    );
+    expect(result.data[0]?.referenceNo).toBe('CMS-2026-TRACKLIST001');
     expect(result.meta).toEqual({
       page: 1,
       pageSize: 10,
