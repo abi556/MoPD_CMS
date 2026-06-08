@@ -1,25 +1,27 @@
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { PublicShell } from "@/components/layout/public-shell";
+import { ErrorScreen } from "@/components/public/error-screen";
+import { ForbiddenArt } from "@/components/public/error-illustrations";
 
 export default async function ForbiddenPage() {
   const t = await getTranslations("auth");
-  const common = await getTranslations("common");
+  const nav = await getTranslations("nav");
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4 py-16">
-      <Card className="max-w-md text-center">
-        <h1 className="text-xl font-semibold text-on-surface">
-          {t("forbiddenTitle")}
-        </h1>
-        <p className="mt-3 text-sm text-text-secondary">{t("forbiddenBody")}</p>
-        <div className="mt-6">
-          <Link href="/">
-            <Button type="button">{common("back")}</Button>
-          </Link>
-        </div>
-      </Card>
-    </div>
+    <PublicShell>
+      <ErrorScreen
+        code="403"
+        eyebrow={t("forbiddenEyebrow")}
+        title={t("forbiddenTitle")}
+        body={t("forbiddenBody")}
+        illustration={<ForbiddenArt className="h-auto w-full" />}
+        primaryAction={{ href: "/", label: nav("home") }}
+        secondaryAction={{
+          href: "/auth/login",
+          label: nav("login"),
+          variant: "secondary",
+        }}
+      />
+    </PublicShell>
   );
 }

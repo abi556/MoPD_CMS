@@ -2,6 +2,7 @@ import { resolveApiV1Prefix } from "@/lib/api-origin";
 import { resolveApiCredentials } from "@/lib/api-credentials";
 import {
   clearAccessToken,
+  clearSessionHint,
   getAccessToken,
   setAccessToken,
 } from "@/lib/auth/token-store";
@@ -147,6 +148,7 @@ export async function apiRequest<T>(
     getAccessToken()
   ) {
     clearAccessToken();
+    clearSessionHint();
     const locale = window.location.pathname.split("/")[1] ?? "en";
     window.location.assign(`/${locale}/auth/session-expired`);
     throw new ApiError(401, { message: "Session expired" });

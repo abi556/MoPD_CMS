@@ -1,0 +1,23 @@
+# MoPD Complaint Management System (CMS)
+
+> The official complaint management portal of the Ministry of Planning and Development (MoPD) of Ethiopia. Citizens can submit complaints, receive a tracking reference number, and follow their case status online. The portal is bilingual (Amharic and English), mobile-first, and built for transparency and accountability in public service.
+
+## Key pages
+
+- [Home](/en): Overview of the complaint process and entry points.
+- [Submit a complaint](/en/complaints/new): Multi-step form to file a new complaint with optional evidence.
+- [Track a complaint](/en/complaints/track): Look up complaint status using a reference number.
+- [Frequently asked questions](/en/faq): Common questions about the complaint process.
+- [Contact](/en/contact): Ministry contact details and message form.
+
+## Policies
+
+- [Privacy policy](/en/privacy): How citizen data is handled under Ethiopian Personal Data Protection Proclamation No. 1321/2024.
+- [Terms of service](/en/terms): Terms governing use of the portal.
+- [Accessibility](/en/accessibility): WCAG 2.2 AA accessibility commitment.
+
+## Notes
+
+- Staff and administrative areas (/en/dashboard, /en/auth) are private and require authentication. Do not crawl or index them.
+- The Amharic version of every public page is available under the /am/ path prefix (e.g. /am/complaints/new).
+- Official ministry website: https://www.mopd.gov.et

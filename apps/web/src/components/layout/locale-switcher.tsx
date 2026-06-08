@@ -11,11 +11,11 @@ export function LocaleSwitcher() {
 
   const btnClass = (active: boolean) =>
     active
-      ? "rounded-none bg-primary px-3.5 py-1.5 font-label text-label text-on-primary shadow-sm transition-all duration-200 active:scale-95 cursor-pointer"
-      : "rounded-none px-3.5 py-1.5 font-label text-label text-text-secondary hover:text-primary transition-all duration-200 active:scale-95 cursor-pointer";
+      ? "rounded-none bg-primary px-2.5 py-1 font-label text-[11px] text-on-primary shadow-sm transition-all duration-200 active:scale-95 cursor-pointer sm:px-3.5 sm:py-1.5 sm:text-label"
+      : "rounded-none px-2.5 py-1 font-label text-[11px] text-text-secondary transition-all duration-200 hover:text-primary active:scale-95 cursor-pointer sm:px-3.5 sm:py-1.5 sm:text-label";
 
   return (
-    <div className="flex items-center gap-0.5 border border-border-standard p-0.5 rounded-none bg-surface-container-low">
+    <div className="flex items-center gap-0.5 rounded-none border border-border-standard bg-surface-container-low p-0.5">
       <button
         type="button"
         onClick={() => {

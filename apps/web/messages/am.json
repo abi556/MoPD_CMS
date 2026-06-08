@@ -23,7 +23,9 @@
     "reports": "ሪፖርቶች",
     "admin": "አስተዳደር",
     "profile": "መገለጫ",
-    "logout": "ውጣ"
+    "logout": "ውጣ",
+    "menu": "ሜኑ",
+    "openMenu": "የአሰሳ ሜኑ ክፈት"
   },
   "public": {
     "heroEyebrow": "የእቅድ እና ልማት ሚኒስቴር",
@@ -192,14 +194,17 @@
     "signIn": "ግባ",
     "sessionExpiredTitle": "የክፍለ ጊዜ ጊዜ አልቋል",
     "sessionExpiredBody": "የክፍለ ጊዜዎ አልቋል። ለመቀጠል እንደገና ይግቡ።",
-    "forbiddenTitle": "መዳረሻ ተከልክሏል",
-    "forbiddenBody": "ይህን ገጽ ለማየት ፍቃድ የለዎትም።"
+    "forbiddenEyebrow": "መዳረሻ ተከልክሏል",
+    "forbiddenTitle": "እዚህ መዳረሻ የለዎትም",
+    "forbiddenBody": "ይህን ገጽ ለማየት ፍቃድ የለዎትም። ስህተት ነው ብለው ካመኑ በተፈቀደለት መለያ ይግቡ ወይም ወደ መነሻ ገጽ ይመለሱ።"
   },
   "errors": {
-    "notFoundTitle": "ገጹ አልተገኘም",
-    "notFoundBody": "የጠየቁት ገጽ የለም።",
-    "genericTitle": "አንድ ነገር ተሳሳተ",
-    "genericBody": "ያልተጠበቀ ስህተት ተከስቷል። እንደገና ሊሞክሩ ይችላሉ።",
+    "notFoundEyebrow": "ገጹ አልተገኘም",
+    "notFoundTitle": "ይህ ገጽ የተሳሳተ መንገድ ወስዷል",
+    "notFoundBody": "የሚፈልጉት ገጽ የለም ወይም ተዛውሯል። ወደ ትክክለኛው መንገድ እንመልስዎ።",
+    "genericEyebrow": "አንድ ነገር ተሳሳተ",
+    "genericTitle": "ያልተጠበቀ ስህተት አጋጥሞናል",
+    "genericBody": "ይህን ገጽ በመጫን ላይ ያልተጠበቀ ስህተት ተከስቷል። እንደገና መሞከር ይችላሉ፤ ችግሩ ከቀጠለ እባክዎ ቆይተው ይመለሱ።",
     "tooManyRequests": "ብዙ ጥያቄዎች። ትንሽ ይጠብቁና እንደገና ይሞክሩ።"
   },
   "complaintSubmit": {
@@ -239,7 +244,7 @@
       "subjectPlaceholder": "ጉዳዩን በአጭሩ ይገልጹ…",
       "description": "ዝርዝር መግለጫ",
       "descriptionPlaceholder": "ስለ ችግሩ የተወሰኑ ዝርዝሮች፣ ቀኖች እና አስቸኳይ አደጋዎች ያስረዱ…",
-      "charCount": "{count} / 1000",
+      "charCount": "{count} / 2000",
       "region": "ክልል",
       "regionPlaceholder": "ክልል ይምረጡ",
       "zone": "ዞን / ንዑስ ከተማ",

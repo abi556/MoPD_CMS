@@ -122,7 +122,8 @@ export function ContactForm() {
           <ValidationError prefix="Message" field="message" errors={state.errors} />
         </div>
 
-        {state.errors && state.errors.length > 0 && (
+        {state.errors != null &&
+          Object.keys(state.errors as unknown as Record<string, unknown>).length > 0 && (
           <div className="flex items-start gap-2.5 rounded-none border border-danger/20 bg-danger/5 p-4 text-danger animate-scale-in">
             <AlertCircle className="h-5 w-5 shrink-0" />
             <div>

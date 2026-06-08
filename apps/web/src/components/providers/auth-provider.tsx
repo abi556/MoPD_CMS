@@ -10,8 +10,14 @@ import {
   type ReactNode,
 } from "react";
 import { apiGet, apiPost, refreshAccessToken } from "@/lib/api-client";
-import { getAccessToken } from "@/lib/auth/token-store";
-import { clearAccessToken, setAccessToken } from "@/lib/auth/token-store";
+import {
+  clearAccessToken,
+  clearSessionHint,
+  getAccessToken,
+  hasSessionHint,
+  setAccessToken,
+  setSessionHint,
+} from "@/lib/auth/token-store";
 import type { LoginResponse, SessionUser } from "@/lib/auth/session-types";
 
 interface AuthContextValue {
@@ -43,8 +49,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Skip all session-bootstrap requests for anonymous visitors. Without an
+      // in-memory access token or a session hint cookie, there is no staff
+      // session to restore, so we avoid the 401s on the public portal.
+      if (!getAccessToken() && !hasSessionHint()) {
+        setIsLoading(false);
+        return;
+      }
+
       if (!getAccessToken()) {
-        await refreshAccessToken();
+        const refreshed = await refreshAccessToken();
+        if (!refreshed) {
+          // The hint is stale (refresh cookie expired/revoked). Clear it so we
+          // don't keep retrying on every load.
+          clearSessionHint();
+          if (!cancelled) {
+            setUser(null);
+            setIsLoading(false);
+          }
+          return;
+        }
       }
       if (!cancelled) {
         await refreshSession();
@@ -63,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       { auth: false },
     );
     setAccessToken(data.accessToken);
+    setSessionHint();
     setUser(data.user);
     return data;
   }, []);
@@ -76,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       /* clear local session even if API fails */
     } finally {
       clearAccessToken();
+      clearSessionHint();
       setUser(null);
     }
   }, []);

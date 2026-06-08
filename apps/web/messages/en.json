@@ -23,7 +23,9 @@
     "reports": "Reports",
     "admin": "Admin",
     "profile": "Profile",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "menu": "Menu",
+    "openMenu": "Open navigation menu"
   },
   "public": {
     "heroEyebrow": "Ministry of Planning and Development",
@@ -192,14 +194,17 @@
     "signIn": "Sign in",
     "sessionExpiredTitle": "Session expired",
     "sessionExpiredBody": "Your session has ended. Sign in again to continue.",
-    "forbiddenTitle": "Access denied",
-    "forbiddenBody": "You do not have permission to view this page."
+    "forbiddenEyebrow": "Access denied",
+    "forbiddenTitle": "You don't have access here",
+    "forbiddenBody": "You do not have permission to view this page. If you believe this is a mistake, sign in with an authorized account or return to the home page."
   },
   "errors": {
-    "notFoundTitle": "Page not found",
-    "notFoundBody": "The page you requested does not exist.",
-    "genericTitle": "Something went wrong",
-    "genericBody": "An unexpected error occurred. You can try again.",
+    "notFoundEyebrow": "Page not found",
+    "notFoundTitle": "This page took a wrong turn",
+    "notFoundBody": "The page you're looking for doesn't exist or has been moved. Let's get you back on track.",
+    "genericEyebrow": "Something went wrong",
+    "genericTitle": "We hit an unexpected error",
+    "genericBody": "An unexpected error occurred while loading this page. You can try again, and if it keeps happening, please come back a little later.",
     "tooManyRequests": "Too many requests. Please wait a moment and try again."
   },
   "complaintSubmit": {
@@ -239,7 +244,7 @@
       "subjectPlaceholder": "Brief summary of the issue…",
       "description": "Detailed description",
       "descriptionPlaceholder": "Please provide specific details about the problem, including dates and any immediate risks…",
-      "charCount": "{count} / 1000",
+      "charCount": "{count} / 2000",
       "region": "Region",
       "regionPlaceholder": "Select region",
       "zone": "Zone / Sub-city",

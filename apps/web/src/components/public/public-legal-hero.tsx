@@ -5,10 +5,10 @@ interface PublicLegalHeroProps {
 
 export function PublicLegalHero({ title, subtitle }: PublicLegalHeroProps) {
   return (
-    <section className="relative overflow-hidden bg-primary pt-14 pb-20 text-on-primary md:pt-16 md:pb-24">
+    <section className="relative overflow-hidden bg-primary pb-16 pt-12 text-on-primary sm:pb-20 sm:pt-14 md:pb-24 md:pt-16">
       {/* Content with elegant fade-in-up animation */}
       <div className="mx-auto max-w-max-width px-gutter text-center animate-fade-in-up">
-        <h1 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
           {title}
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-body text-on-primary/75">

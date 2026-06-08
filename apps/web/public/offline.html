@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Offline — MoPD CMS</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      :root {
+        --primary: #58874b;
+        --primary-dark: #4c7741;
+        --brand-deep: #22521f;
+        --bg: #fcf9f8;
+        --white: #ffffff;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--brand-deep);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        text-align: center;
+      }
+      .art {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px 16px;
+      }
+      .art svg { width: 100%; max-width: 320px; height: auto; }
+      .panel {
+        position: relative;
+        background: var(--primary);
+        color: var(--white);
+        padding: 56px 28px 48px;
+        border-top-left-radius: 50% 64px;
+        border-top-right-radius: 50% 64px;
+      }
+      .panel h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+      .panel p { margin-top: 12px; font-size: 15px; line-height: 1.5; color: rgba(255, 255, 255, 0.85); }
+      .panel .am { margin-top: 6px; font-size: 14px; color: rgba(255, 255, 255, 0.75); }
+      button {
+        margin-top: 28px;
+        cursor: pointer;
+        border: none;
+        background: var(--white);
+        color: var(--primary);
+        font-size: 16px;
+        font-weight: 700;
+        padding: 14px 56px;
+        border-radius: 999px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        transition: transform 0.15s ease, background 0.2s ease;
+      }
+      button:hover { background: #f1f5ee; }
+      button:active { transform: scale(0.97); }
+      @media (min-width: 640px) {
+        .panel { max-width: 560px; margin: 0 auto; width: 100%; border-radius: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="art">
+      <!-- Unplugged connection illustration, brand colors -->
+      <svg viewBox="0 0 360 300" fill="none" role="img" aria-label="No internet connection">
+        <g fill="#58874b" opacity="0.35">
+          <circle cx="40" cy="60" r="5" />
+          <circle cx="312" cy="48" r="6" />
+          <circle cx="300" cy="210" r="5" />
+          <circle cx="52" cy="220" r="4" />
+          <path d="M150 22 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 z" />
+          <path d="M286 150 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 z" />
+        </g>
+
+        <!-- left cable -->
+        <path d="M28 150 C70 150 96 120 120 120" stroke="#22521f" stroke-width="12" stroke-linecap="round" fill="none" />
+        <!-- right cable -->
+        <path d="M332 150 C290 150 264 184 240 184" stroke="#58874b" stroke-width="12" stroke-linecap="round" fill="none" />
+
+        <!-- socket (left plug head) -->
+        <g transform="rotate(35 150 138)">
+          <rect x="118" y="108" width="64" height="60" rx="20" fill="#ffffff" stroke="#22521f" stroke-width="10" />
+          <rect x="150" y="120" width="40" height="36" rx="14" fill="#22521f" />
+        </g>
+
+        <!-- plug (right, with prongs) -->
+        <g transform="rotate(35 214 196)">
+          <rect x="196" y="176" width="56" height="56" rx="18" fill="#ffffff" stroke="#58874b" stroke-width="10" />
+          <path d="M196 190 h-22 M196 218 h-22" stroke="#58874b" stroke-width="10" stroke-linecap="round" />
+        </g>
+
+        <!-- spark gap lines -->
+        <g stroke="#58874b" stroke-width="6" stroke-linecap="round" opacity="0.8">
+          <path d="M176 150 l16 -10" />
+          <path d="M182 168 l18 0" />
+          <path d="M176 186 l16 10" />
+        </g>
+      </svg>
+    </div>
+
+    <section class="panel">
+      <h1>No internet connection</h1>
+      <p>You appear to be offline. Check your connection and try again to continue.</p>
+      <p class="am" lang="am">ከበይነ መረብ ጋር አልተገናኙም። ግንኙነትዎን አረጋግጠው እንደገና ይሞክሩ።</p>
+      <button type="button" onclick="location.reload()">Retry</button>
+    </section>
+  </body>
+</html>

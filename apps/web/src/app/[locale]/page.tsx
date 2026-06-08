@@ -58,13 +58,13 @@ export default async function LandingPage({
   return (
     <PublicShell>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-brand-wash pb-24 pt-16 md:pb-32 md:pt-24">
+      <section className="relative overflow-hidden bg-brand-wash pb-16 pt-12 sm:pb-20 sm:pt-16 md:pb-32 md:pt-24">
         {/* Subtle background grid pattern for premium tech-gov feel */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25" />
 
         <div className="relative mx-auto grid w-full max-w-max-width items-center gap-12 px-gutter md:grid-cols-12">
           <div className="space-y-6 md:col-span-7 animate-fade-in-up">
-            <h1 className="max-w-3xl font-display text-4xl font-semibold leading-tight text-on-background md:text-6xl md:leading-[1.15]">
+            <h1 className="max-w-3xl font-display text-3xl font-semibold leading-tight text-on-background sm:text-4xl md:text-6xl md:leading-[1.15]">
               {t.rich("heroHeading", {
                 highlight: (chunks) => (
                   <span className="text-primary font-bold">{chunks}</span>
@@ -74,14 +74,14 @@ export default async function LandingPage({
             <p className="max-w-2xl text-body text-text-secondary leading-relaxed">
               {t("heroBody")} {t("heroBodyExtended")}
             </p>
-            <div className="flex flex-wrap gap-4 pt-2">
-              <Link href="/complaints/new">
-                <Button type="button" className="rounded-none px-8 py-3.5 text-base shadow-sm transition-all duration-200 hover:bg-primary/95 hover:shadow-md active:scale-[0.98]">
+            <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap sm:gap-4">
+              <Link href="/complaints/new" className="w-full sm:w-auto">
+                <Button type="button" className="w-full rounded-none px-8 py-3.5 text-base shadow-sm transition-all duration-200 hover:bg-primary/95 hover:shadow-md active:scale-[0.98] sm:w-auto">
                   {t("ctaSubmit")}
                 </Button>
               </Link>
-              <Link href="/complaints/track">
-                <Button variant="secondary" type="button" className="rounded-none px-8 py-3.5 text-base shadow-sm transition-all duration-200 hover:bg-surface-container-low hover:shadow-md active:scale-[0.98]">
+              <Link href="/complaints/track" className="w-full sm:w-auto">
+                <Button variant="secondary" type="button" className="w-full rounded-none px-8 py-3.5 text-base shadow-sm transition-all duration-200 hover:bg-surface-container-low hover:shadow-md active:scale-[0.98] sm:w-auto">
                   {t("ctaTrack")}
                 </Button>
               </Link>
@@ -132,9 +132,9 @@ export default async function LandingPage({
       </section>
 
       {/* Process Section - Crisp, Sharp, and Staggered Animations */}
-      <section className="bg-surface-container-lowest py-24 border-y border-border-standard/50">
+      <section className="border-y border-border-standard/50 bg-surface-container-lowest py-16 md:py-24">
         <div className="mx-auto w-full max-w-max-width px-gutter">
-          <div className="mx-auto mb-16 max-w-2xl text-center animate-fade-in-up [animation-delay:150ms] fill-mode-both">
+          <div className="mx-auto mb-10 max-w-2xl text-center animate-fade-in-up fill-mode-both [animation-delay:150ms] md:mb-16">
             <h2 className="font-h1 text-h1 text-on-background tracking-tight">
               {t("processTitle")}
             </h2>
@@ -207,64 +207,61 @@ export default async function LandingPage({
         </div>
       </section>
 
-      {/* Trust & Transparency Section & CTA overlayed on bottom */}
-      <section className="relative overflow-hidden">
-        {/* Background Image with elegant dark overlay */}
-        <div className="relative w-full aspect-1080/281">
-          <Image
-            src="/aa_landmarks.png"
-            alt={t("landmarksAlt")}
-            fill
-            sizes="100vw"
-            className="object-cover object-center"
-            priority
-          />
-          {/* Dark, modern transparent overlay - lighter for better visibility */}
-          <div className="absolute inset-0 bg-neutral-950/40 backdrop-blur-[0.5px]" />
-          
-          <div className="absolute inset-0 flex flex-col justify-between py-8">
-            <div className="mx-auto w-full max-w-max-width px-gutter">
-              <div className="grid gap-6 md:grid-cols-3">
+      {/* Trust & Transparency Section & CTA */}
+      <section className="relative overflow-hidden bg-neutral-950" aria-label={t("landmarksAlt")}>
+        <div className="relative">
+          <div className="pointer-events-none absolute inset-0">
+            <Image
+              src="/aa_landmarks.png"
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover object-center"
+              aria-hidden
+            />
+            <div className="absolute inset-0 bg-neutral-950/50 md:bg-neutral-950/40" />
+          </div>
+
+          <div className="relative z-10 mx-auto w-full max-w-max-width px-gutter py-10 sm:py-12 md:py-10 lg:min-h-[320px] lg:py-12">
+            <div className="flex flex-col gap-8 lg:min-h-[280px] lg:justify-between lg:gap-10">
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
                 {trustCards.map(({ key, icon: Icon, delay }) => (
                   <div
                     key={key}
-                    className="flex gap-4 p-5 border border-white/5 bg-black/15 backdrop-blur-[1px] animate-fade-in-up fill-mode-both"
+                    className="flex min-w-0 gap-4 border border-white/10 bg-black/25 p-4 backdrop-blur-sm animate-fade-in-up fill-mode-both sm:p-5"
                     style={{ animationDelay: delay }}
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/20 text-primary-fixed">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <div>
-                      <h4 className="font-h3 text-h3 text-white font-semibold">
+                    <div className="min-w-0">
+                      <h4 className="font-h3 text-base font-semibold text-white sm:text-h3">
                         {t(`trust.${key}.title`)}
                       </h4>
-                      <p className="mt-1.5 text-body-sm text-white/90 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                      <p className="mt-1.5 text-body-sm leading-relaxed text-white/90">
                         {t(`trust.${key}.body`)}
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* CTA Section - Overlayed directly on the bottom part of the landmarks image */}
-            <div className="mx-auto w-full max-w-max-width px-gutter">
-              <div className="relative overflow-hidden rounded-none border border-white/5 bg-black/25 p-6 md:p-8 animate-fade-in-up [animation-delay:400ms] fill-mode-both backdrop-blur-[1px]">
+              <div className="relative overflow-hidden rounded-none border border-white/10 bg-black/30 p-5 backdrop-blur-sm animate-fade-in-up fill-mode-both [animation-delay:400ms] sm:p-6 md:p-8">
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-5" />
-                
-                <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h2 className="font-display text-2xl md:text-3xl text-white font-semibold tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+
+                <div className="relative z-10 flex flex-col gap-5 sm:gap-6 md:flex-row md:items-center md:justify-between">
+                  <div className="min-w-0">
+                    <h2 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
                       {t("readyTitle")}
                     </h2>
-                    <p className="mt-1.5 max-w-xl text-body-sm text-white/90 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                    <p className="mt-1.5 max-w-xl text-body-sm leading-relaxed text-white/90">
                       {t("readyBody")}
                     </p>
                   </div>
-                  <Link href="/complaints/new">
+                  <Link href="/complaints/new" className="w-full shrink-0 md:w-auto">
                     <Button
                       type="button"
-                      className="rounded-none bg-primary text-on-primary px-8 py-3 text-base hover:bg-primary/90 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+                      className="w-full cursor-pointer rounded-none bg-primary px-8 py-3 text-base text-on-primary transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] md:w-auto"
                     >
                       {t("startSubmission")}
                     </Button>

@@ -32,7 +32,8 @@ export function ComplaintStepDetails({
 }: ComplaintStepDetailsProps) {
   const t = useTranslations("complaintSubmit");
   const charCount = data.description.length;
-  const charWarning = charCount > 900;
+  const descriptionMaxLength = 2000;
+  const charWarning = charCount > descriptionMaxLength - 100;
 
   return (
     <form
@@ -122,7 +123,7 @@ export function ComplaintStepDetails({
           id="description"
           name="description"
           rows={6}
-          maxLength={1000}
+          maxLength={descriptionMaxLength}
           value={data.description}
           onChange={(e) => onChange({ description: e.target.value })}
           placeholder={t("fields.descriptionPlaceholder")}

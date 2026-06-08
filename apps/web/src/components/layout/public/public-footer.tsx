@@ -40,7 +40,7 @@ export function PublicFooter() {
           </p>
         </div>
 
-        <div className="flex w-full flex-row items-start justify-between gap-6 sm:gap-8 md:ml-10 md:w-auto md:min-w-[22rem] md:max-w-2xl md:flex-1 md:justify-between lg:ml-16 lg:gap-12 xl:ml-20 xl:gap-16">
+        <div className="flex w-full flex-row items-start justify-between gap-6 sm:gap-8 md:ml-10 md:w-auto md:min-w-88 md:max-w-2xl md:flex-1 md:justify-between lg:ml-16 lg:gap-12 xl:ml-20 xl:gap-16">
           <nav aria-label={pub("footerLegalLinks")} className="flex flex-col gap-3">
             <Link className={footerLinkClass} href="/privacy">
               {pub("footerPrivacy")}
@@ -60,6 +60,14 @@ export function PublicFooter() {
             <Link className={footerLinkClass} href="/contact">
               {pub("footerContact")}
             </Link>
+            <a
+              className={footerLinkClass}
+              href="https://www.mopd.gov.et"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              mopd.gov.et
+            </a>
           </nav>
 
           <nav aria-label={pub("footerPortalLinks")} className="flex flex-col gap-3">
