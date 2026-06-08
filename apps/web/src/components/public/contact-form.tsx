@@ -5,10 +5,12 @@ import { useTranslations } from "next-intl";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const FALLBACK_FORM_ID = "dummy";
+
 export function ContactForm() {
   const t = useTranslations("contactForm");
   const formId = process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID ?? "";
-  const [state, handleSubmit] = useForm(formId);
+  const [state, handleSubmit] = useForm(formId || FALLBACK_FORM_ID);
 
   if (!formId) {
     return (
