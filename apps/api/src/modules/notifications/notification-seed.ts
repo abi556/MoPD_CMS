@@ -165,4 +165,24 @@ export const NOTIFICATION_TEMPLATE_SEEDS: NotificationTemplateSeed[] = [
     bodyText:
       'ቅሬታው አልተረጋገጠም።\nአዲስ ቅሬታ ያስገቡ እና ማጣቀሻዎን ይጠብቁ፡\n{{newComplaintUrl}}',
   },
+  {
+    key: 'mfa_login_otp',
+    locale: 'en',
+    channel: 'email',
+    subject: 'Your MoPD login code',
+    bodyHtml: `<p>Your one-time login code is <strong>{{code}}</strong>.</p>
+<p>Expires in {{expiresInMinutes}} minutes. Do not share this code.</p>`,
+    bodyText:
+      'Your one-time login code is {{code}}.\nExpires in {{expiresInMinutes}} minutes. Do not share this code.',
+  },
+  {
+    key: 'mfa_login_otp',
+    locale: 'am',
+    channel: 'email',
+    subject: 'የ MoPD መግቢያ ኮድ',
+    bodyHtml: `<p>የአንድ ጊዜ መግቢያ ኮድዎ <strong>{{code}}</strong> ነው።</p>
+<p>በ {{expiresInMinutes}} ደቂቃዎች ውስጥ ያበቃል። ኮዱን ከሌላ ሰው ጋር አያጋሩ።</p>`,
+    bodyText:
+      'የአንድ ጊዜ መግቢያ ኮድዎ {{code}} ነው።\nበ {{expiresInMinutes}} ደቂቃዎች ውስጥ ያበቃል። ኮዱን ከሌላ ሰው ጋር አያጋሩ።',
+  },
 ];

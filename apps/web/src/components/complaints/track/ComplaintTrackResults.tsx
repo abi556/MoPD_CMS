@@ -1,7 +1,8 @@
 "use client";
 
-import { Check, Circle } from "lucide-react";
+import { Check, Circle, Mail } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EthiopianDate } from "@/components/ui/ethiopian-date";
@@ -9,6 +10,7 @@ import type { AppLocale } from "@/i18n/routing";
 import {
   getTimelineStepStates,
   resolveTimelineStepBody,
+  showsAppealGuidance,
   statusBadgeTone,
   TRACK_TIMELINE_STEPS,
   type ComplaintTrackResult,
@@ -28,9 +30,12 @@ export function ComplaintTrackResults({
   onSearchAnother,
 }: ComplaintTrackResultsProps) {
   const t = useTranslations("complaintTrack");
+  const tAppeal = useTranslations("complaintTrack.appealGuidance");
   const locale = useLocale() as AppLocale;
   const status = result.status as ComplaintTrackStatus;
   const stepStates = getTimelineStepStates(status);
+  const showAppeal = showsAppealGuidance(status);
+  const supportEmail = "support@mopd.gov.et";
 
   const statusLabel = (s: ComplaintTrackStatus) =>
     t(`status.${s}` as "status.SUBMITTED");
@@ -91,6 +96,43 @@ export function ComplaintTrackResults({
           </div>
         </div>
       </div>
+
+      {showAppeal ? (
+        <div
+          className={`rounded-none border border-primary/20 bg-brand-wash p-5 animate-fade-in-up [animation-delay:125ms] fill-mode-both ${
+            isSplit ? "mt-6" : "mx-6 md:mx-8"
+          }`}
+        >
+          <div className="flex gap-3">
+            <Mail
+              className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+              aria-hidden
+            />
+            <div>
+              <h3 className="font-label text-label font-semibold text-on-surface">
+                {tAppeal("title")}
+              </h3>
+              <p className="mt-2 font-body-sm text-body-sm leading-relaxed text-text-secondary">
+                {tAppeal("bodyBeforeEmail")}{" "}
+                <a
+                  href={`mailto:${supportEmail}`}
+                  className="font-medium text-primary underline-offset-2 hover:underline"
+                >
+                  {supportEmail}
+                </a>{" "}
+                {tAppeal("bodyBetween")}{" "}
+                <Link
+                  href="/contact"
+                  className="font-medium text-primary underline-offset-2 hover:underline"
+                >
+                  {tAppeal("contactLink")}
+                </Link>
+                {tAppeal("bodyAfter")}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className={isSplit ? "mt-6 animate-fade-in-up [animation-delay:150ms] fill-mode-both" : "p-6 md:p-8 animate-fade-in-up [animation-delay:150ms] fill-mode-both"}>
         <h3 className="mb-6 font-h3 text-h3 text-on-surface font-semibold tracking-tight">

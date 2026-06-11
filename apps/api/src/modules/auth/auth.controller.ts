@@ -1,10 +1,13 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Req,
   Res,
@@ -29,14 +32,26 @@ import {
   MeResponseDto,
   RefreshResponseDto,
 } from './dto/auth-response.dto';
+import {
+  MfaEnrollmentResponseDto,
+  MfaStatusResponseDto,
+  MfaVerifyResponseDto,
+} from './dto/mfa-response.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MfaConfirmDto } from './dto/mfa-confirm.dto';
+import { MfaVerifyDto } from './dto/mfa-verify.dto';
+import { MfaDisableDto } from './dto/mfa-disable.dto';
+import { MfaMethodDto } from './dto/mfa-method.dto';
 import type { JwtUser } from './interfaces/jwt-user.interface';
 import { AuthService } from './auth.service';
 import type { PublicTokenPair } from './auth.service';
+import { MfaService } from './mfa.service';
+import type { MfaEnrollmentResult } from './mfa.service';
 
 function getRefreshCookieName(): string {
   return process.env.AUTH_REFRESH_COOKIE_NAME || 'refresh_token';
@@ -88,7 +103,10 @@ export class AuthController {
   private readonly csrfTrustedOrigins = getCsrfTrustedOrigins();
   private readonly enforceCsrfOriginCheck = shouldEnforceCsrfOriginCheck();
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mfaService: MfaService,
+  ) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -109,10 +127,13 @@ export class AuthController {
     @Body() body: LoginDto,
   ): Promise<{
     data: {
-      user: JwtUser;
-      accessToken: string;
-      tokenType: 'Bearer';
-      expiresIn: number;
+      user?: JwtUser;
+      accessToken?: string;
+      tokenType?: 'Bearer';
+      expiresIn?: number;
+      mustChangePassword: boolean;
+      mfaRequired: boolean;
+      mfaToken?: string;
     };
   }> {
     const loginResult = await this.authService.issueLoginTokens(
@@ -120,11 +141,25 @@ export class AuthController {
       body.password,
       request.correlationId,
     );
+
+    if (loginResult.mfaRequired) {
+      const mfaToken = await this.authService.issueMfaToken(loginResult.user);
+      return {
+        data: {
+          mustChangePassword: loginResult.mustChangePassword,
+          mfaRequired: true,
+          mfaToken,
+        },
+      };
+    }
+
     this.setRefreshCookie(response, loginResult.refreshToken);
     return {
       data: {
         ...loginResult.tokenPair,
         user: loginResult.user,
+        mustChangePassword: loginResult.mustChangePassword,
+        mfaRequired: false,
       },
     };
   }
@@ -198,6 +233,29 @@ export class AuthController {
     };
   }
 
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change password while logged in' })
+  @ApiOkResponse({ description: 'Password changed successfully.' })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  async changePassword(
+    @CurrentUser() user: JwtUser,
+    @Req() request: RequestWithCorrelationId,
+    @Body() body: ChangePasswordDto,
+  ): Promise<{ data: { message: string } }> {
+    await this.authService.changePassword(
+      user.id,
+      body.currentPassword,
+      body.newPassword,
+      request.correlationId,
+    );
+    return {
+      data: { message: 'Password changed successfully.' },
+    };
+  }
+
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -244,7 +302,13 @@ export class AuthController {
   @Get('mfa/status')
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'MFA enrollment status hook (enforcement off until TOTP ships)',
+    summary: 'MFA enrollment status and org policy',
+    description:
+      'Returns whether the user has enrolled TOTP MFA and whether MFA is optional or required (AUTH_MFA_REQUIRED).',
+  })
+  @ApiOkResponse({
+    description: 'MFA enrollment and policy status.',
+    type: MfaStatusResponseDto,
   })
   async mfaStatus(@CurrentUser() user: JwtUser): Promise<{
     data: {
@@ -255,6 +319,166 @@ export class AuthController {
   }> {
     const status = await this.authService.describeMfaStatus(user.id);
     return { data: status };
+  }
+
+  @Post('mfa/enroll')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Start TOTP MFA enrollment (returns QR code + backup codes)' })
+  @ApiOkResponse({
+    description: 'Enrollment payload with QR code, secret, and one-time backup codes.',
+    type: MfaEnrollmentResponseDto,
+  })
+  async mfaEnroll(
+    @CurrentUser() user: JwtUser,
+  ): Promise<{ data: MfaEnrollmentResult }> {
+    const result = await this.mfaService.generateEnrollment(user.id, user.email);
+    return { data: result };
+  }
+
+  @Post('mfa/confirm')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirm TOTP enrollment with 6-digit code' })
+  async mfaConfirm(
+    @CurrentUser() user: JwtUser,
+    @Req() request: RequestWithCorrelationId,
+    @Body() body: MfaConfirmDto,
+  ): Promise<{ data: { message: string } }> {
+    const confirmed = await this.mfaService.confirmEnrollment(
+      user.id,
+      body.code,
+    );
+    if (!confirmed) {
+      await this.authService.auditMfaEvent(
+        'enroll_failed',
+        user.id,
+        request.correlationId,
+      );
+      throw new BadRequestException('Invalid TOTP code');
+    }
+    await this.authService.auditMfaEvent(
+      'enrolled',
+      user.id,
+      request.correlationId,
+    );
+    return { data: { message: 'MFA enrollment confirmed.' } };
+  }
+
+  @Post('mfa/verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Verify MFA code during login challenge and issue real tokens',
+    description:
+      'Send the mfaToken from POST /auth/login as Authorization: Bearer <mfaToken>. Body: TOTP code or backupCode.',
+  })
+  @ApiOkResponse({
+    description: 'MFA verified; issues access token and sets refresh_token cookie.',
+    type: MfaVerifyResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid or expired mfaToken, or wrong MFA code.',
+    type: ErrorResponseDto,
+  })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  async mfaVerify(
+    @Req() request: RequestWithCorrelationId & { headers: { authorization?: string } },
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: MfaVerifyDto,
+  ): Promise<{
+    data: {
+      user: JwtUser;
+      accessToken: string;
+      tokenType: 'Bearer';
+      expiresIn: number;
+      mustChangePassword: boolean;
+    };
+  }> {
+    if (!body.code && !body.backupCode) {
+      throw new BadRequestException('Provide either code or backupCode');
+    }
+
+    const authHeader = request.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new UnauthorizedException('MFA token is required');
+    }
+    const mfaToken = authHeader.slice(7);
+
+    const result = await this.authService.verifyMfaTokenAndIssueTokens(
+      mfaToken,
+      body.code,
+      body.backupCode,
+    );
+
+    await this.authService.auditMfaEvent(
+      'verified',
+      result.user.id,
+      request.correlationId,
+    );
+
+    this.setRefreshCookie(response, result.refreshToken);
+    return {
+      data: {
+        ...result.tokenPair,
+        user: result.user,
+        mustChangePassword: result.mustChangePassword,
+      },
+    };
+  }
+
+  @Patch('mfa/method')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Switch MFA method (requires re-verification)' })
+  async mfaMethodSwitch(
+    @CurrentUser() user: JwtUser,
+    @Req() request: RequestWithCorrelationId,
+    @Body() body: MfaMethodDto,
+  ): Promise<{ data: { message: string } }> {
+    const policy = this.mfaService.isRequiredForRole(user.roles);
+    if (policy.totpOnly && body.method === 'email') {
+      throw new ForbiddenException(
+        'SuperAdmin/SystemAdmin cannot downgrade to email MFA',
+      );
+    }
+    await this.mfaService.updateMfaMethod(user.id, body.method);
+    await this.authService.auditMfaEvent(
+      'method_changed',
+      user.id,
+      request.correlationId,
+      { newMethod: body.method },
+    );
+    return { data: { message: `MFA method switched to ${body.method}.` } };
+  }
+
+  @Delete('mfa')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Disable MFA (requires password re-entry; blocked for elevated roles)' })
+  async mfaDisable(
+    @CurrentUser() user: JwtUser,
+    @Req() request: RequestWithCorrelationId,
+    @Body() body: MfaDisableDto,
+  ): Promise<{ data: { message: string } }> {
+    const policy = this.mfaService.isRequiredForRole(user.roles);
+    if (policy.required && policy.totpOnly) {
+      throw new ForbiddenException(
+        'MFA cannot be disabled for SuperAdmin/SystemAdmin roles',
+      );
+    }
+    await this.authService.verifyUserPassword(user.id, body.password);
+    await this.mfaService.disableMfa(user.id);
+    await this.authService.auditMfaEvent(
+      'disabled',
+      user.id,
+      request.correlationId,
+    );
+    return { data: { message: 'MFA has been disabled.' } };
   }
 
   @UseGuards(JwtAuthGuard)

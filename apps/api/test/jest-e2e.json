@@ -10,5 +10,9 @@
   },
   "moduleNameMapper": {
     "^src/(.*)$": "<rootDir>/../src/$1"
-  }
+  },
+  "transformIgnorePatterns": [
+    "node_modules/.pnpm/(?!(@scure|@noble|@otplib|otplib))",
+    "node_modules/(?!(.pnpm|@scure|@noble|@otplib|otplib))"
+  ]
 }

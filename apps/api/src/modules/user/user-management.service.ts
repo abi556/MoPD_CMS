@@ -135,6 +135,7 @@ export class UserManagementService {
         id: randomUUID(),
         email: input.email,
         passwordHash: bcrypt.hashSync(input.password, getBcryptCostFactor()),
+        mustChangePassword: true,
         isActive: true,
       },
     });

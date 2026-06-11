@@ -22,6 +22,10 @@ import { JwtPayload, JwtUser } from './interfaces/jwt-user.interface';
 import { LoginAttemptService } from './login-attempt.service';
 import { MfaService } from './mfa.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import {
+  isStrongPassword,
+  PASSWORD_POLICY_MESSAGE,
+} from '../../common/validators/password-policy';
 
 export interface TokenPair {
   accessToken: string;
@@ -32,6 +36,8 @@ export interface TokenPair {
 
 export interface AuthLoginResult extends TokenPair {
   user: JwtUser;
+  mustChangePassword: boolean;
+  mfaRequired: boolean;
 }
 
 interface IssuedTokens extends TokenPair {
@@ -157,6 +163,8 @@ export class AuthService implements OnModuleInit {
       tokenType: bundle.tokenPair.tokenType,
       expiresIn: bundle.tokenPair.expiresIn,
       user: bundle.user,
+      mustChangePassword: bundle.mustChangePassword,
+      mfaRequired: bundle.mfaRequired,
     };
   }
 
@@ -411,6 +419,8 @@ export class AuthService implements OnModuleInit {
     user: JwtUser;
     tokenPair: PublicTokenPair;
     refreshToken: string;
+    mustChangePassword: boolean;
+    mfaRequired: boolean;
   }> {
     const normEmail = this.loginAttemptService.normalizeEmail(email);
     await this.loginAttemptService.ensureEmailNotLockedAsync(normEmail);
@@ -449,6 +459,8 @@ export class AuthService implements OnModuleInit {
       user: authUser,
       tokenPair: this.toPublicTokenPair(issuedTokens),
       refreshToken: issuedTokens.refreshToken,
+      mustChangePassword: user.mustChangePassword,
+      mfaRequired: user.mfaEnabled,
     };
   }
 
@@ -574,6 +586,142 @@ export class AuthService implements OnModuleInit {
     };
   }
 
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    correlationId?: string,
+  ): Promise<void> {
+    const user = await this.userService.findActiveById(userId);
+    if (!user) {
+      throw new UnauthorizedException('Invalid user');
+    }
+
+    if (!this.verifyPassword(currentPassword, user.passwordHash)) {
+      await this.auditService.logEvent({
+        eventType: AUDIT_EVENT.AUTH_PASSWORD_CHANGE_FAILED,
+        actorUserId: userId,
+        correlationId,
+        metadata: { reason: 'invalid_current_password' },
+      });
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        'New password must differ from current password',
+      );
+    }
+
+    this.assertStrongNewPassword(newPassword);
+
+    const hash = bcrypt.hashSync(newPassword, getBcryptCostFactor());
+    await this.userService.changePasswordWithVersionBump(userId, hash);
+    await this.auditService.logEvent({
+      eventType: AUDIT_EVENT.AUTH_PASSWORD_CHANGE_COMPLETED,
+      actorUserId: userId,
+      correlationId,
+    });
+  }
+
+  async issueMfaToken(user: JwtUser): Promise<string> {
+    return this.jwtService.signAsync(
+      { sub: user.id, email: user.email, type: 'mfa' },
+      { expiresIn: '5m' },
+    );
+  }
+
+  async verifyMfaTokenAndIssueTokens(
+    mfaToken: string,
+    code: string | undefined,
+    backupCode: string | undefined,
+  ): Promise<{
+    user: JwtUser;
+    tokenPair: PublicTokenPair;
+    refreshToken: string;
+    mustChangePassword: boolean;
+  }> {
+    let payload: { sub: string; email: string; type: string };
+    try {
+      payload = await this.jwtService.verifyAsync<{
+        sub: string;
+        email: string;
+        type: string;
+      }>(mfaToken);
+    } catch {
+      throw new UnauthorizedException('Invalid or expired MFA token');
+    }
+
+    if (payload.type !== 'mfa') {
+      throw new UnauthorizedException('Invalid MFA token type');
+    }
+
+    let verified = false;
+    if (code) {
+      verified = await this.mfaService.verifyTotp(payload.sub, code);
+    } else if (backupCode) {
+      verified = await this.mfaService.verifyBackupCode(
+        payload.sub,
+        backupCode,
+      );
+    }
+
+    if (!verified) {
+      throw new UnauthorizedException('Invalid MFA code');
+    }
+
+    const user = await this.userService.findActiveById(payload.sub);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const authUser = this.toAuthUser(user.id, user.email, user.userRoles);
+    const issuedTokens = await this.issueTokenPair(
+      authUser,
+      user.passwordVersion,
+    );
+
+    return {
+      user: authUser,
+      tokenPair: this.toPublicTokenPair(issuedTokens),
+      refreshToken: issuedTokens.refreshToken,
+      mustChangePassword: user.mustChangePassword,
+    };
+  }
+
+  async verifyUserPassword(userId: string, password: string): Promise<void> {
+    const user = await this.userService.findActiveById(userId);
+    if (!user) {
+      throw new UnauthorizedException('Invalid user');
+    }
+    if (!this.verifyPassword(password, user.passwordHash)) {
+      throw new UnauthorizedException('Password is incorrect');
+    }
+  }
+
+  async auditMfaEvent(
+    action: 'enrolled' | 'enroll_failed' | 'verified' | 'verify_failed' | 'disabled' | 'method_changed',
+    userId: string,
+    correlationId?: string,
+    metadata?: Record<string, string | number | boolean | null>,
+  ): Promise<void> {
+    const eventMap = {
+      enrolled: AUDIT_EVENT.AUTH_MFA_ENROLLED,
+      enroll_failed: AUDIT_EVENT.AUTH_MFA_ENROLL_FAILED,
+      verified: AUDIT_EVENT.AUTH_MFA_VERIFIED,
+      verify_failed: AUDIT_EVENT.AUTH_MFA_VERIFY_FAILED,
+      disabled: AUDIT_EVENT.AUTH_MFA_DISABLED,
+      method_changed: AUDIT_EVENT.AUTH_MFA_METHOD_CHANGED,
+    } as const;
+
+    await this.auditService.logEvent({
+      eventType: eventMap[action],
+      actorUserId: userId,
+      correlationId,
+      metadata,
+    });
+  }
+
   /** SDS-aligned stub: issues a reset token stored in Redis (or memory in tests). */
   async requestPasswordReset(
     email: string,
@@ -636,6 +784,8 @@ export class AuthService implements OnModuleInit {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
+    this.assertStrongNewPassword(newPassword);
+
     const hash = bcrypt.hashSync(newPassword, getBcryptCostFactor());
     await this.userService.resetPasswordWithVersionBump(userId, hash);
     await this.loginAttemptService.clearFailures(user.email);
@@ -682,5 +832,11 @@ export class AuthService implements OnModuleInit {
       await this.redis.del(key);
     }
     return userId;
+  }
+
+  private assertStrongNewPassword(password: string): void {
+    if (!isStrongPassword(password)) {
+      throw new BadRequestException(PASSWORD_POLICY_MESSAGE);
+    }
   }
 }

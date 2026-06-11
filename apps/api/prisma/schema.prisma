@@ -217,16 +217,20 @@ model CaseTask {
 }
 
 model User {
-  id              String     @id @default(uuid())
-  email           String     @unique
-  passwordHash    String
-  passwordVersion Int        @default(0)
-  mfaEnabled      Boolean    @default(false)
-  isActive        Boolean    @default(true)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  userRoles       UserRole[]
-  documents       Document[]
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  passwordHash       String
+  passwordVersion    Int        @default(0)
+  mustChangePassword Boolean    @default(false)
+  mfaEnabled         Boolean    @default(false)
+  mfaMethod          String?
+  totpSecret         String?
+  totpVerifiedAt     DateTime?
+  isActive           Boolean    @default(true)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  userRoles          UserRole[]
+  documents          Document[]
 }
 
 model Document {

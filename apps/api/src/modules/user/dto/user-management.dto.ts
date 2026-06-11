@@ -12,6 +12,8 @@ import {
   MinLength,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { IsStrongPassword } from '../../../common/validators/is-strong-password.decorator';
+import { PASSWORD_MIN_LENGTH } from '../../../common/validators/password-policy';
 
 export class ListUsersQueryDto {
   @ApiPropertyOptional({ example: 1 })
@@ -45,9 +47,15 @@ export class CreateUserDto {
   @IsEmail()
   email!: string;
 
-  @ApiProperty({ example: 'StrongPass123!' })
+  @ApiProperty({
+    example: 'StrongPass123!',
+    minLength: PASSWORD_MIN_LENGTH,
+    description:
+      'Initial password: min 12 chars with uppercase, lowercase, number, and special character.',
+  })
   @IsString()
-  @MinLength(8)
+  @MinLength(PASSWORD_MIN_LENGTH)
+  @IsStrongPassword()
   password!: string;
 
   @ApiProperty({ example: ['role-case-officer'], type: [String] })

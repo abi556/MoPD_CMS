@@ -13,7 +13,11 @@ interface AuthUserWithRoles {
   isActive: boolean;
   passwordHash: string;
   passwordVersion: number;
+  mustChangePassword: boolean;
   mfaEnabled: boolean;
+  mfaMethod: string | null;
+  totpSecret: string | null;
+  totpVerifiedAt: Date | null;
   userRoles: Array<{
     role: {
       name: string;
@@ -59,6 +63,7 @@ interface UserDbGateway {
         id: string;
         email: string;
         passwordHash: string;
+        mustChangePassword?: boolean;
         isActive: boolean;
       };
       update: {
@@ -90,7 +95,11 @@ interface UserDbGateway {
       data: {
         passwordHash?: string;
         passwordVersion?: { increment: number };
+        mustChangePassword?: boolean;
         mfaEnabled?: boolean;
+        mfaMethod?: string | null;
+        totpSecret?: string | null;
+        totpVerifiedAt?: Date | null;
       };
     }): Promise<unknown>;
   };
@@ -329,6 +338,7 @@ export class UserService {
           id: seedUser.id,
           email: seedUser.email,
           passwordHash: this.createPasswordHash(seedUser.password),
+          mustChangePassword: true,
           isActive: true,
         },
         update: {
@@ -426,6 +436,47 @@ export class UserService {
       data: {
         passwordHash,
         passwordVersion: { increment: 1 },
+      },
+    });
+  }
+
+  async changePasswordWithVersionBump(
+    userId: string,
+    passwordHash: string,
+  ): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        passwordVersion: { increment: 1 },
+        mustChangePassword: false,
+      },
+    });
+  }
+
+  async setMfaEnrollment(
+    userId: string,
+    data: {
+      mfaEnabled: boolean;
+      mfaMethod: string | null;
+      totpSecret: string | null;
+      totpVerifiedAt: Date | null;
+    },
+  ): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data,
+    });
+  }
+
+  async clearMfaEnrollment(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        mfaEnabled: false,
+        mfaMethod: null,
+        totpSecret: null,
+        totpVerifiedAt: null,
       },
     });
   }

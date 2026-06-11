@@ -21,6 +21,9 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
   - `data: []`
   - `meta: { page, pageSize, total, totalPages }` or cursor meta for audit
 - **Validation:** global `ValidationPipe` with whitelist/forbidNonWhitelisted
+- **Staff password policy** (change password, reset password, admin user create):
+  - Minimum **12** characters
+  - At least one uppercase letter, one lowercase letter, one digit, and one special character
 - **Rate limiting:** per-route `@Throttle` decorators
 - **Permissions:** enforced by `JwtAuthGuard + PermissionsGuard` and `@Permissions(...)`
 
@@ -51,10 +54,12 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 - **Body:** `{ email, password }`
   - `email` must be valid email
   - `password` min length `8`
-- **Response:** `{ data: { user, accessToken, tokenType: "Bearer", expiresIn } }`
+- **Response (no MFA):** `{ data: { user, accessToken, tokenType: "Bearer", expiresIn, mustChangePassword, mfaRequired: false } }`
   - `user: { id, email, roles[], permissions[] }`
+- **Response (MFA required):** `{ data: { mustChangePassword, mfaRequired: true, mfaToken } }`
+  - No `accessToken` or `user` — client must call `POST /auth/mfa/verify` with the `mfaToken`
 - **Errors:** `401`
-- **Side effect:** sets `refresh_token` cookie
+- **Side effect:** sets `refresh_token` cookie (only when MFA is not required)
 
 ### POST `/auth/refresh`
 - **Auth:** Cookie (`refresh_token`)
@@ -79,14 +84,57 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 ### POST `/auth/reset-password`
 - **Auth:** Public
 - **Body:** `{ token, newPassword }`
-  - `newPassword` min length `8`
+  - `newPassword` min length `12`; must include uppercase, lowercase, digit, and special character
 - **Response:** success message
 - **Errors:** validation/domain failures (`422`)
+
+### POST `/auth/change-password`
+- **Auth:** Bearer
+- **Body:** `{ currentPassword, newPassword }`
+  - `currentPassword` min length `8`
+  - `newPassword` min length `12`; must include uppercase, lowercase, digit, and special character
+- **Response:** `{ data: { message } }`
+- **Errors:** `401` (wrong current password), `422` (same as current)
+- **Rate limit:** 10 req/min
+- **Notes:** Bumps `passwordVersion` (invalidates all existing sessions). Clears `mustChangePassword` flag.
 
 ### GET `/auth/mfa/status`
 - **Auth:** Bearer
 - **Body:** none
 - **Response:** `{ data: { enrolled, provider: "totp", policy: "optional" | "required" } }`
+
+### POST `/auth/mfa/enroll`
+- **Auth:** Bearer
+- **Response:** `{ data: { qrCodeDataUrl, secret, backupCodes[] } }`
+- **Notes:** Returns QR code data URL for authenticator app and 10 one-time backup codes.
+
+### POST `/auth/mfa/confirm`
+- **Auth:** Bearer
+- **Body:** `{ code }` — 6-digit TOTP code from authenticator app
+- **Response:** `{ data: { message } }`
+- **Errors:** `422` (invalid code)
+- **Notes:** Confirms TOTP enrollment. Sets `mfaEnabled: true`, `mfaMethod: "totp"`.
+
+### POST `/auth/mfa/verify`
+- **Auth:** Bearer (mfaToken from login response)
+- **Body:** `{ code }` or `{ backupCode }`
+- **Response:** `{ data: { user, accessToken, tokenType: "Bearer", expiresIn, mustChangePassword } }`
+- **Errors:** `401` (invalid/expired mfaToken or wrong code)
+- **Side effect:** sets `refresh_token` cookie
+- **Notes:** Completes MFA login challenge. Issues real JWT + refresh token.
+
+### PATCH `/auth/mfa/method`
+- **Auth:** Bearer
+- **Body:** `{ method: "totp" | "email" }`
+- **Response:** `{ data: { message } }`
+- **Errors:** `403` (SuperAdmin/SystemAdmin cannot downgrade to email)
+
+### DELETE `/auth/mfa`
+- **Auth:** Bearer
+- **Body:** `{ password }` — current password for re-verification
+- **Response:** `{ data: { message } }`
+- **Errors:** `401` (wrong password), `403` (blocked for elevated roles)
+- **Notes:** Disables MFA. SuperAdmin/SystemAdmin cannot disable MFA.
 
 ### GET `/auth/me`
 - **Auth:** Bearer
@@ -211,6 +259,13 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 ### GET `/complaints/recovery/inquiries` (staff)
 - **Permission:** `complaint:recovery:manage`
 - **Query:** `status?` (`PENDING|IN_REVIEW|RESOLVED|REJECTED`)
+
+### GET `/complaints/recovery/inquiries/:id/candidates` (staff)
+- **Permission:** `complaint:recovery:manage`
+- **Response:** `{ data: RecoveryInquiryCandidateDto[] }`
+  - `RecoveryInquiryCandidateDto`: `{ id, referenceNo, subject, submittedAt, status, complainantEmail? }`
+- **Purpose:** Pre-filtered complaint search for a recovery inquiry (subject fragment, optional ±3 day date window, category, org unit)
+- **Errors:** `404` (unknown inquiry)
 
 ### PATCH `/complaints/recovery/inquiries/:id` (staff)
 - **Permission:** `complaint:recovery:manage`

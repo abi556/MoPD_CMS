@@ -60,7 +60,11 @@ interface StoredUser {
   email: string;
   passwordHash: string;
   passwordVersion: number;
+  mustChangePassword: boolean;
   mfaEnabled: boolean;
+  mfaMethod: string | null;
+  totpSecret: string | null;
+  totpVerifiedAt: Date | null;
   isActive: boolean;
 }
 
@@ -562,14 +566,18 @@ export function createPrismaMock(): PrismaService {
   }): Promise<StoredUser> => {
     const existing = userStore.get(args.where.id);
     const create = args.create as StoredUser &
-      Partial<Pick<StoredUser, 'passwordVersion' | 'mfaEnabled'>>;
+      Partial<Pick<StoredUser, 'passwordVersion' | 'mustChangePassword' | 'mfaEnabled' | 'mfaMethod' | 'totpSecret' | 'totpVerifiedAt'>>;
     const baseCreate: StoredUser = {
       id: create.id,
       email: create.email,
       passwordHash: create.passwordHash,
       isActive: create.isActive,
       passwordVersion: create.passwordVersion ?? 0,
+      mustChangePassword: create.mustChangePassword ?? false,
       mfaEnabled: create.mfaEnabled ?? false,
+      mfaMethod: create.mfaMethod ?? null,
+      totpSecret: create.totpSecret ?? null,
+      totpVerifiedAt: create.totpVerifiedAt ?? null,
     };
     const next: StoredUser = existing
       ? { ...existing, ...args.update }

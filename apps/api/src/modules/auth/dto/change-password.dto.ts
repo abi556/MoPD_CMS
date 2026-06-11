@@ -3,16 +3,18 @@ import { IsString, MinLength } from 'class-validator';
 import { IsStrongPassword } from '../../../common/validators/is-strong-password.decorator';
 import { PASSWORD_MIN_LENGTH } from '../../../common/validators/password-policy';
 
-export class ResetPasswordDto {
+export class ChangePasswordDto {
   @ApiProperty({
-    description:
-      'Plain reset token from the password reset flow (email or dev channel).',
+    example: 'OldPass123!',
+    minLength: 8,
+    description: 'Current password for verification.',
   })
   @IsString()
-  token!: string;
+  @MinLength(8)
+  currentPassword!: string;
 
   @ApiProperty({
-    example: 'NewSecurePass123!',
+    example: 'NewStrongPass456!',
     minLength: PASSWORD_MIN_LENGTH,
     description:
       'New password: min 12 chars with uppercase, lowercase, number, and special character.',

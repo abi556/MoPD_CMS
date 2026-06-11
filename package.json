@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "postinstall": "pnpm --filter @mopd-cms/api prisma:generate",
-    "docker:infra": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker up -d",
+    "docker:infra": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker up -d --wait",
     "docker:infra:down": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker down",
     "docker:app": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker --profile app up -d --build",
     "docker:app:down": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker --profile app down",

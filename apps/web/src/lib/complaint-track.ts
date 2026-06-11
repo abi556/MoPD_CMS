@@ -133,3 +133,12 @@ export function statusBadgeTone(
   }
   return "neutral";
 }
+
+const APPEAL_GUIDANCE_STATUSES: ComplaintTrackStatus[] = [
+  "RESPONSE_ISSUED",
+  "CLOSED",
+];
+
+export function showsAppealGuidance(status: ComplaintTrackStatus): boolean {
+  return APPEAL_GUIDANCE_STATUSES.includes(status);
+}

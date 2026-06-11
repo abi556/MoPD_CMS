@@ -15,10 +15,13 @@ export interface AuthUserResponse {
 
 export interface LoginResponse {
   data: {
-    accessToken: string;
-    tokenType: 'Bearer';
-    expiresIn: number;
-    user: AuthUserResponse;
+    accessToken?: string;
+    tokenType?: 'Bearer';
+    expiresIn?: number;
+    user?: AuthUserResponse;
+    mustChangePassword: boolean;
+    mfaRequired: boolean;
+    mfaToken?: string;
   };
 }
 

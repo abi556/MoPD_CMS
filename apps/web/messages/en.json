@@ -405,6 +405,13 @@
       "APPEAL": "Appeal",
       "CLOSED": "Closed"
     },
+    "appealGuidance": {
+      "title": "Disagree with the outcome?",
+      "bodyBeforeEmail": "If you wish to appeal or request further review, email",
+      "bodyBetween": "or",
+      "contactLink": "contact us through our contact page",
+      "bodyAfter": "."
+    },
     "errors": {
       "title": "Unable to load tracking",
       "referenceAttempted": "Reference searched: {reference}",
@@ -499,6 +506,28 @@
     "errors": {
       "loadFailed": "Could not load inquiries."
     }
+  },
+  "chatbot": {
+    "name": "Melhiq",
+    "nameAmharic": "መልህቅ",
+    "tagline": "Your MoPD guide — clear answers, official sources",
+    "statusOnline": "Online · bilingual help",
+    "openLabel": "Open Melhiq, the MoPD assistant",
+    "closeLabel": "Close chat",
+    "languageSwitched": "I've switched to English. How can I help you?",
+    "welcome": "Hi, I'm Melhiq (መልህቅ) — I help with complaints, MoPD services, and related public information. Pick a topic below or type your question.",
+    "stubReply": "Thanks for your question. Full AI answers are coming soon. For now, try the quick links below, visit our FAQ, or contact MoPD directly.",
+    "typing": "Melhiq is typing",
+    "inputLabel": "Message to Melhiq",
+    "inputPlaceholder": "Ask about complaints, MoPD, or public services…",
+    "sendLabel": "Send message",
+    "disclaimer": "Melhiq gives general guidance only — not legal advice. Confirm important details with an official source. Do not share passwords or sensitive personal data.",
+    "quickSubmit": "Submit complaint",
+    "quickTrack": "Track status",
+    "quickRecover": "Recover reference",
+    "quickFaq": "Read FAQ",
+    "quickHours": "Office hours",
+    "promptHours": "What are MoPD office hours?"
   },
   "contactForm": {
     "title": "Send us a message",
