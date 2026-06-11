@@ -700,7 +700,13 @@ export class AuthService implements OnModuleInit {
   }
 
   async auditMfaEvent(
-    action: 'enrolled' | 'enroll_failed' | 'verified' | 'verify_failed' | 'disabled' | 'method_changed',
+    action:
+      | 'enrolled'
+      | 'enroll_failed'
+      | 'verified'
+      | 'verify_failed'
+      | 'disabled'
+      | 'method_changed',
     userId: string,
     correlationId?: string,
     metadata?: Record<string, string | number | boolean | null>,

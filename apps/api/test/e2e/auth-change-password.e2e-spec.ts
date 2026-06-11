@@ -2,11 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import type { LoginResponse, ErrorEnvelope } from './helpers/types';
-import {
-  asSupertestApp,
-  createTestApp,
-  getBody,
-} from './helpers/test-context';
+import { asSupertestApp, createTestApp, getBody } from './helpers/test-context';
 
 describe('Auth Change-Password (e2e)', () => {
   let app: INestApplication<Server>;
@@ -27,7 +23,10 @@ describe('Auth Change-Password (e2e)', () => {
   it('rejects change-password without auth', async () => {
     await request(asSupertestApp(app))
       .post('/api/v1/auth/change-password')
-      .send({ currentPassword: 'AdminPass123!', newPassword: 'NewStrongPass456!' })
+      .send({
+        currentPassword: 'AdminPass123!',
+        newPassword: 'NewStrongPass456!',
+      })
       .expect(401);
   });
 
@@ -36,7 +35,10 @@ describe('Auth Change-Password (e2e)', () => {
     const res = await request(asSupertestApp(app))
       .post('/api/v1/auth/change-password')
       .set('Authorization', `Bearer ${token}`)
-      .send({ currentPassword: 'WrongPass000!', newPassword: 'NewStrongPass456!' })
+      .send({
+        currentPassword: 'WrongPass000!',
+        newPassword: 'NewStrongPass456!',
+      })
       .expect(401);
     const body = getBody<ErrorEnvelope>(res);
     expect(body.error.message).toContain('incorrect');
@@ -67,7 +69,10 @@ describe('Auth Change-Password (e2e)', () => {
     await request(asSupertestApp(app))
       .post('/api/v1/auth/change-password')
       .set('Authorization', `Bearer ${token}`)
-      .send({ currentPassword: 'AdminPass123!', newPassword: 'BrandNewPass456!' })
+      .send({
+        currentPassword: 'AdminPass123!',
+        newPassword: 'BrandNewPass456!',
+      })
       .expect(200);
   });
 

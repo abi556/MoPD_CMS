@@ -325,15 +325,21 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Start TOTP MFA enrollment (returns QR code + backup codes)' })
+  @ApiOperation({
+    summary: 'Start TOTP MFA enrollment (returns QR code + backup codes)',
+  })
   @ApiOkResponse({
-    description: 'Enrollment payload with QR code, secret, and one-time backup codes.',
+    description:
+      'Enrollment payload with QR code, secret, and one-time backup codes.',
     type: MfaEnrollmentResponseDto,
   })
   async mfaEnroll(
     @CurrentUser() user: JwtUser,
   ): Promise<{ data: MfaEnrollmentResult }> {
-    const result = await this.mfaService.generateEnrollment(user.id, user.email);
+    const result = await this.mfaService.generateEnrollment(
+      user.id,
+      user.email,
+    );
     return { data: result };
   }
 
@@ -376,7 +382,8 @@ export class AuthController {
       'Send the mfaToken from POST /auth/login as Authorization: Bearer <mfaToken>. Body: TOTP code or backupCode.',
   })
   @ApiOkResponse({
-    description: 'MFA verified; issues access token and sets refresh_token cookie.',
+    description:
+      'MFA verified; issues access token and sets refresh_token cookie.',
     type: MfaVerifyResponseDto,
   })
   @ApiUnauthorizedResponse({
@@ -385,7 +392,8 @@ export class AuthController {
   })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   async mfaVerify(
-    @Req() request: RequestWithCorrelationId & { headers: { authorization?: string } },
+    @Req()
+    request: RequestWithCorrelationId & { headers: { authorization?: string } },
     @Res({ passthrough: true }) response: Response,
     @Body() body: MfaVerifyDto,
   ): Promise<{
@@ -459,7 +467,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Disable MFA (requires password re-entry; blocked for elevated roles)' })
+  @ApiOperation({
+    summary:
+      'Disable MFA (requires password re-entry; blocked for elevated roles)',
+  })
   async mfaDisable(
     @CurrentUser() user: JwtUser,
     @Req() request: RequestWithCorrelationId,

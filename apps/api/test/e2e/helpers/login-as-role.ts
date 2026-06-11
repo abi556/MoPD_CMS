@@ -55,7 +55,9 @@ export async function loginAsRole(
     .expect(200);
   const body = getBody<LoginResponse>(response);
   if (!body.data.accessToken) {
-    throw new Error(`Login returned no accessToken for role ${role} — MFA may be required`);
+    throw new Error(
+      `Login returned no accessToken for role ${role} — MFA may be required`,
+    );
   }
   return body.data.accessToken;
 }

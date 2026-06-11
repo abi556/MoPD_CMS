@@ -1,12 +1,5 @@
-import {
-  registerDecorator,
-  type ValidationArguments,
-  type ValidationOptions,
-} from 'class-validator';
-import {
-  isStrongPassword,
-  PASSWORD_POLICY_MESSAGE,
-} from './password-policy';
+import { registerDecorator, type ValidationOptions } from 'class-validator';
+import { isStrongPassword, PASSWORD_POLICY_MESSAGE } from './password-policy';
 
 export function IsStrongPassword(
   validationOptions?: ValidationOptions,
@@ -24,7 +17,7 @@ export function IsStrongPassword(
         validate(value: unknown): boolean {
           return typeof value === 'string' && isStrongPassword(value);
         },
-        defaultMessage(args: ValidationArguments): string {
+        defaultMessage(): string {
           return (
             (typeof validationOptions?.message === 'string'
               ? validationOptions.message

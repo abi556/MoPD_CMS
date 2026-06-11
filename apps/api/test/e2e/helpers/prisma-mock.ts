@@ -566,7 +566,17 @@ export function createPrismaMock(): PrismaService {
   }): Promise<StoredUser> => {
     const existing = userStore.get(args.where.id);
     const create = args.create as StoredUser &
-      Partial<Pick<StoredUser, 'passwordVersion' | 'mustChangePassword' | 'mfaEnabled' | 'mfaMethod' | 'totpSecret' | 'totpVerifiedAt'>>;
+      Partial<
+        Pick<
+          StoredUser,
+          | 'passwordVersion'
+          | 'mustChangePassword'
+          | 'mfaEnabled'
+          | 'mfaMethod'
+          | 'totpSecret'
+          | 'totpVerifiedAt'
+        >
+      >;
     const baseCreate: StoredUser = {
       id: create.id,
       email: create.email,

@@ -2,11 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import type { LoginResponse } from './helpers/types';
-import {
-  asSupertestApp,
-  createTestApp,
-  getBody,
-} from './helpers/test-context';
+import { asSupertestApp, createTestApp, getBody } from './helpers/test-context';
 
 describe('Auth MFA Enrollment (e2e)', () => {
   let app: INestApplication<Server>;

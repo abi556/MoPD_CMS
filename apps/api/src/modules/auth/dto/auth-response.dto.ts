@@ -81,7 +81,8 @@ export class LoginDataDto {
   tokenType?: 'Bearer';
 
   @ApiPropertyOptional({
-    description: 'Access token TTL in seconds. Present when mfaRequired is false.',
+    description:
+      'Access token TTL in seconds. Present when mfaRequired is false.',
   })
   expiresIn?: number;
 

@@ -44,5 +44,7 @@ export function decryptTotpSecret(ciphertext: string): string {
   const encrypted = data.subarray(IV_LEN + TAG_LEN);
   const decipher = createDecipheriv(ALGO, key, iv);
   decipher.setAuthTag(tag);
-  return decipher.update(encrypted) + decipher.final('utf8');
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(
+    'utf8',
+  );
 }
