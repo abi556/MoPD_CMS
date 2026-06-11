@@ -106,14 +106,15 @@ export function ComplaintSubmitSuccess({
         <Button
           type="button"
           onClick={onAttachEvidence}
-          className="rounded-none w-full gap-2 py-3.5 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]"
+          size="lg"
+          fullWidth
         >
           <FileUp className="h-4 w-4" aria-hidden />
           {t("success.attachEvidence")}
         </Button>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link href="/complaints/track" className="w-full sm:w-auto">
-            <Button variant="secondary" className="rounded-none w-full transition-all duration-200 active:scale-[0.98]">
+            <Button variant="secondary" fullWidth>
               {t("success.trackLink")}
             </Button>
           </Link>
@@ -121,7 +122,8 @@ export function ComplaintSubmitSuccess({
             type="button"
             variant="secondary"
             onClick={onDone}
-            className="rounded-none w-full sm:w-auto transition-all duration-200 active:scale-[0.98]"
+            fullWidth
+            className="sm:w-auto"
           >
             {t("success.returnPortal")}
           </Button>

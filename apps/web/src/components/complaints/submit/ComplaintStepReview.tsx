@@ -104,7 +104,7 @@ export function ComplaintStepReview({
           variant="secondary"
           onClick={onBack}
           disabled={isSubmitting}
-          className="rounded-none w-full md:w-auto transition-all duration-200 active:scale-[0.98]"
+          className="w-full md:w-auto"
         >
           {t("actions.back")}
         </Button>
@@ -112,7 +112,7 @@ export function ComplaintStepReview({
           type="button"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="rounded-none w-full gap-2 md:w-auto transition-all duration-200 hover:shadow-md active:scale-[0.98]"
+          className="w-full md:w-auto"
         >
           {isSubmitting ? t("actions.submitting") : t("actions.submit")}
           <Send className="h-4 w-4" aria-hidden />

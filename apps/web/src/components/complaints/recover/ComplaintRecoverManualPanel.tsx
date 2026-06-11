@@ -101,7 +101,7 @@ export function ComplaintRecoverManualPanel() {
         </h1>
         <p className="mb-8 text-body text-text-secondary leading-relaxed">{successMessage || t("successBody")}</p>
         <Link href="/complaints/track">
-          <Button variant="secondary" className="rounded-none transition-all duration-200 active:scale-[0.98]">{t("backToRecover")}</Button>
+          <Button variant="secondary">{t("backToRecover")}</Button>
         </Link>
       </div>
     );
@@ -235,7 +235,7 @@ export function ComplaintRecoverManualPanel() {
             </p>
           ) : null}
 
-          <Button type="submit" className="rounded-none w-full py-3.5 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]" disabled={loading}>
+          <Button type="submit" size="lg" fullWidth disabled={loading}>
             {loading ? t("submitting") : t("submit")}
           </Button>
         </form>

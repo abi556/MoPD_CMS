@@ -166,7 +166,7 @@ export function ComplaintEvidencePanel({
           {t("evidence.sessionExpiredHint", { reference: referenceNo })}
         </p>
         <div className="mt-6">
-          <Button type="button" variant="secondary" onClick={onFinish} className="rounded-none transition-all duration-200 active:scale-[0.98]">
+          <Button type="button" variant="secondary" onClick={onFinish}>
             {t("evidence.done")}
           </Button>
         </div>
@@ -202,7 +202,7 @@ export function ComplaintEvidencePanel({
             </ul>
           ) : null}
           <div className="flex flex-wrap justify-center gap-4">
-            <Button type="button" onClick={onFinish} className="rounded-none transition-all duration-200 active:scale-[0.98]">
+            <Button type="button" onClick={onFinish}>
               {t("evidence.done")}
             </Button>
           </div>
@@ -343,7 +343,7 @@ export function ComplaintEvidencePanel({
             variant="secondary"
             onClick={onBack}
             disabled={panelState === "uploading"}
-            className="rounded-none gap-2 w-full md:w-auto transition-all duration-200 active:scale-[0.98]"
+            className="w-full md:w-auto"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
             {t("actions.back")}
@@ -354,7 +354,6 @@ export function ComplaintEvidencePanel({
               variant="secondary"
               onClick={onFinish}
               disabled={panelState === "uploading"}
-              className="rounded-none transition-all duration-200 active:scale-[0.98]"
             >
               {t("evidence.skip")}
             </Button>
@@ -362,7 +361,6 @@ export function ComplaintEvidencePanel({
               type="button"
               onClick={uploadAll}
               disabled={panelState === "uploading" || files.length === 0}
-              className="rounded-none gap-2 transition-all duration-200 hover:shadow-md active:scale-[0.98]"
             >
               {panelState === "uploading"
                 ? t("evidence.uploading")

@@ -144,7 +144,8 @@ export function ComplaintRecoverPanel() {
             <Button
               type="button"
               variant={channel === "email" ? "primary" : "secondary"}
-              className="rounded-none flex-1 gap-2 py-3 transition-all duration-200"
+              className="flex-1"
+              size="lg"
               onClick={() => setChannel("email")}
             >
               <Mail className="h-4 w-4" aria-hidden />
@@ -153,7 +154,8 @@ export function ComplaintRecoverPanel() {
             <Button
               type="button"
               variant={channel === "sms" ? "primary" : "secondary"}
-              className="rounded-none flex-1 gap-2 py-3 transition-all duration-200"
+              className="flex-1"
+              size="lg"
               onClick={() => setChannel("sms")}
             >
               <Smartphone className="h-4 w-4" aria-hidden />
@@ -198,7 +200,7 @@ export function ComplaintRecoverPanel() {
               {error}
             </p>
           ) : null}
-          <Button type="submit" className="rounded-none w-full gap-2 py-3.5 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]" disabled={loading}>
+          <Button type="submit" size="lg" fullWidth disabled={loading}>
             {loading ? t("sending") : t("sendCode")}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
@@ -227,7 +229,7 @@ export function ComplaintRecoverPanel() {
             <Button
               type="button"
               variant="secondary"
-              className="rounded-none w-full transition-all duration-200 active:scale-[0.98]"
+              fullWidth
               onClick={() => {
                 setStep("contact");
                 setCode("");
@@ -236,7 +238,7 @@ export function ComplaintRecoverPanel() {
             >
               {t("changeContact")}
             </Button>
-            <Button type="submit" className="rounded-none w-full transition-all duration-200 active:scale-[0.98]" disabled={loading}>
+            <Button type="submit" fullWidth disabled={loading}>
               {loading ? t("verifying") : t("verifyCode")}
             </Button>
           </div>
@@ -271,7 +273,7 @@ export function ComplaintRecoverPanel() {
                     href={`/complaints/track?ref=${encodeURIComponent(ref.referenceNo)}`}
                     className="mt-4 inline-block"
                   >
-                    <Button variant="primary" className="rounded-none gap-2 transition-all duration-200 active:scale-[0.98]">
+                    <Button variant="primary">
                       {t("trackLink")}
                       <ArrowRight className="h-4 w-4" aria-hidden />
                     </Button>

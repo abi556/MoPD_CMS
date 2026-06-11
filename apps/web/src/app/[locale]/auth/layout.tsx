@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { AuthShell } from "@/components/layout/auth-shell";
 
+/** Auth routes supply their own shell (login split layout, AuthShell on other pages). */
 export default function AuthLayout({ children }: { children: ReactNode }) {
-  return <AuthShell>{children}</AuthShell>;
+  return children;
 }

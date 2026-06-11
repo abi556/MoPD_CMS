@@ -190,10 +190,10 @@ export function ComplaintStepContactLocation({
       ) : null}
 
       <div className="flex flex-col-reverse items-center justify-between gap-4 border-t border-border-standard pt-6 md:flex-row md:gap-0 animate-fade-in-up [animation-delay:200ms] fill-mode-both">
-        <Button type="button" variant="secondary" onClick={onBack} className="rounded-none w-full md:w-auto transition-all duration-200 active:scale-[0.98]">
+        <Button type="button" variant="secondary" onClick={onBack} className="w-full md:w-auto">
           {t("actions.back")}
         </Button>
-        <Button type="submit" className="rounded-none w-full gap-2 md:w-auto transition-all duration-200 hover:shadow-md active:scale-[0.98]">
+        <Button type="submit" className="w-full md:w-auto">
           {t("actions.continueReview")}
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Button>

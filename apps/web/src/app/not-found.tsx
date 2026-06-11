@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrokenLinkArt } from "@/components/public/error-illustrations";
+import { buttonClassName } from "@/components/ui/button";
 
 /**
  * Root-level 404 for completely unmatched URLs. This renders outside the
@@ -28,13 +29,17 @@ export default function RootNotFound() {
           <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-center md:justify-start">
             <Link
               href="/en"
-              className="inline-flex min-h-11 items-center justify-center rounded-none bg-primary px-8 py-3.5 text-base font-semibold text-on-primary shadow-sm transition-all duration-200 hover:opacity-90 hover:shadow-md active:scale-[0.98]"
+              className={buttonClassName({ size: "lg", className: "w-full px-8 sm:w-auto" })}
             >
               Back to home
             </Link>
             <Link
               href="/en/complaints/track"
-              className="inline-flex min-h-11 items-center justify-center rounded-none border border-border-standard bg-surface-container-lowest px-8 py-3.5 text-base font-semibold text-on-surface shadow-sm transition-all duration-200 hover:bg-surface-container-low active:scale-[0.98]"
+              className={buttonClassName({
+                variant: "secondary",
+                size: "lg",
+                className: "w-full px-8 sm:w-auto",
+              })}
             >
               Track a complaint
             </Link>

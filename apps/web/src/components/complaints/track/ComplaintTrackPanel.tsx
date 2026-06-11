@@ -277,7 +277,9 @@ function ComplaintTrackPanelInner() {
         type="submit"
         disabled={loading}
         suppressHydrationWarning
-        className={`rounded-none w-full gap-2 py-3.5 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] ${options?.showProgressSlot ? "" : "mt-6"}`}
+        size="lg"
+        fullWidth
+        className={options?.showProgressSlot ? "" : "mt-6"}
       >
         {loading ? t("searching") : t("search")}
         <ArrowRight className="h-4 w-4" aria-hidden />
@@ -354,7 +356,7 @@ function ComplaintTrackPanelInner() {
           <Button
             type="button"
             variant="secondary"
-            className="rounded-none w-full transition-all duration-200 active:scale-[0.98]"
+            fullWidth
             suppressHydrationWarning
             onClick={onSearchAnother}
           >

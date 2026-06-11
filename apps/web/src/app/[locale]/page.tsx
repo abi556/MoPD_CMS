@@ -3,7 +3,6 @@ import { redirect } from "@/i18n/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import {
-  CircleCheck,
   FileDown,
   Eye,
   Search,
@@ -16,6 +15,10 @@ import {
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { PublicShell } from "@/components/layout/public-shell";
+
+/** Bump ?v= when replacing public/complaint-processing-isometric-illustration.png */
+const HERO_ILLUSTRATION_SRC =
+  "/complaint-processing-isometric-illustration.png?v=2";
 
 async function hasRefreshCookie(): Promise<boolean> {
   const name = process.env.AUTH_REFRESH_COOKIE_NAME ?? "refresh_token";
@@ -58,11 +61,11 @@ export default async function LandingPage({
   return (
     <PublicShell>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-brand-wash pb-16 pt-12 sm:pb-20 sm:pt-16 md:pb-32 md:pt-24">
+      <section className="relative overflow-x-clip bg-brand-wash pb-16 pt-12 sm:pb-20 sm:pt-16 md:pb-32 md:pt-24">
         {/* Subtle background grid pattern for premium tech-gov feel */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25 md:right-[41.666667%]" />
 
-        <div className="relative mx-auto grid w-full max-w-max-width items-center gap-12 px-gutter md:grid-cols-12">
+        <div className="relative mx-auto grid w-full max-w-max-width items-center gap-8 px-gutter md:grid-cols-12 md:gap-6 lg:gap-8">
           <div className="space-y-6 md:col-span-7 animate-fade-in-up">
             <h1 className="max-w-3xl font-display text-3xl font-semibold leading-tight text-on-background sm:text-4xl md:text-6xl md:leading-[1.15]">
               {t.rich("heroHeading", {
@@ -76,57 +79,30 @@ export default async function LandingPage({
             </p>
             <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap sm:gap-4">
               <Link href="/complaints/new" className="w-full sm:w-auto">
-                <Button type="button" className="w-full rounded-none px-8 py-3.5 text-base shadow-sm transition-all duration-200 hover:bg-primary/95 hover:shadow-md active:scale-[0.98] sm:w-auto">
+                <Button type="button" size="lg" fullWidth className="sm:w-auto">
                   {t("ctaSubmit")}
                 </Button>
               </Link>
               <Link href="/complaints/track" className="w-full sm:w-auto">
-                <Button variant="secondary" type="button" className="w-full rounded-none px-8 py-3.5 text-base shadow-sm transition-all duration-200 hover:bg-surface-container-low hover:shadow-md active:scale-[0.98] sm:w-auto">
+                <Button variant="secondary" type="button" size="lg" fullWidth className="sm:w-auto">
                   {t("ctaTrack")}
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Hero Visual Block - Sharp, Professional, and Interactive */}
-          <div className="relative hidden md:col-span-5 md:block animate-scale-in [animation-delay:100ms] fill-mode-both">
-            <div className="relative aspect-square rounded-none border border-border-standard bg-surface-container-lowest p-8 shadow-sm">
-              <div className="absolute inset-0 bg-gradient-to-tr from-brand-surface/20 to-transparent opacity-50" />
-              
-              <Image
-                src="/mopd_logo.png"
-                alt="MoPD portal visual"
-                fill
-                sizes="(max-width: 768px) 100vw, 400px"
-                className="object-contain object-[center_38%] p-12 pb-24 opacity-95 transition-transform duration-500 hover:scale-[1.02]"
-                priority
-              />
-              
-              {/* Floating Status Card */}
-              <div className="absolute left-8 right-8 bottom-6 rounded-none border border-border-standard bg-surface-container-lowest/95 p-4 shadow-md backdrop-blur-sm transition-all duration-300 hover:shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-none bg-success/10 text-success">
-                      <CircleCheck className="h-5 w-5" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-text-placeholder">
-                        {t("complaintIdLabel")}
-                      </p>
-                      <p className="font-mono text-sm font-bold text-on-surface">
-                        #MP-2026-0882
-                      </p>
-                    </div>
-                  </div>
-                  <span className="rounded-none bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
-                    Resolved
-                  </span>
-                </div>
-                <div className="mt-3 h-1 w-full bg-surface-container-high">
-                  <div className="h-1 w-full bg-success transition-all duration-1000" />
-                </div>
-              </div>
-            </div>
+          {/* Hero illustration — transparent PNG on brand-wash; unoptimized to preserve alpha */}
+          <div className="relative hidden min-h-0 md:col-span-5 md:flex md:items-center md:justify-end md:overflow-visible animate-scale-in [animation-delay:100ms] fill-mode-both">
+            <Image
+              src={HERO_ILLUSTRATION_SRC}
+              alt={t("heroIllustrationAlt")}
+              width={960}
+              height={960}
+              sizes="(max-width: 768px) 100vw, 55vw"
+              unoptimized
+              className="pointer-events-none h-auto w-[min(150%,42rem)] max-w-none select-none object-contain object-right md:translate-x-[6%] lg:translate-x-[10%]"
+              priority
+            />
           </div>
         </div>
       </section>
@@ -259,10 +235,7 @@ export default async function LandingPage({
                     </p>
                   </div>
                   <Link href="/complaints/new" className="w-full shrink-0 md:w-auto">
-                    <Button
-                      type="button"
-                      className="w-full cursor-pointer rounded-none bg-primary px-8 py-3 text-base text-on-primary transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] md:w-auto"
-                    >
+                    <Button type="button" size="lg" fullWidth className="md:w-auto">
                       {t("startSubmission")}
                     </Button>
                   </Link>

@@ -148,7 +148,7 @@ export function ComplaintStepDetails({
         >
           {t("actions.cancel")}
         </button>
-        <Button type="submit" className="rounded-none gap-2 px-10 py-3 shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]">
+        <Button type="submit" size="lg" className="px-10">
           {t("actions.next")}
           <ArrowRight className="h-5 w-5" aria-hidden />
         </Button>

@@ -34,7 +34,7 @@ export function OptionsLoadBanner({
           variant="secondary"
           onClick={onRetry}
           disabled={retrying}
-          className="rounded-none shrink-0 transition-all duration-200 active:scale-[0.98]"
+          className="shrink-0"
         >
           {retrying ? t("loading") : t("actions.retryOptions")}
         </Button>

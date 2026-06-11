@@ -220,7 +220,7 @@ export function ComplaintTrackResults({
           {t("resultsHeading", { reference: result.referenceNo })}
         </h2>
         {onSearchAnother ? (
-          <Button type="button" variant="secondary" onClick={onSearchAnother} className="rounded-none transition-all duration-200 active:scale-[0.98]">
+          <Button type="button" variant="secondary" onClick={onSearchAnother}>
             {t("searchAnother")}
           </Button>
         ) : null}

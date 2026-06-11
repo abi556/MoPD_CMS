@@ -48,6 +48,8 @@
   --color-warning: #CA8A04;
   --color-surface-variant: #e5e2e1;
   --color-brand-wash: #F4F8F3;
+  /* Matches complaint-processing-isometric-illustration.png canvas */
+  --color-hero-wash: #eef9f1;
   --color-surface-dim: #dcd9d9;
   --color-secondary-fixed-dim: #a2d48f;
   --color-tertiary-fixed: #b9f1ac;
@@ -73,6 +75,9 @@
   --color-sla-yellow: var(--color-warning);
   --color-sla-red: var(--color-danger);
   --color-focus-ring: var(--color-primary);
+
+  /* Border radius — subtle corner softening for buttons (tweak here) */
+  --radius-button: 10px;
 
   /* Spacing */
   --spacing-sidebar-wide: 256px;

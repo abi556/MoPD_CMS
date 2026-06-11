@@ -25,8 +25,9 @@ function ActionButton({ action }: { action: ErrorScreenAction }) {
     <Button
       type="button"
       variant={action.variant ?? "primary"}
+      size="lg"
       onClick={action.onClick}
-      className="rounded-none px-8 py-3.5 text-base shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]"
+      className="w-full px-8 sm:w-auto"
     >
       {action.label}
     </Button>

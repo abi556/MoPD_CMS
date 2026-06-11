@@ -137,11 +137,7 @@ export function ContactForm() {
           </div>
         )}
 
-        <Button
-          type="submit"
-          disabled={state.submitting}
-          className="w-full rounded-none py-3 text-base font-semibold shadow-sm transition-all duration-200 hover:bg-primary/95 hover:shadow-md active:scale-[0.98] cursor-pointer"
-        >
+        <Button type="submit" size="lg" fullWidth disabled={state.submitting}>
           {state.submitting ? t("submitting") : t("submit")}
         </Button>
       </form>

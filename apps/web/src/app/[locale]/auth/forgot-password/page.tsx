@@ -1,16 +1,13 @@
-import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { AuthShell } from "@/components/layout/auth-shell";
+import { Suspense } from "react";
+import { StaffLoginScreen } from "@/components/auth/staff-login-screen";
+import { ForgotPasswordForm } from "@/components/forms/forgot-password-form";
 
 export default function ForgotPasswordPage() {
   return (
-    <AuthShell>
-      <Card>
-        <EmptyState
-          title="Forgot password"
-          description="Password recovery flow is reserved in SDS and will be fully implemented in auth phase."
-        />
-      </Card>
-    </AuthShell>
+    <StaffLoginScreen>
+      <Suspense fallback={<p className="text-sm text-text-secondary">…</p>}>
+        <ForgotPasswordForm />
+      </Suspense>
+    </StaffLoginScreen>
   );
 }
