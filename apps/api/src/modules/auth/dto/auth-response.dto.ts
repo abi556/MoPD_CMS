@@ -151,7 +151,8 @@ export class MeProfileDto extends AuthUserDto {
   mfaMethod!: 'totp' | 'email' | null;
 
   @ApiProperty({
-    description: 'Whether MFA enrollment can be deferred (optional policy only).',
+    description:
+      'Whether MFA enrollment can be deferred (optional policy only).',
   })
   canSkipMfaEnroll!: boolean;
 }

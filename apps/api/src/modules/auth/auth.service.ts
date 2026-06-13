@@ -8,7 +8,6 @@ import {
 import bcrypt from 'bcrypt';
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   Logger,
   OnModuleInit,
@@ -602,7 +601,10 @@ export class AuthService implements OnModuleInit {
     };
   }
 
-  async skipMfaEnrollment(userId: string, correlationId?: string): Promise<void> {
+  async skipMfaEnrollment(
+    userId: string,
+    correlationId?: string,
+  ): Promise<void> {
     const user = await this.userService.findActiveById(userId);
     if (!user) {
       throw new UnauthorizedException('Invalid user');

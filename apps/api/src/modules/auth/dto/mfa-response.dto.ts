@@ -76,7 +76,8 @@ export class MfaStatusDataDto {
   totpOnly!: boolean;
 
   @ApiProperty({
-    description: 'Whether the user may defer enrollment and use the console now.',
+    description:
+      'Whether the user may defer enrollment and use the console now.',
   })
   canSkipEnroll!: boolean;
 }
