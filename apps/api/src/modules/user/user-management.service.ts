@@ -136,6 +136,7 @@ export class UserManagementService {
         email: input.email,
         passwordHash: bcrypt.hashSync(input.password, getBcryptCostFactor()),
         mustChangePassword: true,
+        mustEnrollMfa: true,
         isActive: true,
       },
     });

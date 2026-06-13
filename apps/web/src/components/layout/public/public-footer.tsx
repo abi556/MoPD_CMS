@@ -7,7 +7,7 @@ import { BrandWordmark } from "@/components/layout/brand-wordmark";
 
 export function PublicFooter() {
   const pub = useTranslations("public");
-  const nav = useTranslations("nav");
+  const nav = useTranslations("nav-public");
 
   const footerLinkClass =
     "block font-body-sm text-body-sm text-inverse-on-surface/70 transition-colors hover:text-primary";

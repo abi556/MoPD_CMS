@@ -60,6 +60,10 @@ async function parseEnvelope<T>(res: Response): Promise<T> {
   }
 
   if (body && typeof body === "object" && "data" in body) {
+    // Paginated payloads ({ data, meta }) are returned as-is.
+    if ("meta" in body && body.meta !== undefined) {
+      return body as T;
+    }
     return (body as Envelope<T> & { data: T }).data;
   }
 
@@ -100,13 +104,22 @@ export interface ApiRequestOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
   auth?: boolean;
   skipRefresh?: boolean;
+  /** Override Bearer token (e.g. MFA challenge token from login). */
+  bearerToken?: string;
 }
 
 export async function apiRequest<T>(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const { body, auth = true, skipRefresh = false, headers, ...init } = options;
+  const {
+    body,
+    auth = true,
+    skipRefresh = false,
+    bearerToken,
+    headers,
+    ...init
+  } = options;
   const normalized = path.startsWith("/") ? path : `/${path}`;
 
   const run = async (token: string | null): Promise<Response> => {
@@ -114,8 +127,9 @@ export async function apiRequest<T>(
     if (body !== undefined && !(body instanceof FormData)) {
       requestHeaders.set("Content-Type", "application/json");
     }
-    if (auth && token) {
-      requestHeaders.set("Authorization", `Bearer ${token}`);
+    const bearer = bearerToken ?? token;
+    if (auth && bearer) {
+      requestHeaders.set("Authorization", `Bearer ${bearer}`);
     }
 
     return fetch(apiUrl(normalized), {
@@ -131,7 +145,7 @@ export async function apiRequest<T>(
     });
   };
 
-  const token = auth ? getAccessToken() : null;
+  const token = auth ? (bearerToken ?? getAccessToken()) : null;
   let res = await run(token);
 
   if (res.status === 401 && auth && !skipRefresh) {

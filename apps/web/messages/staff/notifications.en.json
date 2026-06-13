@@ -1,0 +1,18 @@
+{
+  "title": "Notifications",
+  "subtitle": "Monitor email delivery status and resend failed messages.",
+  "templateKey": "Template",
+  "to": "Recipient",
+  "status": "Status",
+  "sentAt": "Sent at",
+  "lastError": "Last error",
+  "resend": "Resend",
+  "filterStatus": "Status",
+  "filterTo": "Recipient email",
+  "filterTemplateKey": "Template key",
+  "emptyTitle": "No deliveries found",
+  "emptyDescription": "Adjust filters or trigger a notification to see deliveries here.",
+  "confirmResendTitle": "Resend notification?",
+  "confirmResendDescription": "A new delivery will be queued with the same template and recipient.",
+  "resendQueuedConflict": "Cannot resend while the delivery is still queued."
+}

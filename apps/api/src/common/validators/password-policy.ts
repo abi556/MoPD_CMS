@@ -1,8 +1,9 @@
-/** SDS-aligned staff password rules (min 12 chars + character classes). */
-export const PASSWORD_MIN_LENGTH = 12;
+/** Staff password rules: min 8 chars + character classes (12+ recommended with MFA). */
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_RECOMMENDED_LENGTH = 12;
 
 export const PASSWORD_POLICY_MESSAGE =
-  'Password must be at least 12 characters and include uppercase, lowercase, a number, and a special character';
+  'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character (12+ characters recommended)';
 
 const HAS_UPPERCASE = /[A-Z]/;
 const HAS_LOWERCASE = /[a-z]/;

@@ -1,0 +1,35 @@
+{
+  "title": "እጅ የማጣቀሻ መመለስ",
+  "intro": "በማስገባት ጊዜ ኢሜይል ወይም ስልክ ካልሰጡ ቅሬታዎን ይግለጹ። ሰራተኞች ወዲያው አይመለሱም — ማጣቀሻዎን ወይም ውጤት ለመላክ ኢሜይል ያስፈልጋል።",
+  "back": "ተመለስ",
+  "backToRecover": "ወደ መመለስ ተመለስ",
+  "optional": "(አማራጭ)",
+  "fields": {
+    "subjectFragment": "ርዕስ",
+    "subjectFragmentPlaceholder": "በአጭሩ መግለጫ…",
+    "subjectFragmentHint": "ቅሬታዎ ስለምን እንደሆነ ቢያንስ 5 ፊደላት ይጻፉ።",
+    "submittedDateGregorian": "ቀን (ግሪጎሪያን)",
+    "submittedDateEthiopian": "ቀን (ኢትዮጵያ)",
+    "submittedDateEthiopianPlaceholder": "10 ታህሳስ 2010",
+    "submittedDateEthiopianHint": "የኢትዮጵያ ዘመን አቆጣጠር ቀን ካስታውሱ ይጠቀሙ።",
+    "category": "ምድብ",
+    "categoryPlaceholder": "ምድብ ይምረጡ",
+    "orgUnit": "ኃላፊ ቢሮ",
+    "orgUnitPlaceholder": "ቢሮ ይምረጡ",
+    "contactEmail": "ለመልስ ኢሜይል",
+    "contactEmailPlaceholder": "you@example.com",
+    "contactEmailHint": "ሰራተኞች ሲጨርሱ በዚህ ኢሜይል ይላኩልዎታል (ብዙ የስራ ቀናት ሊወስድ ይችላል)።",
+    "additionalNotes": "ማስታወሻ",
+    "additionalNotesPlaceholder": "ሰራተኞች ቅሬታዎን ለማግኘት የሚረዳ ተጨማሪ መረጃ…"
+  },
+  "submit": "ጥያቄ አስገባ",
+  "submitting": "በማስገባት…",
+  "successTitle": "ጥያቄ ተቀብለናል",
+  "successBody": "ለማረጋገጫ ኢሜይል ይመልከቱ። ሰራተኞች ሲጨርሱ በሰጡት ኢሜይል እንላክልዎታለን።",
+  "errors": {
+    "subjectMin": "ርዕሱ ቢያንስ 5 ፊደላት።",
+    "emailInvalid": "ትክክለኛ ኢሜይል ያስገቡ።",
+    "rateLimited": "ብዙ ሙከራዎች። ወደ አንድ ሰዓት በኋላ እንደገና ይሞክሩ። ቅፅበታዊ ሙከራ ከነበረ ሌላ ኢሜይል ይጠቀሙ።",
+    "submitFailed": "ጥያቄ ማስገባት አልተቻለም።"
+  }
+}

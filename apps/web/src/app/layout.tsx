@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { notoEthiopic, sourceSans } from "@/styles/fonts";
+import { RootProviders } from "@/components/providers/root-providers";
 import { ServiceWorkerRegistrar } from "@/components/providers/service-worker-registrar";
 import { getSiteUrl, siteConfig } from "@/lib/site-config";
 import "./globals.css";
@@ -104,10 +105,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${sourceSans.variable} ${notoEthiopic.variable} h-full antialiased`}
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <RootProviders>{children}</RootProviders>
         <ServiceWorkerRegistrar />
       </body>
     </html>

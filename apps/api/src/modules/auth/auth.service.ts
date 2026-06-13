@@ -8,6 +8,7 @@ import {
 import bcrypt from 'bcrypt';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   OnModuleInit,
@@ -572,17 +573,76 @@ export class AuthService implements OnModuleInit {
 
   async describeMfaStatus(userId: string): Promise<{
     enrolled: boolean;
+    method: 'totp' | 'email' | null;
     provider: 'totp';
     policy: 'optional' | 'required';
+    mustEnroll: boolean;
+    totpOnly: boolean;
+    canSkipEnroll: boolean;
   }> {
     const user = await this.userService.findActiveById(userId);
     if (!user) {
       throw new UnauthorizedException('Invalid user');
     }
+    const rolePolicy = this.mfaService.isRequiredForRole(
+      user.userRoles.map((userRole) => userRole.role.name),
+    );
+    const policy = rolePolicy.required ? 'required' : 'optional';
+    // Onboarding MFA is always recommended; any role may defer until they enroll.
+    const mustEnroll = false;
+    const canSkipEnroll = !user.mfaEnabled;
     return {
       enrolled: user.mfaEnabled,
+      method: (user.mfaMethod as 'totp' | 'email' | null) ?? null,
       provider: 'totp',
-      policy: this.mfaService.isGloballyRequired() ? 'required' : 'optional',
+      policy,
+      mustEnroll,
+      totpOnly: rolePolicy.totpOnly,
+      canSkipEnroll,
+    };
+  }
+
+  async skipMfaEnrollment(userId: string, correlationId?: string): Promise<void> {
+    const user = await this.userService.findActiveById(userId);
+    if (!user) {
+      throw new UnauthorizedException('Invalid user');
+    }
+    if (user.mfaEnabled) {
+      throw new BadRequestException('MFA is already enrolled.');
+    }
+    await this.userService.deferMfaEnrollment(userId);
+    await this.auditMfaEvent('enroll_deferred', userId, correlationId);
+  }
+
+  async getSessionProfile(userId: string): Promise<{
+    id: string;
+    email: string;
+    roles: string[];
+    permissions: string[];
+    mustChangePassword: boolean;
+    mustEnrollMfa: boolean;
+    requireMfaEnrollment: boolean;
+    mfaEnrolled: boolean;
+    mfaMethod: 'totp' | 'email' | null;
+    canSkipMfaEnroll: boolean;
+  }> {
+    const user = await this.userService.findActiveById(userId);
+    if (!user) {
+      throw new UnauthorizedException('Invalid user');
+    }
+    const authUser = this.toAuthUser(user.id, user.email, user.userRoles);
+    const mfaStatus = await this.describeMfaStatus(userId);
+    return {
+      id: authUser.id,
+      email: authUser.email,
+      roles: authUser.roles,
+      permissions: authUser.permissions,
+      mustChangePassword: user.mustChangePassword,
+      mustEnrollMfa: user.mustEnrollMfa,
+      requireMfaEnrollment: mfaStatus.mustEnroll,
+      mfaEnrolled: user.mfaEnabled,
+      mfaMethod: mfaStatus.method,
+      canSkipMfaEnroll: mfaStatus.canSkipEnroll,
     };
   }
 
@@ -703,6 +763,7 @@ export class AuthService implements OnModuleInit {
     action:
       | 'enrolled'
       | 'enroll_failed'
+      | 'enroll_deferred'
       | 'verified'
       | 'verify_failed'
       | 'disabled'
@@ -714,6 +775,7 @@ export class AuthService implements OnModuleInit {
     const eventMap = {
       enrolled: AUDIT_EVENT.AUTH_MFA_ENROLLED,
       enroll_failed: AUDIT_EVENT.AUTH_MFA_ENROLL_FAILED,
+      enroll_deferred: AUDIT_EVENT.AUTH_MFA_ENROLL_DEFERRED,
       verified: AUDIT_EVENT.AUTH_MFA_VERIFIED,
       verify_failed: AUDIT_EVENT.AUTH_MFA_VERIFY_FAILED,
       disabled: AUDIT_EVENT.AUTH_MFA_DISABLED,

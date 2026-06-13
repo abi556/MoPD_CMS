@@ -6,15 +6,19 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api-client";
+import { storeMfaChallenge } from "@/lib/auth/mfa-storage";
 import { resolvePostLoginPath } from "@/lib/auth/post-login-redirect";
+import { resolveStaffOnboardingPath } from "@/lib/auth/staff-onboarding";
+import { staffRoutes } from "@/lib/staff/routes";
 import { useSession } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
+import { AuthFieldInput } from "@/components/forms/auth-field-input";
 
 const REMEMBER_EMAIL_KEY = "mopd_staff_login_email";
 
 export function LoginForm() {
   const t = useTranslations("auth");
-  const { login } = useSession();
+  const { login, refreshSession } = useSession();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +30,7 @@ export function LoginForm() {
     try {
       const stored = localStorage.getItem(REMEMBER_EMAIL_KEY);
       if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- restore remembered email
         setEmail(stored);
         setRememberEmail(true);
       }
@@ -49,7 +54,21 @@ export function LoginForm() {
       } catch {
         /* ignore */
       }
-      router.replace(resolvePostLoginPath(result.user));
+      if (result.kind === "mfa") {
+        storeMfaChallenge(result.mfaToken, result.mustChangePassword);
+        router.replace(staffRoutes.auth.mfaVerify);
+        return;
+      }
+      if (result.mustChangePassword) {
+        router.replace(staffRoutes.auth.changePassword);
+        return;
+      }
+      const sessionUser = await refreshSession();
+      router.replace(
+        sessionUser
+          ? resolveStaffOnboardingPath(sessionUser)
+          : resolvePostLoginPath(result.user),
+      );
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -81,7 +100,7 @@ export function LoginForm() {
               className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-placeholder"
               aria-hidden
             />
-            <input
+            <AuthFieldInput
               id="email"
               name="email"
               type="email"
@@ -106,7 +125,7 @@ export function LoginForm() {
               className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-placeholder"
               aria-hidden
             />
-            <input
+            <AuthFieldInput
               id="password"
               name="password"
               type="password"
@@ -163,8 +182,8 @@ export function LoginForm() {
           <Link
             href={
               email
-                ? `/auth/forgot-password?email=${encodeURIComponent(email)}`
-                : "/auth/forgot-password"
+                ? `${staffRoutes.auth.forgotPassword}?email=${encodeURIComponent(email)}`
+                : staffRoutes.auth.forgotPassword
             }
             className="font-semibold text-on-surface underline-offset-4 hover:underline"
           >

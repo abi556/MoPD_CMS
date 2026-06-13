@@ -1,6 +1,6 @@
 # MoPD CMS — Frontend local development
 
-Guide for `apps/web` Phase 0+ setup against the NestJS API. API contracts: [API.md](./API.md). Permissions: [RBAC.md](./RBAC.md). UI spec: [MoPD_CMS_Frontend_UI_Plan.md](../../CMS%20SRS%20+%20SDS/MoPD_CMS_Frontend_UI_Plan.md).
+Guide for `apps/web` Phase 0+ setup against the NestJS API. API contracts: [API.md](./API.md). Permissions: [RBAC.md](./RBAC.md). UI spec: [MoPD_CMS_Frontend_UI_Plan.md](../../CMS%20SRS%20+%20SDS/MoPD_CMS_Frontend_UI_Plan.md). Staff console plan (one app, admin-first): [MoPD_CMS_Staff_Console_Plan.md](../../CMS%20SRS%20+%20SDS/MoPD_CMS_Staff_Console_Plan.md).
 
 ---
 
@@ -159,7 +159,7 @@ Implemented in `apps/web`:
 
 | Area | Paths |
 |------|--------|
-| i18n | `src/i18n/*`, `messages/en.json`, `messages/am.json`, `proxy.ts` (Next 16; was `middleware.ts`) |
+| i18n | `src/i18n/*`, `messages/{shared,public,staff}/*`, `src/lib/i18n/load-messages.ts`, `proxy.ts` (Next 16; was `middleware.ts`) |
 | API client | `src/lib/api-client.ts`, `src/lib/api-credentials.ts` |
 | Auth | `src/components/providers/auth-provider.tsx`, `/[locale]/auth/login` |
 | Shells | `PublicShell`, `AuthShell`, `AppShell`, `LocaleSwitcher` |

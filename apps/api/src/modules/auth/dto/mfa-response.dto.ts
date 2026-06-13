@@ -47,6 +47,13 @@ export class MfaStatusDataDto {
   @ApiProperty({ description: 'Whether TOTP MFA is enrolled for this user.' })
   enrolled!: boolean;
 
+  @ApiProperty({
+    enum: ['totp', 'email'],
+    nullable: true,
+    description: 'Active MFA method when enrolled.',
+  })
+  method!: 'totp' | 'email' | null;
+
   @ApiProperty({ enum: ['totp'], example: 'totp' })
   provider!: 'totp';
 
@@ -56,6 +63,22 @@ export class MfaStatusDataDto {
       'Org policy from AUTH_MFA_REQUIRED; elevated roles always require MFA.',
   })
   policy!: 'optional' | 'required';
+
+  @ApiProperty({
+    description:
+      'User must complete TOTP enrollment before accessing the staff console.',
+  })
+  mustEnroll!: boolean;
+
+  @ApiProperty({
+    description: 'When true, switching to email OTP is not allowed.',
+  })
+  totpOnly!: boolean;
+
+  @ApiProperty({
+    description: 'Whether the user may defer enrollment and use the console now.',
+  })
+  canSkipEnroll!: boolean;
 }
 
 export class MfaStatusResponseDto {

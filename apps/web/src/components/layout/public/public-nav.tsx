@@ -8,7 +8,7 @@ function normalizePath(pathname: string): string {
 }
 
 export function PublicNav() {
-  const nav = useTranslations("nav");
+  const nav = useTranslations("nav-public");
   const pathname = usePathname();
   const normalizedPath = normalizePath(pathname);
   const isSubmit = normalizedPath.startsWith("/complaints/new");

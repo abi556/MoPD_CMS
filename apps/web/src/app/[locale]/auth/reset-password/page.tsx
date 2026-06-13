@@ -1,10 +1,13 @@
+import { Suspense } from "react";
+import { StaffLoginScreen } from "@/components/auth/staff-login-screen";
 import { ResetPasswordForm } from "@/components/forms/reset-password-form";
-import { AuthShell } from "@/components/layout/auth-shell";
 
 export default function ResetPasswordPage() {
   return (
-    <AuthShell>
-      <ResetPasswordForm />
-    </AuthShell>
+    <StaffLoginScreen>
+      <Suspense fallback={<p className="text-sm text-text-secondary">…</p>}>
+        <ResetPasswordForm />
+      </Suspense>
+    </StaffLoginScreen>
   );
 }

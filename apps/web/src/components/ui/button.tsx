@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 
 const baseClassName =
-  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-button)] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]";
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-none font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]";
 
 const variants = {
   primary:

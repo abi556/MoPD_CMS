@@ -124,9 +124,41 @@ export class LogoutResponseDto {
   data!: LogoutDataDto;
 }
 
+export class MeProfileDto extends AuthUserDto {
+  @ApiProperty({ description: 'Whether the user must change password first.' })
+  mustChangePassword!: boolean;
+
+  @ApiProperty({
+    description:
+      'Soft prompt flag: user should be offered MFA setup (e.g. after first login).',
+  })
+  mustEnrollMfa!: boolean;
+
+  @ApiProperty({
+    description:
+      'Hard requirement: elevated roles must enroll before using the console.',
+  })
+  requireMfaEnrollment!: boolean;
+
+  @ApiProperty({ description: 'Whether MFA is active for this account.' })
+  mfaEnrolled!: boolean;
+
+  @ApiProperty({
+    enum: ['totp', 'email'],
+    nullable: true,
+    description: 'Current MFA method when enrolled.',
+  })
+  mfaMethod!: 'totp' | 'email' | null;
+
+  @ApiProperty({
+    description: 'Whether MFA enrollment can be deferred (optional policy only).',
+  })
+  canSkipMfaEnroll!: boolean;
+}
+
 export class MeResponseDto {
   @ApiProperty({
-    type: AuthUserDto,
+    type: MeProfileDto,
   })
-  data!: AuthUserDto;
+  data!: MeProfileDto;
 }

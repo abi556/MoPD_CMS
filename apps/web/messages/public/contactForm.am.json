@@ -1,0 +1,18 @@
+{
+  "title": "መልዕክት ይላኩልን",
+  "subtitle": "ከታች ያለውን ቅጽ ይሙሉ እና ቡድናችን በተቻለ ፍጥነት ያነጋግርዎታል።",
+  "nameLabel": "ሙሉ ስም",
+  "namePlaceholder": "ሙሉ ስምዎን ያስገቡ",
+  "emailLabel": "የኢሜይል አድራሻ",
+  "emailPlaceholder": "you@example.com",
+  "subjectLabel": "ርዕሰ ጉዳይ",
+  "subjectPlaceholder": "ጉዳዩ ምንድን ነው?",
+  "messageLabel": "መልዕክት",
+  "messagePlaceholder": "መልዕክትዎን እዚህ ይጻፉ...",
+  "submit": "መልዕክት ላክ",
+  "submitting": "በመላክ ላይ...",
+  "successTitle": "መልዕክትዎ በተሳካ ሁኔታ ተልኳል!",
+  "successBody": "የእቅድ እና ልማት ሚኒስቴርን ስላነጋገሩ እናመሰግናለን። መልዕክትዎ ደርሶናል እና በቅርቡ ምላሽ እንሰጥዎታለን።",
+  "errorTitle": "መላክ አልተሳካም",
+  "errorBody": "መልዕክትዎን በመላክ ላይ ስህተት አጋጥሟል። እባክዎ እንደገና ይሞክሩ።"
+}

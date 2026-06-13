@@ -15,6 +15,7 @@ export const AUDIT_EVENT = {
   AUTH_PASSWORD_CHANGE_FAILED: 'auth.password_change.failed',
   AUTH_MFA_ENROLLED: 'auth.mfa.enrolled',
   AUTH_MFA_ENROLL_FAILED: 'auth.mfa.enroll_failed',
+  AUTH_MFA_ENROLL_DEFERRED: 'auth.mfa.enroll_deferred',
   AUTH_MFA_VERIFIED: 'auth.mfa.verified',
   AUTH_MFA_VERIFY_FAILED: 'auth.mfa.verify_failed',
   AUTH_MFA_DISABLED: 'auth.mfa.disabled',

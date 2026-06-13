@@ -85,6 +85,7 @@ All codes below are defined in `apps/api/src/modules/auth/rbac/seed-catalog.ts` 
 | `complaints:transition` | Transition workflow status (legacy) |
 | `complaint:read` | Read **all** complaints (unscoped) |
 | `complaint:read:own` | Read assignee-scoped complaints + queue |
+| `complaint:recovery:manage` | Staff recovery inquiry queue (`GET/PATCH /complaints/recovery/inquiries`) |
 | `complaint:review` | Move complaint into QA/legal review |
 | `complaint:approve` | Approve response issuance from QA |
 | `complaint:update` | Update non-status complaint fields |

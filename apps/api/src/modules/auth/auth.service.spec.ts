@@ -77,6 +77,7 @@ describe('AuthService', () => {
       ],
     });
   const updatePasswordHash = jest.fn<Promise<void>, [string, string]>();
+  const deferMfaEnrollment = jest.fn<Promise<void>, [string]>();
   const loginAttemptStub = {
     normalizeEmail: (e: string) => e.trim().toLowerCase(),
     ensureEmailNotLockedAsync: jest.fn().mockResolvedValue(undefined),
@@ -85,6 +86,13 @@ describe('AuthService', () => {
   };
   const mfaStub = {
     isGloballyRequired: jest.fn().mockReturnValue(false),
+    isRequiredForRole: jest.fn((roles: string[]) => {
+      const elevated = ['SuperAdmin', 'SystemAdmin'];
+      if (roles.some((role) => elevated.includes(role))) {
+        return { required: true, totpOnly: true };
+      }
+      return { required: false, totpOnly: false };
+    }),
   };
   const queuePasswordResetEmail = jest.fn().mockResolvedValue(undefined);
   let service: AuthService;
@@ -95,10 +103,12 @@ describe('AuthService', () => {
     findActiveByEmail.mockClear();
     findActiveById.mockClear();
     updatePasswordHash.mockReset();
+    deferMfaEnrollment.mockReset();
     loginAttemptStub.ensureEmailNotLockedAsync.mockClear();
     loginAttemptStub.recordFailedAttempt.mockResolvedValue(false);
     loginAttemptStub.clearFailures.mockClear();
     updatePasswordHash.mockResolvedValue(undefined);
+    deferMfaEnrollment.mockResolvedValue(undefined);
     signAsync.mockResolvedValue('signed-access-token');
 
     service = new AuthService(
@@ -108,6 +118,7 @@ describe('AuthService', () => {
         findActiveByEmail,
         findActiveById,
         updatePasswordHash,
+        deferMfaEnrollment,
       } as unknown as UserService,
       {
         logEvent: jest.fn().mockResolvedValue(undefined),
@@ -173,5 +184,61 @@ describe('AuthService', () => {
     await expect(
       service.logout('user-officer-0001', login.refreshToken),
     ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('allows any role to skip MFA enrollment when not enrolled', async () => {
+    findActiveById.mockResolvedValue({
+      id: 'user-admin-0001',
+      email: 'admin@mopd.local',
+      passwordHash: 'hash',
+      passwordVersion: 0,
+      mfaEnabled: false,
+      isActive: true,
+      userRoles: [
+        {
+          role: {
+            name: 'SuperAdmin',
+            rolePermissions: [],
+          },
+        },
+      ],
+    });
+
+    const status = await service.describeMfaStatus('user-admin-0001');
+
+    expect(status.canSkipEnroll).toBe(true);
+    expect(status.mustEnroll).toBe(false);
+    expect(status.totpOnly).toBe(true);
+
+    await service.skipMfaEnrollment('user-admin-0001');
+    expect(deferMfaEnrollment).toHaveBeenCalledWith('user-admin-0001');
+  });
+
+  it('allows CaseOfficer to skip MFA enrollment', async () => {
+    findActiveById.mockResolvedValue({
+      id: 'user-officer-0001',
+      email: 'officer@mopd.local',
+      passwordHash: 'hash',
+      passwordVersion: 0,
+      mfaEnabled: false,
+      isActive: true,
+      userRoles: [
+        {
+          role: {
+            name: 'CaseOfficer',
+            rolePermissions: [],
+          },
+        },
+      ],
+    });
+
+    const status = await service.describeMfaStatus('user-officer-0001');
+
+    expect(status.canSkipEnroll).toBe(true);
+    expect(status.totpOnly).toBe(false);
+    expect(status.mustEnroll).toBe(false);
+
+    await service.skipMfaEnrollment('user-officer-0001');
+    expect(deferMfaEnrollment).toHaveBeenCalledWith('user-officer-0001');
   });
 });

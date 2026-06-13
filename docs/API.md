@@ -22,7 +22,7 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
   - `meta: { page, pageSize, total, totalPages }` or cursor meta for audit
 - **Validation:** global `ValidationPipe` with whitelist/forbidNonWhitelisted
 - **Staff password policy** (change password, reset password, admin user create):
-  - Minimum **12** characters
+  - Minimum **8** characters (**12+** recommended; MFA is available)
   - At least one uppercase letter, one lowercase letter, one digit, and one special character
 - **Rate limiting:** per-route `@Throttle` decorators
 - **Permissions:** enforced by `JwtAuthGuard + PermissionsGuard` and `@Permissions(...)`
@@ -84,7 +84,7 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 ### POST `/auth/reset-password`
 - **Auth:** Public
 - **Body:** `{ token, newPassword }`
-  - `newPassword` min length `12`; must include uppercase, lowercase, digit, and special character
+  - `newPassword` min length `8`; must include uppercase, lowercase, digit, and special character (12+ recommended)
 - **Response:** success message
 - **Errors:** validation/domain failures (`422`)
 
@@ -92,7 +92,7 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 - **Auth:** Bearer
 - **Body:** `{ currentPassword, newPassword }`
   - `currentPassword` min length `8`
-  - `newPassword` min length `12`; must include uppercase, lowercase, digit, and special character
+  - `newPassword` min length `8`; must include uppercase, lowercase, digit, and special character (12+ recommended)
 - **Response:** `{ data: { message } }`
 - **Errors:** `401` (wrong current password), `422` (same as current)
 - **Rate limit:** 10 req/min
@@ -101,7 +101,11 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 ### GET `/auth/mfa/status`
 - **Auth:** Bearer
 - **Body:** none
-- **Response:** `{ data: { enrolled, provider: "totp", policy: "optional" | "required" } }`
+- **Response:** `{ data: { enrolled, method, provider: "totp", policy: "optional" | "required", mustEnroll, totpOnly, canSkipEnroll } }`
+- **Notes:**
+  - `mustEnroll` — always `false` during onboarding (MFA is recommended, not blocking)
+  - `canSkipEnroll` — `true` until the user enrolls
+  - `mustEnrollMfa` on the user record is **not** returned here; see `/auth/me`
 
 ### POST `/auth/mfa/enroll`
 - **Auth:** Bearer
@@ -113,7 +117,14 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 - **Body:** `{ code }` — 6-digit TOTP code from authenticator app
 - **Response:** `{ data: { message } }`
 - **Errors:** `422` (invalid code)
-- **Notes:** Confirms TOTP enrollment. Sets `mfaEnabled: true`, `mfaMethod: "totp"`.
+- **Notes:** Confirms TOTP enrollment. Sets `mfaEnabled: true`, `mfaMethod: "totp"`, clears `mustEnrollMfa`.
+
+### POST `/auth/mfa/skip`
+- **Auth:** Bearer
+- **Body:** none
+- **Response:** `{ data: { message } }`
+- **Errors:** `400` (already enrolled)
+- **Notes:** Defers optional onboarding MFA for any staff role. Clears `mustEnrollMfa` on the user. SuperAdmin/SystemAdmin may still use TOTP-only at login after they enroll; email OTP switch remains blocked for elevated roles in Profile → MFA.
 
 ### POST `/auth/mfa/verify`
 - **Auth:** Bearer (mfaToken from login response)
@@ -139,8 +150,12 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 ### GET `/auth/me`
 - **Auth:** Bearer
 - **Body:** none
-- **Response:** `{ data: { id, email, roles[], permissions[] } }`
+- **Response:** `{ data: { id, email, roles[], permissions[], mustChangePassword, mustEnrollMfa, requireMfaEnrollment, mfaEnrolled, mfaMethod, canSkipMfaEnroll } }`
 - **Errors:** `401`
+- **Notes:**
+  - `mustEnrollMfa` — soft prompt flag (redirect to enroll after password change); cleared by skip or confirm
+  - `requireMfaEnrollment` — always `false` during onboarding (use dashboard guard + `mustEnrollMfa` soft prompt instead)
+  - `canSkipMfaEnroll` — mirrors `/auth/mfa/status` `canSkipEnroll`
 
 ---
 

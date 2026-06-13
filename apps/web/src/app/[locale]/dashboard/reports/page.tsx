@@ -1,10 +1,11 @@
-import { EmptyState } from "@/components/ui/empty-state";
+import { ReportsStubPage } from "@/app/[locale]/dashboard/reports/reports-stub-page";
 
 export default function DashboardReportsPage() {
   return (
-    <EmptyState
-      title="Reports"
-      description="Analytics and report widgets will be completed in the reports phase."
+    <ReportsStubPage
+      title="Reports overview"
+      description="Analytics hub for volume, SLA, resolution, and channel dashboards (RPT-01)."
     />
   );
 }
+

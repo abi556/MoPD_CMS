@@ -36,6 +36,14 @@ export function hasPermission(
   return satisfiesPermission(permissions, code);
 }
 
+/** Nav visibility — granted codes only, no alias expansion. */
+export function hasExactPermission(
+  permissions: readonly string[] | undefined,
+  code: string,
+): boolean {
+  return Boolean(permissions?.includes(code));
+}
+
 export function hasAllPermissions(
   permissions: readonly string[] | undefined,
   required: readonly string[],
@@ -47,6 +55,19 @@ export function hasAllPermissions(
     return false;
   }
   return required.every((code) => satisfiesPermission(permissions, code));
+}
+
+export function hasAnyPermission(
+  permissions: readonly string[] | undefined,
+  required: readonly string[],
+): boolean {
+  if (!required.length) {
+    return true;
+  }
+  if (!permissions?.length) {
+    return false;
+  }
+  return required.some((code) => satisfiesPermission(permissions, code));
 }
 
 export function canUploadDocuments(permissions: readonly string[]): boolean {

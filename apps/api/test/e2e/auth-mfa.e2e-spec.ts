@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
 import type { LoginResponse } from './helpers/types';
+import { loginAsRole } from './helpers/login-as-role';
 import { asSupertestApp, createTestApp, getBody } from './helpers/test-context';
 
 describe('Auth MFA Enrollment (e2e)', () => {
@@ -19,6 +20,26 @@ describe('Auth MFA Enrollment (e2e)', () => {
     const body = getBody<LoginResponse>(res);
     return body.data.accessToken!;
   }
+
+  type MfaStatusBody = {
+    data: {
+      enrolled: boolean;
+      provider: string;
+      policy: string;
+      mustEnroll: boolean;
+      totpOnly: boolean;
+      canSkipEnroll: boolean;
+    };
+  };
+
+  type MeBody = {
+    data: {
+      mustEnrollMfa: boolean;
+      requireMfaEnrollment: boolean;
+      canSkipMfaEnroll: boolean;
+      mfaEnrolled: boolean;
+    };
+  };
 
   it('returns MFA enrollment data (QR + backup codes)', async () => {
     const token = await loginAdmin();
@@ -66,10 +87,52 @@ describe('Auth MFA Enrollment (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    const body = res.body as {
-      data: { enrolled: boolean; provider: string; policy: string };
-    };
+    const body = res.body as MfaStatusBody;
     expect(typeof body.data.enrolled).toBe('boolean');
     expect(body.data.provider).toBe('totp');
+  });
+
+  it('allows CaseOfficer to skip MFA enrollment', async () => {
+    const token = await loginAsRole(asSupertestApp(app), 'CaseOfficer');
+
+    const statusRes = await request(asSupertestApp(app))
+      .get('/api/v1/auth/mfa/status')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    const status = getBody<MfaStatusBody>(statusRes).data;
+    expect(status.canSkipEnroll).toBe(true);
+    expect(status.totpOnly).toBe(false);
+
+    await request(asSupertestApp(app))
+      .post('/api/v1/auth/mfa/skip')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    const meRes = await request(asSupertestApp(app))
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    const me = getBody<MeBody>(meRes).data;
+    expect(me.mustEnrollMfa).toBe(false);
+    expect(me.canSkipMfaEnroll).toBe(true);
+    expect(me.requireMfaEnrollment).toBe(false);
+  });
+
+  it('allows SuperAdmin to skip MFA enrollment', async () => {
+    const token = await loginAdmin();
+
+    const statusRes = await request(asSupertestApp(app))
+      .get('/api/v1/auth/mfa/status')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    const status = getBody<MfaStatusBody>(statusRes).data;
+    expect(status.canSkipEnroll).toBe(true);
+    expect(status.totpOnly).toBe(true);
+    expect(status.mustEnroll).toBe(false);
+
+    await request(asSupertestApp(app))
+      .post('/api/v1/auth/mfa/skip')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
   });
 });

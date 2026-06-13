@@ -1,0 +1,17 @@
+{
+  "title": "Reference recovery inquiries",
+  "intro": "Staff queue for citizens who could not use self-service recovery.",
+  "status": "Status",
+  "subject": "Subject fragment",
+  "submitted": "Submitted",
+  "resolve": "Resolve",
+  "referenceNo": "Resolved reference",
+  "matchedId": "Matched complaint id",
+  "loadCandidates": "Load candidates",
+  "contactEmail": "Contact email",
+  "reject": "Reject (email citizen)",
+  "noItems": "No inquiries in this queue.",
+  "errors": {
+    "loadFailed": "Could not load inquiries."
+  }
+}

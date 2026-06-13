@@ -1,48 +1,97 @@
-import { hasPermission } from "@/lib/permissions";
+import { hasExactPermission, hasPermission } from "@/lib/permissions";
+import { staffRoutes } from "@/lib/staff/routes";
 import type { SessionUser } from "@/lib/auth/session-types";
+import {
+  buildAdminNavGroups,
+  hasAnyAdminPermission,
+} from "./build-admin-nav";
+import { buildReportsNavGroups } from "./build-reports-nav";
+
+export type AppNavIcon =
+  | "layout-dashboard"
+  | "inbox"
+  | "mail-question"
+  | "bar-chart-3"
+  | "settings"
+  | "user"
+  | "bell";
+
+export interface AppNavLink {
+  href: string;
+  labelKey: string;
+}
+
+export interface AppNavGroup {
+  labelKey: string;
+  items: AppNavLink[];
+}
 
 export interface AppNavItem {
   href: string;
   labelKey: string;
-  icon: "layout-dashboard" | "inbox" | "bar-chart-3" | "settings";
+  icon: AppNavIcon;
+  groups?: AppNavGroup[];
 }
 
-const ALL_ITEMS: AppNavItem[] = [
-  { href: "/dashboard", labelKey: "dashboard", icon: "layout-dashboard" },
-  {
-    href: "/dashboard/complaints",
-    labelKey: "complaints",
-    icon: "inbox",
-  },
-  { href: "/dashboard/reports", labelKey: "reports", icon: "bar-chart-3" },
-  { href: "/dashboard/admin", labelKey: "admin", icon: "settings" },
-];
-
 export function buildAppNav(user: SessionUser): AppNavItem[] {
-  const items: AppNavItem[] = [];
+  const items: AppNavItem[] = [
+    { href: staffRoutes.home, labelKey: "dashboard", icon: "layout-dashboard" },
+  ];
 
   if (
     hasPermission(user.permissions, "complaint:read") ||
     hasPermission(user.permissions, "complaint:read:own")
   ) {
-    items.push(ALL_ITEMS[0], ALL_ITEMS[1]);
-  } else {
-    items.push(ALL_ITEMS[0]);
+    items.push({
+      href: staffRoutes.complaints,
+      labelKey: "complaints",
+      icon: "inbox",
+    });
   }
 
-  if (hasPermission(user.permissions, "report:view")) {
-    items.push(ALL_ITEMS[2]);
+  if (hasPermission(user.permissions, "complaint:recovery:manage")) {
+    items.push({
+      href: staffRoutes.recoveryInquiries,
+      labelKey: "recoveryInquiries",
+      icon: "mail-question",
+    });
   }
 
-  if (
-    hasPermission(user.permissions, "user:manage") ||
-    hasPermission(user.permissions, "role:manage") ||
-    hasPermission(user.permissions, "config:manage")
-  ) {
-    items.push(ALL_ITEMS[3]);
+  const reportGroups = buildReportsNavGroups(user);
+  if (reportGroups.length > 0) {
+    items.push({
+      href: staffRoutes.reports.root,
+      labelKey: "reports",
+      icon: "bar-chart-3",
+      groups: reportGroups,
+    });
   }
 
-  return items.filter(
-    (item, index, arr) => arr.findIndex((i) => i.href === item.href) === index,
-  );
+  if (hasAnyAdminPermission(user)) {
+    const adminGroups = buildAdminNavGroups(user);
+    if (adminGroups.length > 0) {
+      items.push({
+        href: staffRoutes.admin.root,
+        labelKey: "admin",
+        icon: "settings",
+        groups: adminGroups,
+      });
+    }
+  }
+
+  if (hasExactPermission(user.permissions, "notification:manage")) {
+    items.push({
+      href: staffRoutes.notifications,
+      labelKey: "notifications",
+      icon: "bell",
+    });
+  }
+
+  items.push({
+    href: staffRoutes.profile,
+    labelKey: "profile",
+    icon: "user",
+  });
+
+  return items;
 }

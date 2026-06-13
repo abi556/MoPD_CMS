@@ -18,7 +18,7 @@ interface NavLink {
 }
 
 export function PublicMobileNav() {
-  const nav = useTranslations("nav");
+  const nav = useTranslations("nav-public");
   const pub = useTranslations("public");
   const common = useTranslations("common");
   const pathname = usePathname();

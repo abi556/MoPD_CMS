@@ -39,4 +39,17 @@ describe('RBAC seed (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
   });
+
+  it('returns current user profile at GET /users/me', async () => {
+    const token = await loginAsRole(asSupertestApp(app), 'CaseOfficer');
+    const res = await request(asSupertestApp(app))
+      .get('/api/v1/users/me')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect(res.body.data).toMatchObject({
+      email: expect.any(String),
+      roles: expect.any(Array),
+      isActive: true,
+    });
+  });
 });

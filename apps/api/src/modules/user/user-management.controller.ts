@@ -67,6 +67,34 @@ export class UserManagementController {
     });
   }
 
+  @Get('users/me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiOkResponse({ type: UserDetailResponseDto })
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
+  async me(@CurrentUser() user: JwtUser): Promise<UserDetailResponseDto> {
+    return { data: await this.userManagementService.getCurrentUser(user.id) };
+  }
+
+  @Patch('users/me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update own profile' })
+  @ApiOkResponse({ type: UserDetailResponseDto })
+  @Throttle({ default: { limit: 60, ttl: 60000 } })
+  async updateMe(
+    @CurrentUser() user: JwtUser,
+    @Body() body: UpdateOwnProfileDto,
+  ): Promise<UserDetailResponseDto> {
+    return {
+      data: await this.userManagementService.updateCurrentUser(
+        user.id,
+        body.email,
+      ),
+    };
+  }
+
   @Get('users/:id')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('user:manage')
@@ -116,34 +144,6 @@ export class UserManagementController {
     @Param('id') id: string,
   ): Promise<UserDetailResponseDto> {
     return { data: await this.userManagementService.deactivateUser(id) };
-  }
-
-  @Get('users/me')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiOkResponse({ type: UserDetailResponseDto })
-  @Throttle({ default: { limit: 120, ttl: 60000 } })
-  async me(@CurrentUser() user: JwtUser): Promise<UserDetailResponseDto> {
-    return { data: await this.userManagementService.getCurrentUser(user.id) };
-  }
-
-  @Patch('users/me')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update own profile' })
-  @ApiOkResponse({ type: UserDetailResponseDto })
-  @Throttle({ default: { limit: 60, ttl: 60000 } })
-  async updateMe(
-    @CurrentUser() user: JwtUser,
-    @Body() body: UpdateOwnProfileDto,
-  ): Promise<UserDetailResponseDto> {
-    return {
-      data: await this.userManagementService.updateCurrentUser(
-        user.id,
-        body.email,
-      ),
-    };
   }
 
   @Get('roles')

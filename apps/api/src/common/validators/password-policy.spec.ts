@@ -2,11 +2,12 @@ import { isStrongPassword } from './password-policy';
 
 describe('password-policy', () => {
   it('accepts passwords meeting all rules', () => {
+    expect(isStrongPassword('Pass123!')).toBe(true);
     expect(isStrongPassword('BrandNewPass456!')).toBe(true);
     expect(isStrongPassword('AdminPass123!')).toBe(true);
   });
 
-  it('rejects passwords shorter than 12 characters', () => {
+  it('rejects passwords shorter than 8 characters', () => {
     expect(isStrongPassword('Short1!')).toBe(false);
   });
 

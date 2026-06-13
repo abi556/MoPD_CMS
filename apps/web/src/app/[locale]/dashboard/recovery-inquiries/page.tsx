@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
-import { RecoveryInquiriesPanel } from "@/components/dashboard/RecoveryInquiriesPanel";
+import { RequirePermission } from "@/components/auth/require-permission";
+import { RecoveryInquiriesPanel } from "@/components/staff/recovery/recovery-inquiries-panel";
 
 export default async function RecoveryInquiriesPage({
   params,
@@ -10,8 +11,8 @@ export default async function RecoveryInquiriesPage({
   setRequestLocale(locale);
 
   return (
-    <div className="p-6 md:p-8">
+    <RequirePermission permission="complaint:recovery:manage">
       <RecoveryInquiriesPanel />
-    </div>
+    </RequirePermission>
   );
 }

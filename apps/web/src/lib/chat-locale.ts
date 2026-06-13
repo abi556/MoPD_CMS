@@ -1,17 +1,10 @@
-import type { AbstractIntlMessages } from "next-intl";
 import type { AppLocale } from "@/i18n/routing";
+import { loadChatbotMessages as loadChatbotBundle } from "@/lib/i18n/load-messages";
 
 const STORAGE_KEY = "mopd_chat_locale";
 
-export async function loadChatbotMessages(
-  locale: AppLocale,
-): Promise<AbstractIntlMessages> {
-  const bundle =
-    locale === "am"
-      ? (await import("../../messages/am.json")).default
-      : (await import("../../messages/en.json")).default;
-
-  return { chatbot: bundle.chatbot };
+export async function loadChatbotMessages(locale: AppLocale) {
+  return loadChatbotBundle(locale);
 }
 
 export function readStoredChatLocale(): AppLocale | null {

@@ -1,0 +1,18 @@
+{
+  "title": "Send us a message",
+  "subtitle": "Fill out the form below and our team will get back to you as soon as possible.",
+  "nameLabel": "Full Name",
+  "namePlaceholder": "Enter your full name",
+  "emailLabel": "Email Address",
+  "emailPlaceholder": "you@example.com",
+  "subjectLabel": "Subject",
+  "subjectPlaceholder": "What is this regarding?",
+  "messageLabel": "Message",
+  "messagePlaceholder": "Type your message here...",
+  "submit": "Send Message",
+  "submitting": "Sending...",
+  "successTitle": "Message Sent Successfully!",
+  "successBody": "Thank you for contacting the Ministry of Planning and Development. We have received your message and will get back to you shortly.",
+  "errorTitle": "Submission Failed",
+  "errorBody": "There was an error submitting your message. Please try again."
+}

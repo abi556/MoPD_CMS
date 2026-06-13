@@ -1,8 +1,136 @@
 @import "tailwindcss";
 
+@custom-variant staff-dark (&:where(.staff-shell[data-theme=dark], .staff-shell[data-theme=dark] *));
+
 :root {
   --background: #fcf9f8;
   --foreground: #1c1b1b;
+}
+
+/* Staff dashboard shell theme (scoped to .staff-shell) */
+.staff-shell {
+  --staff-shell-bg: #f1f5f9;
+  --staff-sidebar-bg: #ffffff;
+  --staff-surface: #ffffff;
+  --staff-border: #e2e8f0;
+  --staff-text: #1c1b1b;
+  --staff-text-muted: #475569;
+  --staff-nav-active: #58874b;
+  --staff-nav-active-text: #ffffff;
+  --staff-nav-active-bg: #58874b;
+  --staff-nav-hover: #f6f3f2;
+  --staff-input-bg: #f6f3f2;
+  --staff-kpi-primary-from: #58874b;
+  --staff-kpi-primary-to: #22521f;
+  --staff-kpi-secondary-from: #bdf1a8;
+  --staff-kpi-secondary-to: #3d6930;
+  --staff-kpi-tertiary-from: #3a6b34;
+  --staff-kpi-tertiary-to: #22521f;
+  --staff-kpi-warning-from: #ca8a04;
+  --staff-kpi-warning-to: #a16207;
+  --staff-card-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  --staff-chart-submitted: #58874b;
+  --staff-chart-open: #2563eb;
+  --staff-chart-review: #d97706;
+  --staff-chart-resolved: #059669;
+  --staff-chart-closed: #475569;
+  --staff-chart-submitted-bar: #58874b;
+  --staff-chart-closed-bar: #64748b;
+  --staff-chart-channel-web: #58874b;
+  --staff-chart-channel-email: #2563eb;
+  --staff-chart-channel-sms: #d97706;
+  --staff-chart-channel-walkin: #7c3aed;
+}
+
+.staff-shell .staff-skeleton {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background-color: var(--staff-border);
+  opacity: 0.5;
+}
+
+.staff-shell[data-theme="dark"] .staff-skeleton {
+  opacity: 0.35;
+}
+
+.staff-shell[data-theme="dark"] {
+  --staff-shell-bg: #0f1210;
+  --staff-sidebar-bg: #141a16;
+  --staff-surface: #1a221c;
+  --staff-border: #2a352e;
+  --staff-text: #e8efe8;
+  --staff-text-muted: #94a89a;
+  --staff-nav-active: #6fa362;
+  --staff-nav-active-text: #ffffff;
+  --staff-nav-active-bg: #58874b;
+  --staff-nav-hover: rgba(255, 255, 255, 0.06);
+  --staff-input-bg: #141a16;
+  --staff-kpi-primary-from: #58874b;
+  --staff-kpi-primary-to: #1a3d18;
+  --staff-kpi-secondary-from: #3d6930;
+  --staff-kpi-secondary-to: #22521f;
+  --staff-kpi-tertiary-from: #3a6b34;
+  --staff-kpi-tertiary-to: #141a16;
+  --staff-kpi-warning-from: #ca8a04;
+  --staff-kpi-warning-to: #713f12;
+  --staff-card-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  --staff-chart-submitted: #6fa362;
+  --staff-chart-open: #60a5fa;
+  --staff-chart-review: #fbbf24;
+  --staff-chart-resolved: #34d399;
+  --staff-chart-closed: #94a3b8;
+  --staff-chart-submitted-bar: #6fa362;
+  --staff-chart-closed-bar: #94a3b8;
+  --staff-chart-channel-web: #6fa362;
+  --staff-chart-channel-email: #60a5fa;
+  --staff-chart-channel-sms: #fbbf24;
+  --staff-chart-channel-walkin: #a78bfa;
+}
+
+/* Staff utilities reference scoped CSS vars on .staff-shell (not @theme — vars are undefined at :root). */
+@utility bg-staff-shell {
+  background-color: var(--staff-shell-bg);
+}
+@utility bg-staff-sidebar {
+  background-color: var(--staff-sidebar-bg);
+}
+@utility bg-staff-surface {
+  background-color: var(--staff-surface);
+}
+@utility bg-staff-input-bg {
+  background-color: var(--staff-input-bg);
+}
+@utility bg-staff-nav-active-bg {
+  background-color: var(--staff-nav-active-bg);
+}
+@utility bg-staff-nav-hover {
+  background-color: var(--staff-nav-hover);
+}
+@utility bg-staff-nav-active {
+  background-color: var(--staff-nav-active);
+}
+@utility text-staff-text {
+  color: var(--staff-text);
+}
+@utility text-staff-text-muted {
+  color: var(--staff-text-muted);
+}
+@utility text-staff-nav-active {
+  color: var(--staff-nav-active);
+}
+@utility text-staff-nav-active-text {
+  color: var(--staff-nav-active-text);
+}
+@utility border-staff-border {
+  border-color: var(--staff-border);
+}
+@utility border-staff-nav-active {
+  border-color: var(--staff-nav-active);
+}
+@utility ring-staff-nav-active {
+  --tw-ring-color: var(--staff-nav-active);
+}
+@utility shadow-staff-card {
+  box-shadow: var(--staff-card-shadow);
 }
 
 @theme inline {
@@ -75,9 +203,6 @@
   --color-sla-yellow: var(--color-warning);
   --color-sla-red: var(--color-danger);
   --color-focus-ring: var(--color-primary);
-
-  /* Border radius — subtle corner softening for buttons (tweak here) */
-  --radius-button: 10px;
 
   /* Spacing */
   --spacing-sidebar-wide: 256px;

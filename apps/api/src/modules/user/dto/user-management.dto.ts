@@ -51,7 +51,7 @@ export class CreateUserDto {
     example: 'StrongPass123!',
     minLength: PASSWORD_MIN_LENGTH,
     description:
-      'Initial password: min 12 chars with uppercase, lowercase, number, and special character.',
+      'Initial password: min 8 chars with uppercase, lowercase, number, and special character (12+ recommended).',
   })
   @IsString()
   @MinLength(PASSWORD_MIN_LENGTH)

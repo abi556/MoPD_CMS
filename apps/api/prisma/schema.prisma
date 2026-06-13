@@ -222,6 +222,7 @@ model User {
   passwordHash       String
   passwordVersion    Int        @default(0)
   mustChangePassword Boolean    @default(false)
+  mustEnrollMfa      Boolean    @default(false)
   mfaEnabled         Boolean    @default(false)
   mfaMethod          String?
   totpSecret         String?

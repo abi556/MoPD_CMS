@@ -15,7 +15,7 @@ export class ResetPasswordDto {
     example: 'NewSecurePass123!',
     minLength: PASSWORD_MIN_LENGTH,
     description:
-      'New password: min 12 chars with uppercase, lowercase, number, and special character.',
+      'New password: min 8 chars with uppercase, lowercase, number, and special character (12+ recommended).',
   })
   @IsString()
   @MinLength(PASSWORD_MIN_LENGTH)

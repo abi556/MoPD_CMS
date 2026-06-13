@@ -1,0 +1,63 @@
+{
+  "heroEyebrow": "የእቅድ እና ልማት ሚኒስቴር",
+  "heroTitle": "የቅሬታ አስተዳደር ስርዓት",
+  "officialPortal": "ይፋዊ የመንግስት ፖርታል",
+  "heroHeading": "ወደ የእቅድ እና ልማት ሚኒስቴር <highlight>ቅሬታ</highlight> ያስገቡ ወይም ይከታተሉ።",
+  "heroBody": "ቅሬታ ያስገቡ፣ የመከታተያ ቁጥር ይቀበሉ፣ እና ሂደቱን በመስመር ይከታተሉ።",
+  "heroBodyExtended": "ለዜጎች ያተኮረ መድረካችን በአስተዳደራዊ ሂደቶች ግልጽነትን እና ተጠያቂነትን ያረጋግጣል።",
+  "heroIllustrationAlt": "ቅሬታ ሰነዶች ወደ የተረጋገጡ ውጤቶች የሚቀየሩበት የሶስት አቅጣጫ ምስል",
+  "complaintIdLabel": "የቅሬታ መለያ",
+  "processTitle": "ሂደቱ እንዴት ይሰራል",
+  "processSubtitle": "ከመጀመሪያ ማስገባት እስከ መጨረሻ ውሳኔ ድረስ ግልጽ የሆነ አራት-ደረጃ ጉዞ።",
+  "steps": {
+    "submission": {
+      "title": "ማስገባት",
+      "body": "ስለ ቅሬታዎ ዝርዝር መረጃ እና የሚደግፉ ፋይሎችን ያቅርቡ።"
+    },
+    "review": {
+      "title": "ግምገማ",
+      "body": "MoPD ቅሬታውን ያረጋግጣል እና ለተጠሪ ሰራተኛ ይመድባል።"
+    },
+    "investigation": {
+      "title": "ምርመራ",
+      "body": "የተመደበው ባለሙያ ማስረጃዎችን ይሰበስባል እና ጉዳዩን ይፈታል።"
+    },
+    "resolution": {
+      "title": "መፍትሄ",
+      "body": "የመጨረሻ ውሳኔ እና የመፍትሄ ውጤት በመደበኛ መንገድ ይገለጻል።"
+    }
+  },
+  "readyTitle": "ለመጀመር ዝግጁ ነዎት?",
+  "readyBody": "አዲስ ቅሬታ ያስገቡ ወይም ነባር ጉዳይን በማጣቀሻ ቁጥርዎ ይከታተሉ።",
+  "startSubmission": "ማስገባት ጀምር",
+  "landmarksAlt": "የአዲስ አበባ መሪ ሕንፃዎች እና ታሪካዊ ቦታዎች",
+  "trust": {
+    "secure": {
+      "title": "ደህንነት እና ግላዊነት",
+      "body": "መረጃዎ በኢትዮጵያ የግል ዳታ ጥበቃ አዋጅ ቁጥር 1321/2024 መሠረት ይጠበቃል።"
+    },
+    "tracking": {
+      "title": "በቀጥታ መከታተል",
+      "body": "በልዩ እና ደህንነቱ የተጠበቀ የማጣቀሻ ቁጥርዎ ቅሬታዎን በየጊዜው መከታተል ይችላሉ።"
+    },
+    "citizenCentered": {
+      "title": "ለዜጎች ያተኮረ",
+      "body": "በአስተዳደራዊ ሂደቶች ውስጥ ግልጽነት፣ ፍትሃዊነት እና ተጠያቂነትን ለማረጋገጥ የተነደፈ።"
+    }
+  },
+  "footerDescription": "የእቅድ እና ልማት ሚኒስቴር (MoPD) የቅሬታ አስተዳደር ስርዓት። ይበልጥ ፈጣን እና ምላሽ ሰጪ አስተዳደር በመገንባት ላይ።",
+  "footerDescriptionLine1": "የእቅድ እና ልማት ሚኒስቴር (MoPD) የቅሬታ አስተዳደር",
+  "footerDescriptionLine2": "ስርዓት። ይበልጥ ፈጣን እና ምላሽ ሰጪ አስተዳደር በመገንባት ላይ።",
+  "footerPrivacy": "የግላዊነት ፖሊሲ",
+  "footerTerms": "የአገልግሎት ውሎች",
+  "footerContact": "ያግኙን",
+  "footerAccessibility": "ተደራሽነት",
+  "footerFaq": "ተደጋጋሚ ጥያቄዎች",
+  "footerLegalLinks": "ሕግ",
+  "footerHelpLinks": "እርዳታ",
+  "footerPortalLinks": "ፖርታል",
+  "footerCopyright": "© 2026 የእቅድ እና ልማት ሚኒስቴር (MoPD)። መብቶች በሙሉ የተጠበቁ ናቸው።",
+  "ctaSubmit": "ቅሬታ አስገባ",
+  "ctaTrack": "በማጣቀሻ ቁጥር ተከታተል",
+  "phase0Note": "መሠረት በመገንባት ላይ — የሰራተኛ እና አስተዳደር ገጾች በቀጣይ ደረጃዎች ይመጣሉ።"
+}

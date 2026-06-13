@@ -15,9 +15,9 @@ export function StaffLoginShowcase() {
 
   return (
     <aside className="relative hidden bg-[#f0f2f5] lg:flex lg:h-full lg:min-h-0 lg:flex-1 lg:flex-col lg:px-8 lg:py-6 lg:pr-10">
-      <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden rounded-[2rem] bg-neutral-950 px-10 py-10 text-white shadow-2xl">
+      <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden rounded-4xl bg-neutral-950 px-10 py-10 text-white shadow-2xl">
         {/* Diagonal highlight streak */}
-        <div className="pointer-events-none absolute -right-24 top-8 h-[110%] w-44 rotate-[35deg] bg-gradient-to-b from-white/20 via-white/5 to-transparent" />
+        <div className="pointer-events-none absolute -right-24 top-8 h-[110%] w-44 rotate-35 bg-linear-to-b from-white/20 via-white/5 to-transparent" />
 
         <div className="relative z-10 flex flex-col gap-6">
           <div className="flex shrink-0 justify-center">

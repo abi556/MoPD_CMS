@@ -1,0 +1,80 @@
+{
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "toggle": "Theme: {mode}"
+  },
+  "forbidden": {
+    "eyebrow": "403 Forbidden",
+    "title": "You do not have access",
+    "body": "Your account does not have permission to view this page. Contact your system administrator if you believe this is an error."
+  },
+  "shell": {
+    "searchPlaceholder": "Search dashboard…",
+    "notifications": "Notifications",
+    "help": "Help"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Complaint operations at a glance",
+    "totalOpen": "Open complaints",
+    "triageQueue": "Triage queue",
+    "qaReview": "QA / legal review",
+    "slaAtRisk": "SLA at risk",
+    "slaPlaceholder": "—",
+    "slaTooltip": "SLA metrics ship in Phase 2",
+    "loading": "Loading metrics…",
+    "error": "Could not load dashboard metrics.",
+    "retry": "Try again",
+    "empty": "No complaint activity to display yet.",
+    "exportReport": "Export report",
+    "chartTitle": "Complaint volume overview",
+    "chartSubtitle": "Trends across open, triage, and review queues",
+    "chartPlaceholder": "Chart data ships in Phase 2",
+    "topCategories": "Top categories",
+    "topCategoriesHint": "Based on complaint volume in the last 30 days",
+    "recentQueue": "Recent queue activity",
+    "recentQueueHint": "Latest triage and assignment events",
+    "tabs": {
+      "overview": "Overview",
+      "byStatus": "By status",
+      "byChannel": "By channel",
+      "byOrgUnit": "By org unit"
+    },
+    "legend": {
+      "open": "Open",
+      "triage": "Triage",
+      "qa": "QA review",
+      "sla": "SLA at risk"
+    },
+    "analytics": {
+      "sampleNote": "Sample data until report APIs ship (GET /reports/dashboard/*).",
+      "statusTitle": "Complaint status mix",
+      "statusSubtitle": "Submitted, open, in review, resolved, and closed",
+      "slaTitle": "SLA compliance",
+      "slaSubtitle": "On-time resolution rate. Targets from configured SLA rules.",
+      "volumeTitle": "Weekly intake vs closure",
+      "volumeSubtitle": "Submitted and closed complaints over the last six weeks",
+      "channelsTitle": "Intake by channel",
+      "channelsSubtitle": "Share of complaints by intake channel",
+      "viewReport": "View full report",
+      "drillOpen": "View open complaints",
+      "submitted": "Submitted",
+      "closed": "Closed",
+      "status": {
+        "submitted": "Submitted",
+        "open": "Open / triage",
+        "inReview": "Under review",
+        "resolved": "Resolved",
+        "closed": "Closed"
+      },
+      "channels": {
+        "web": "Web portal",
+        "email": "Email",
+        "sms": "SMS",
+        "walkIn": "Walk-in"
+      }
+    }
+  }
+}

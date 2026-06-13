@@ -11,7 +11,7 @@ export default function LocaleError({
 }) {
   const t = useTranslations("errors");
   const common = useTranslations("common");
-  const nav = useTranslations("nav");
+  const nav = useTranslations("nav-public");
 
   return (
     <ErrorScreen

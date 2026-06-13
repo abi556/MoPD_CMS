@@ -5,7 +5,7 @@ import { BrokenLinkArt } from "@/components/public/error-illustrations";
 
 export default async function NotFound() {
   const t = await getTranslations("errors");
-  const nav = await getTranslations("nav");
+  const nav = await getTranslations("nav-public");
 
   return (
     <PublicShell>

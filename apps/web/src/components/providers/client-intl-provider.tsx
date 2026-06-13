@@ -12,8 +12,14 @@ import {
   NextIntlClientProvider,
   type AbstractIntlMessages,
 } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { appTimeZone } from "@/i18n/config";
 import type { AppLocale } from "@/i18n/routing";
+import {
+  getLocaleFromPathname,
+  replaceLocaleInPathname,
+} from "@/lib/i18n/locale-path";
+import { loadMessages } from "@/lib/i18n/load-messages";
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
 
@@ -22,16 +28,6 @@ type ClientIntlContextValue = {
 };
 
 const ClientIntlContext = createContext<ClientIntlContextValue | null>(null);
-
-async function loadMessages(locale: AppLocale): Promise<AbstractIntlMessages> {
-  switch (locale) {
-    case "am":
-      return (await import("../../../messages/am.json")).default;
-    case "en":
-    default:
-      return (await import("../../../messages/en.json")).default;
-  }
-}
 
 function applyDocumentLocale(locale: AppLocale) {
   document.documentElement.lang = locale;
@@ -55,22 +51,32 @@ export function ClientIntlProvider({
 }: ClientIntlProviderProps) {
   const [locale, setLocale] = useState<AppLocale>(initialLocale);
   const [messages, setMessages] = useState<AbstractIntlMessages>(initialMessages);
-  const router = useRouter();
   const pathname = usePathname();
 
-  // Reload message bundles so JSON edits (and client locale switches) stay in sync.
+  // Follow server locale on real navigations (links, back/forward). Skip when the
+  // URL was updated client-side via replaceState during switchLocale.
   useEffect(() => {
+    if (initialLocale === locale) {
+      return;
+    }
+
+    const urlLocale = getLocaleFromPathname(window.location.pathname);
+    if (urlLocale && urlLocale !== initialLocale) {
+      return;
+    }
+
     let cancelled = false;
     void loadMessages(initialLocale).then((nextMessages) => {
       if (!cancelled) {
         setLocale(initialLocale);
         setMessages(nextMessages);
+        applyDocumentLocale(initialLocale);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [initialLocale]);
+  }, [initialLocale, locale]);
 
   const switchLocale = useCallback(
     async (nextLocale: AppLocale) => {
@@ -81,32 +87,23 @@ export function ClientIntlProvider({
       const nextMessages = await loadMessages(nextLocale);
       setLocale(nextLocale);
       setMessages(nextMessages);
-      
-      // Set cookie so the server knows the preference on future requests
+
       document.cookie = `${LOCALE_COOKIE}=${nextLocale};path=/;max-age=31536000;samesite=lax`;
-      
       applyDocumentLocale(nextLocale);
 
-      // Construct the new URL with the updated locale segment
-      const segments = pathname.split("/");
-      if (segments.length > 1 && (segments[1] === "en" || segments[1] === "am")) {
-        segments[1] = nextLocale;
-      } else {
-        segments.splice(1, 0, nextLocale);
-      }
-      const nextPath = segments.join("/") || `/${nextLocale}`;
-
-      // Trigger Next.js router transition to fetch the Server Components in the new locale
+      const nextPath = replaceLocaleInPathname(pathname, nextLocale);
       const search = window.location.search;
       const url = search ? `${nextPath}${search}` : nextPath;
-      router.replace(url);
+
+      // Client-only URL update — avoids RSC refetch, auth remount, and skeleton flash.
+      window.history.replaceState(window.history.state, "", url);
     },
-    [locale, pathname, router],
+    [locale, pathname],
   );
 
   return (
     <ClientIntlContext.Provider value={{ switchLocale }}>
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages} timeZone={appTimeZone}>
         {children}
       </NextIntlClientProvider>
     </ClientIntlContext.Provider>

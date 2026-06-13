@@ -12,6 +12,7 @@ import {
 import Image from "next/image";
 import { Send, Sparkles, X } from "lucide-react";
 import { NextIntlClientProvider, useTranslations } from "next-intl";
+import { appTimeZone } from "@/i18n/config";
 import type { AbstractIntlMessages } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
@@ -306,7 +307,7 @@ export function ChatPanel({
   const initialWelcome = (messages.chatbot as { welcome: string }).welcome;
 
   return (
-    <NextIntlClientProvider locale={chatLocale} messages={messages}>
+    <NextIntlClientProvider locale={chatLocale} messages={messages} timeZone={appTimeZone}>
       <ChatPanelInner
         chatLocale={chatLocale}
         initialWelcome={initialWelcome}

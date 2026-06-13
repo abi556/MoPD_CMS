@@ -14,6 +14,7 @@ interface AuthUserWithRoles {
   passwordHash: string;
   passwordVersion: number;
   mustChangePassword: boolean;
+  mustEnrollMfa: boolean;
   mfaEnabled: boolean;
   mfaMethod: string | null;
   totpSecret: string | null;
@@ -444,13 +445,28 @@ export class UserService {
     userId: string,
     passwordHash: string,
   ): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new Error(`User not found: ${userId}`);
+    }
+    const mustEnrollMfa =
+      user.mustEnrollMfa || (user.mustChangePassword && !user.mfaEnabled);
+
     await this.prisma.user.update({
       where: { id: userId },
       data: {
         passwordHash,
         passwordVersion: { increment: 1 },
         mustChangePassword: false,
+        mustEnrollMfa,
       },
+    });
+  }
+
+  async deferMfaEnrollment(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { mustEnrollMfa: false },
     });
   }
 
@@ -465,7 +481,10 @@ export class UserService {
   ): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
-      data,
+      data: {
+        ...data,
+        ...(data.mfaEnabled ? { mustEnrollMfa: false } : {}),
+      },
     });
   }
 

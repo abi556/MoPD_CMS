@@ -61,6 +61,7 @@ interface StoredUser {
   passwordHash: string;
   passwordVersion: number;
   mustChangePassword: boolean;
+  mustEnrollMfa: boolean;
   mfaEnabled: boolean;
   mfaMethod: string | null;
   totpSecret: string | null;
@@ -571,6 +572,7 @@ export function createPrismaMock(): PrismaService {
           StoredUser,
           | 'passwordVersion'
           | 'mustChangePassword'
+          | 'mustEnrollMfa'
           | 'mfaEnabled'
           | 'mfaMethod'
           | 'totpSecret'
@@ -584,6 +586,7 @@ export function createPrismaMock(): PrismaService {
       isActive: create.isActive,
       passwordVersion: create.passwordVersion ?? 0,
       mustChangePassword: create.mustChangePassword ?? false,
+      mustEnrollMfa: create.mustEnrollMfa ?? false,
       mfaEnabled: create.mfaEnabled ?? false,
       mfaMethod: create.mfaMethod ?? null,
       totpSecret: create.totpSecret ?? null,

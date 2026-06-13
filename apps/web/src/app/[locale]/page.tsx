@@ -63,7 +63,7 @@ export default async function LandingPage({
       {/* Hero Section */}
       <section className="relative overflow-x-clip bg-brand-wash pb-16 pt-12 sm:pb-20 sm:pt-16 md:pb-32 md:pt-24">
         {/* Subtle background grid pattern for premium tech-gov feel */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25 md:right-[41.666667%]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-size-[4rem_4rem] [mask-image:radial-gradient  (ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25 md:right-[41.666667%]" />
 
         <div className="relative mx-auto grid w-full max-w-max-width items-center gap-8 px-gutter md:grid-cols-12 md:gap-6 lg:gap-8">
           <div className="space-y-6 md:col-span-7 animate-fade-in-up">
@@ -223,7 +223,7 @@ export default async function LandingPage({
               </div>
 
               <div className="relative overflow-hidden rounded-none border border-white/10 bg-black/30 p-5 backdrop-blur-sm animate-fade-in-up fill-mode-both [animation-delay:400ms] sm:p-6 md:p-8">
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-5" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] opacity-5" />
 
                 <div className="relative z-10 flex flex-col gap-5 sm:gap-6 md:flex-row md:items-center md:justify-between">
                   <div className="min-w-0">

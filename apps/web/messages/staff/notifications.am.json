@@ -1,0 +1,18 @@
+{
+  "title": "ማሳወቂያዎች",
+  "subtitle": "የኢሜይል ማድረሻ ሁኔታን ይከታተሉ እና የተሳሳቱን እንደገና ይላኩ።",
+  "templateKey": "አብነት",
+  "to": "ተቀባይ",
+  "status": "ሁኔታ",
+  "sentAt": "የተላከበት",
+  "lastError": "የመጨረሻ ስህተት",
+  "resend": "እንደገና ላክ",
+  "filterStatus": "ሁኔታ",
+  "filterTo": "የተቀባይ ኢሜይል",
+  "filterTemplateKey": "የአብነት ቁልፍ",
+  "emptyTitle": "ማድረሻ አልተገኘም",
+  "emptyDescription": "ማጣሪያዎችን ያስተካክሉ ወይም ማሳወቂያ ያስነሱ።",
+  "confirmResendTitle": "ማሳወቂያ እንደገና ይላክ?",
+  "confirmResendDescription": "አዲስ ማድረሻ በተመሳሳይ አብነት እና ተቀባይ ይጠበቃል።",
+  "resendQueuedConflict": "ማድረሻ በመጠባበቅ ላይ ሲሆን እንደገና መላክ አይቻልም።"
+}

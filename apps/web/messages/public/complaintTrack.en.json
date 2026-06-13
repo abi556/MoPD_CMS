@@ -1,0 +1,83 @@
+{
+  "title": "Track Complaint Status",
+  "intro": "Enter your unique reference number to securely check the status and updates of your submitted complaint.",
+  "referenceLabel": "Reference Number",
+  "referencePlaceholder": "e.g., CMS-2026-ABCD1234WXYZ",
+  "search": "Check Status",
+  "searching": "Checking…",
+  "loading": "Loading…",
+  "lostReference": "Lost your reference number?",
+  "recoverReference": "Recover your reference",
+  "resultsHeading": "Tracking results for: {reference}",
+  "searchAnother": "Track another complaint",
+  "currentStatus": "Current status",
+  "subject": "Subject",
+  "submittedAt": "Submission date",
+  "timelineTitle": "Progress timeline",
+  "progress": {
+    "label": "Overall progress",
+    "stepOf": "Step {current} of {total}",
+    "loading": "Fetching your complaint status…",
+    "errorHint": "We could not find this reference. Check the number and try again."
+  },
+  "timeline": {
+    "received": {
+      "title": "Complaint received",
+      "body": "Your complaint enters the MoPD system with a reference number."
+    },
+    "review": {
+      "title": "Under review",
+      "body": "MoPD reviews your submission and assigns it to the responsible team."
+    },
+    "investigation": {
+      "title": "In investigation",
+      "body": "Staff investigate the case, prepare a response, and complete internal review."
+    },
+    "response": {
+      "title": "Response issued",
+      "body": "You receive MoPD's response and may provide feedback or request an appeal."
+    },
+    "closed": {
+      "title": "Case closed",
+      "body": "The case is complete."
+    }
+  },
+  "statusDetail": {
+    "SUBMITTED": "Your complaint is registered in our system. A reference number has been issued so you can track progress here.",
+    "TRIAGE": "MoPD is reviewing your submission, checking details, and deciding how your complaint should be handled.",
+    "ASSIGNED": "Your complaint has been assigned to a responsible MoPD team or officer. They will take the next steps on your case.",
+    "IN_INVESTIGATION": "Assigned staff are examining the facts and details of your complaint.",
+    "DRAFT_RESPONSE": "MoPD is preparing a formal written response to your complaint.",
+    "QA_LEGAL_REVIEW": "The draft response is being reviewed for quality and legal compliance before it is issued to you.",
+    "RESPONSE_ISSUED": "MoPD has issued a formal response. Please review the outcome communicated to you.",
+    "AWAITING_FEEDBACK": "MoPD is waiting for your feedback on the response. Your input may help close or continue the case.",
+    "APPEAL": "An appeal or further review has been registered. Your complaint is being re-examined by MoPD.",
+    "CLOSED": "This complaint is closed. No further routine updates are expected unless a separate appeal process still applies."
+  },
+  "status": {
+    "SUBMITTED": "Submitted",
+    "TRIAGE": "Under triage",
+    "ASSIGNED": "Assigned",
+    "IN_INVESTIGATION": "In investigation",
+    "DRAFT_RESPONSE": "Draft response",
+    "QA_LEGAL_REVIEW": "Legal review",
+    "RESPONSE_ISSUED": "Response issued",
+    "AWAITING_FEEDBACK": "Awaiting feedback",
+    "APPEAL": "Appeal",
+    "CLOSED": "Closed"
+  },
+  "appealGuidance": {
+    "title": "Disagree with the outcome?",
+    "bodyBeforeEmail": "If you wish to appeal or request further review, email",
+    "bodyBetween": "or",
+    "contactLink": "contact us through our contact page",
+    "bodyAfter": "."
+  },
+  "errors": {
+    "title": "Unable to load tracking",
+    "referenceAttempted": "Reference searched: {reference}",
+    "referenceRequired": "Enter a reference number.",
+    "notFound": "No complaint found for that reference. Check the number and try again.",
+    "generic": "Could not load tracking information. Please try again."
+  }
+}

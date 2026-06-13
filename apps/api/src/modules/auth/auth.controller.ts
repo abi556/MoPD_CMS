@@ -311,11 +311,7 @@ export class AuthController {
     type: MfaStatusResponseDto,
   })
   async mfaStatus(@CurrentUser() user: JwtUser): Promise<{
-    data: {
-      enrolled: boolean;
-      provider: 'totp';
-      policy: 'optional' | 'required';
-    };
+    data: Awaited<ReturnType<AuthService['describeMfaStatus']>>;
   }> {
     const status = await this.authService.describeMfaStatus(user.id);
     return { data: status };
@@ -371,6 +367,23 @@ export class AuthController {
       request.correlationId,
     );
     return { data: { message: 'MFA enrollment confirmed.' } };
+  }
+
+  @Post('mfa/skip')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Defer optional MFA enrollment (admin-created users cannot skip)',
+  })
+  async mfaSkip(
+    @CurrentUser() user: JwtUser,
+    @Req() request: RequestWithCorrelationId,
+  ): Promise<{ data: { message: string } }> {
+    await this.authService.skipMfaEnrollment(user.id, request.correlationId);
+    return {
+      data: { message: 'You can enable MFA later from Profile → MFA.' },
+    };
   }
 
   @Post('mfa/verify')
@@ -504,17 +517,11 @@ export class AuthController {
     description: 'Access token is missing or invalid.',
     type: ErrorResponseDto,
   })
-  me(@CurrentUser() user: JwtUser): {
-    data: { id: string; email: string; roles: string[]; permissions: string[] };
-  } {
-    return {
-      data: {
-        id: user.id,
-        email: user.email,
-        roles: user.roles,
-        permissions: user.permissions,
-      },
-    };
+  async me(@CurrentUser() user: JwtUser): Promise<{
+    data: Awaited<ReturnType<AuthService['getSessionProfile']>>;
+  }> {
+    const data = await this.authService.getSessionProfile(user.id);
+    return { data };
   }
 
   private getRefreshTokenFromCookie(request: Request): string {

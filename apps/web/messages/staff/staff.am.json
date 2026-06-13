@@ -1,0 +1,80 @@
+{
+  "theme": {
+    "system": "ስርዓት",
+    "light": "ብርሃን",
+    "dark": "ጨለማ",
+    "toggle": "ገጽታ: {mode}"
+  },
+  "forbidden": {
+    "eyebrow": "403 የተከለከለ",
+    "title": "መዳረሻ የለዎትም",
+    "body": "ይህን ገጽ ለማየት ፈቃድ የለዎትም። ችግሩ ከሆነ የስርዓት አስተዳዳሪዎን ያነጋግሩ።"
+  },
+  "shell": {
+    "searchPlaceholder": "ዳሽቦርድ ፈልግ…",
+    "notifications": "ማሳወቂያዎች",
+    "help": "እገዛ"
+  },
+  "dashboard": {
+    "title": "ዳሽቦርድ",
+    "subtitle": "የቅሬታ ስራዎች በአጭሩ",
+    "totalOpen": "ክፍት ቅሬታዎች",
+    "triageQueue": "የትሪያዥ ወረፋ",
+    "qaReview": "የQA / ህጋዊ ግምገማ",
+    "slaAtRisk": "አደጋ ላይ ያለ SLA",
+    "slaPlaceholder": "—",
+    "slaTooltip": "የSLA መለኪያዎች በሁለኛው ደረጃ ይመጣሉ",
+    "loading": "መለኪያዎች በመጫን ላይ…",
+    "error": "የዳሽቦርድ መለኪያዎችን ማግኘት አልተቻለም።",
+    "retry": "እንደገና ይሞክሩ",
+    "empty": "እስካሁን ለማሳየት የቅሬታ እንቅስቃሴ የለም።",
+    "exportReport": "ሪፖርት ላክ",
+    "chartTitle": "የቅሬታ መጠን አጠቃላይ እይታ",
+    "chartSubtitle": "በክፍት፣ ትሪያዥ እና ግምገማ ወረፎች ውስጥ ያሉ አዝማሚያዎች",
+    "chartPlaceholder": "የግራፍ መረጃ በሁለኛው ደረጃ ይመጣል",
+    "topCategories": "ከፍተኛ ምድቦች",
+    "topCategoriesHint": "ባለፉ 30 ቀናት ውስጥ በቅሬታ መጠን",
+    "recentQueue": "የቅርብ ጊዜ ወረፋ እንቅስቃሴ",
+    "recentQueueHint": "የቅርብ ጊዜ ትሪያዥ እና መመደብ ክሰተቶች",
+    "tabs": {
+      "overview": "አጠቃላይ",
+      "byStatus": "በሁኔታ",
+      "byChannel": "በቻናል",
+      "byOrgUnit": "በድርጅታዊ ክፍል"
+    },
+    "legend": {
+      "open": "ክፍት",
+      "triage": "ትሪያዥ",
+      "qa": "QA ግምገማ",
+      "sla": "SLA አደጋ"
+    },
+    "analytics": {
+      "sampleNote": "የሪፖርት API እስኪመጣ ድረስ የናሙና ውሂብ (GET /reports/dashboard/*)።",
+      "statusTitle": "የቅሬታ ሁኔታ ድምር",
+      "statusSubtitle": "የተላኩ፣ ክፍት፣ በግምገማ፣ የተፈቱ እና የተዘጉ",
+      "slaTitle": "SLA ተገዢነት",
+      "slaSubtitle": "በጊዜ መፍትሄ መጠን። ከተዋቀሩ የSLA ደንቦች።",
+      "volumeTitle": "ሳምንታዊ ግብዣ እና መዝጋት",
+      "volumeSubtitle": "ባለፉት ስድስት ሳምንታት የተላኩ እና የተዘጉ ቅሬታዎች",
+      "channelsTitle": "በቻናል ግብዣ",
+      "channelsSubtitle": "ቅሬታዎች በግብዣ ቻናል ድርሻ",
+      "viewReport": "ሙሉ ሪፖርት ይመልከቱ",
+      "drillOpen": "ክፍት ቅሬታዎች ይመልከቱ",
+      "submitted": "የተላኩ",
+      "closed": "የተዘጉ",
+      "status": {
+        "submitted": "የተላኩ",
+        "open": "ክፍት / ትሪያዥ",
+        "inReview": "በግምገማ",
+        "resolved": "የተፈቱ",
+        "closed": "የተዘጉ"
+      },
+      "channels": {
+        "web": "የድር ፖርታል",
+        "email": "ኢሜይል",
+        "sms": "SMS",
+        "walkIn": "በቀጥታ መገኘት"
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "notFoundEyebrow": "Page not found",
+  "notFoundTitle": "This page took a wrong turn",
+  "notFoundBody": "The page you're looking for doesn't exist or has been moved. Let's get you back on track.",
+  "genericEyebrow": "Something went wrong",
+  "genericTitle": "We hit an unexpected error",
+  "genericBody": "An unexpected error occurred while loading this page. You can try again, and if it keeps happening, please come back a little later.",
+  "tooManyRequests": "Too many requests. Please wait a moment and try again."
+}

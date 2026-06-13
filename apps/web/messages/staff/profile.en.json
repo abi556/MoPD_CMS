@@ -1,0 +1,22 @@
+{
+  "title": "Profile",
+  "subtitle": "Manage your account, password, and sign-in security.",
+  "accountTitle": "Account",
+  "accountSubtitle": "Your staff identity in MoPD CMS.",
+  "emailLabel": "Email",
+  "rolesLabel": "Roles",
+  "noRoles": "No roles assigned",
+  "passwordTitle": "Password",
+  "passwordSubtitle": "Minimum 8 characters with upper, lower, number, and special character (12+ recommended).",
+  "passwordSuccess": "Password updated successfully.",
+  "securityTitle": "Two-factor authentication",
+  "securitySubtitle": "Add an extra layer of protection when signing in.",
+  "mfaNotEnrolled": "MFA is not enabled on your account.",
+  "mfaEnrollCta": "Set up authenticator",
+  "mfaDisableTitle": "Disable two-factor authentication",
+  "mfaDisableHint": "Enter your current password to turn off MFA.",
+  "mfaDisableSubmit": "Disable MFA",
+  "mfaDisableSuccess": "Two-factor authentication has been disabled.",
+  "mfaDisableBlocked": "Your role requires MFA and it cannot be disabled.",
+  "cancel": "Cancel"
+}

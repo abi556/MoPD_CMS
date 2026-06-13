@@ -6,7 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { apiPost, ApiError } from "@/lib/api-client";
+import { staffRoutes } from "@/lib/staff/routes";
 import { Button } from "@/components/ui/button";
+import { AuthFieldInput } from "@/components/forms/auth-field-input";
 
 type ForgotPasswordResponse = { message: string };
 
@@ -21,6 +23,7 @@ export function ForgotPasswordForm() {
   useEffect(() => {
     const fromQuery = searchParams.get("email");
     if (fromQuery) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- prefill from query
       setEmail(fromQuery);
     }
   }, [searchParams]);
@@ -60,7 +63,7 @@ export function ForgotPasswordForm() {
         </p>
         <div className="mt-8">
           <Link
-            href="/auth/login"
+            href={staffRoutes.auth.login}
             className="text-sm font-semibold text-on-surface underline-offset-4 hover:underline"
           >
             {t("backToSignIn")}
@@ -89,7 +92,7 @@ export function ForgotPasswordForm() {
               className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-placeholder"
               aria-hidden
             />
-            <input
+            <AuthFieldInput
               id="email"
               name="email"
               type="email"
@@ -127,7 +130,7 @@ export function ForgotPasswordForm() {
 
       <div className="mt-8 text-sm">
         <Link
-          href="/auth/login"
+          href={staffRoutes.auth.login}
           className="font-semibold text-on-surface underline-offset-4 hover:underline"
         >
           {t("backToSignIn")}

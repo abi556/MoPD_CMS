@@ -1,0 +1,17 @@
+{
+  "title": "የማጣቀሻ መመለስ ጥያቄዎች",
+  "intro": "ራስ-ሰር መመለስ ለማይሆኑ ዜጎች ወሬ።",
+  "status": "ሁኔታ",
+  "subject": "ርዕስ",
+  "submitted": "ተላከ",
+  "resolve": "አጠናቅቅ",
+  "referenceNo": "ማጣቀሻ",
+  "matchedId": "የቅሬታ መለያ",
+  "loadCandidates": "አማራጮች",
+  "contactEmail": "ኢሜይል",
+  "reject": "አትቀበል (ኢሜይል ላክ)",
+  "noItems": "ጥያቄ የለም።",
+  "errors": {
+    "loadFailed": "መጫን አልተቻለም።"
+  }
+}

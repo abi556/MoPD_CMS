@@ -18,15 +18,62 @@ import {
   setAccessToken,
   setSessionHint,
 } from "@/lib/auth/token-store";
-import type { LoginResponse, SessionUser } from "@/lib/auth/session-types";
+import type {
+  LoginResult,
+  LoginSessionPayload,
+  SessionUser,
+} from "@/lib/auth/session-types";
+
+interface RawLoginResponse {
+  mfaRequired?: boolean;
+  mfaToken?: string;
+  accessToken?: string;
+  user?: SessionUser;
+  expiresIn?: number;
+  mustChangePassword?: boolean;
+}
+
+function mapLoginResponse(data: RawLoginResponse): LoginResult {
+  if (data.mfaRequired && data.mfaToken) {
+    return {
+      kind: "mfa",
+      mfaToken: data.mfaToken,
+      mustChangePassword: Boolean(data.mustChangePassword),
+    };
+  }
+  if (!data.accessToken || !data.user) {
+    throw new Error("Invalid login response");
+  }
+  return {
+    kind: "session",
+    accessToken: data.accessToken,
+    expiresIn: data.expiresIn ?? 0,
+    user: data.user,
+    mustChangePassword: Boolean(data.mustChangePassword),
+  };
+}
+
+function applySession(payload: LoginSessionPayload) {
+  setAccessToken(payload.accessToken);
+  setSessionHint();
+}
 
 interface AuthContextValue {
   user: SessionUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<LoginResponse>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  verifyMfa: (
+    mfaToken: string,
+    body: { code?: string; backupCode?: string },
+  ) => Promise<LoginSessionPayload>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => Promise<{ message: string }>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<SessionUser | null>;
+  setUserFromSession: (user: SessionUser) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -49,9 +96,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // Skip all session-bootstrap requests for anonymous visitors. Without an
-      // in-memory access token or a session hint cookie, there is no staff
-      // session to restore, so we avoid the 401s on the public portal.
       if (!getAccessToken() && !hasSessionHint()) {
         setIsLoading(false);
         return;
@@ -60,8 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!getAccessToken()) {
         const refreshed = await refreshAccessToken();
         if (!refreshed) {
-          // The hint is stale (refresh cookie expired/revoked). Clear it so we
-          // don't keep retrying on every load.
           clearSessionHint();
           if (!cancelled) {
             setUser(null);
@@ -80,17 +122,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [refreshSession]);
 
+  const setUserFromSession = useCallback((next: SessionUser) => {
+    setUser(next);
+  }, []);
+
   const login = useCallback(async (email: string, password: string) => {
-    const data = await apiPost<LoginResponse>(
+    const data = await apiPost<RawLoginResponse>(
       "/auth/login",
       { email, password },
       { auth: false },
     );
-    setAccessToken(data.accessToken);
-    setSessionHint();
-    setUser(data.user);
-    return data;
+    const result = mapLoginResponse(data);
+    if (result.kind === "session") {
+      applySession(result);
+      setUser(result.user);
+    }
+    return result;
   }, []);
+
+  const verifyMfa = useCallback(
+    async (
+      mfaToken: string,
+      body: { code?: string; backupCode?: string },
+    ): Promise<LoginSessionPayload> => {
+      const data = await apiPost<RawLoginResponse>("/auth/mfa/verify", body, {
+        auth: true,
+        bearerToken: mfaToken,
+        skipRefresh: true,
+      });
+      if (!data.accessToken || !data.user) {
+        throw new Error("Invalid MFA verify response");
+      }
+      const payload: LoginSessionPayload = {
+        accessToken: data.accessToken,
+        expiresIn: data.expiresIn ?? 0,
+        user: data.user,
+        mustChangePassword: Boolean(data.mustChangePassword),
+      };
+      applySession(payload);
+      setUser(payload.user);
+      return payload;
+    },
+    [],
+  );
+
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string) => {
+      return apiPost<{ message: string }>("/auth/change-password", {
+        currentPassword,
+        newPassword,
+      });
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -112,10 +196,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       isAuthenticated: Boolean(user),
       login,
+      verifyMfa,
+      changePassword,
       logout,
       refreshSession,
+      setUserFromSession,
     }),
-    [user, isLoading, login, logout, refreshSession],
+    [
+      user,
+      isLoading,
+      login,
+      verifyMfa,
+      changePassword,
+      logout,
+      refreshSession,
+      setUserFromSession,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

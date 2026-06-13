@@ -1,0 +1,22 @@
+{
+  "title": "መገለጫ",
+  "subtitle": "መለያዎን፣ የይለፍ ቃልዎን እና የመግቢያ ደህንነትዎን ያስተዳድሩ።",
+  "accountTitle": "መለያ",
+  "accountSubtitle": "በ MoPD CMS ውስጥ የሰራተኛ ማንነትዎ።",
+  "emailLabel": "ኢሜይል",
+  "rolesLabel": "ሚናዎች",
+  "noRoles": "ምንም ሚና አልተመደበም",
+  "passwordTitle": "የይለፍ ቃል",
+  "passwordSubtitle": "ቢያንስ 8 ቁምፊዎች ከትልቅ፣ ከትንሽ፣ ከቁጥር እና ከልዩ ቁምፊ ጋር (12+ የሚመከር)።",
+  "passwordSuccess": "የይለፍ ቃል በተሳካ ሁኔታ ተዘምኗል።",
+  "securityTitle": "ሁለት-ደረጃ ማረጋገጫ",
+  "securitySubtitle": "በመግቢያ ላይ ተጨማሪ ጥበቃ ያክሉ።",
+  "mfaNotEnrolled": "MFA በመለያዎ ላይ አልተነቃም።",
+  "mfaEnrollCta": "ማረጋገጫ መተግበሪያ ያዘጋጁ",
+  "mfaDisableTitle": "ሁለት-ደረጃ ማረጋገጫን ያጥፉ",
+  "mfaDisableHint": "MFA ለማጥፋት የአሁኑን የይለፍ ቃል ያስገቡ።",
+  "mfaDisableSubmit": "MFA አጥፋ",
+  "mfaDisableSuccess": "ሁለት-ደረጃ ማረጋገጫ ተሰርዟል።",
+  "mfaDisableBlocked": "የእርስዎ ሚና MFA ይፈልጋል እና ሊቦዝ አይችልም።",
+  "cancel": "ይቅር"
+}

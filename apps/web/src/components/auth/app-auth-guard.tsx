@@ -4,7 +4,8 @@ import { useEffect, type ReactNode } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useSession } from "@/components/providers/auth-provider";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { staffRoutes } from "@/lib/staff/routes";
+import { StaffAuthLoadingShell } from "@/components/staff/layout/staff-auth-loading-shell";
 
 export function AppAuthGuard({ children }: { children: ReactNode }) {
   const { user, isLoading, isAuthenticated } = useSession();
@@ -13,20 +14,14 @@ export function AppAuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace("/auth/login");
+      router.replace(staffRoutes.auth.login);
     }
   }, [isLoading, isAuthenticated, router, locale]);
 
-  if (isLoading) {
-    return (
-      <div className="p-8">
-        <LoadingSkeleton className="h-8 w-48" />
-        <LoadingSkeleton className="mt-4 h-32 w-full" />
-      </div>
-    );
-  }
-
   if (!user) {
+    if (isLoading) {
+      return <StaffAuthLoadingShell />;
+    }
     return null;
   }
 
