@@ -25,6 +25,7 @@ const EN_BUNDLES = {
   reports: () => import("../../../messages/staff/reports.en.json"),
   profile: () => import("../../../messages/staff/profile.en.json"),
   notifications: () => import("../../../messages/staff/notifications.en.json"),
+  complaints: () => import("../../../messages/staff/complaints.en.json"),
 } as const;
 
 const AM_BUNDLES = {
@@ -49,6 +50,7 @@ const AM_BUNDLES = {
   reports: () => import("../../../messages/staff/reports.am.json"),
   profile: () => import("../../../messages/staff/profile.am.json"),
   notifications: () => import("../../../messages/staff/notifications.am.json"),
+  complaints: () => import("../../../messages/staff/complaints.am.json"),
 } as const;
 
 type BundleKey = keyof typeof EN_BUNDLES;
@@ -65,7 +67,7 @@ async function loadBundle<K extends BundleKey>(
 export async function loadStaffMessages(
   locale: AppLocale,
 ): Promise<AbstractIntlMessages> {
-  const [auth, navStaff, staff, recoveryInquiries, admin, reports, profile, notifications] =
+  const [auth, navStaff, staff, recoveryInquiries, admin, reports, profile, notifications, complaints] =
     await Promise.all([
       loadBundle(locale, "auth"),
       loadBundle(locale, "navStaff"),
@@ -75,6 +77,7 @@ export async function loadStaffMessages(
       loadBundle(locale, "reports"),
       loadBundle(locale, "profile"),
       loadBundle(locale, "notifications"),
+      loadBundle(locale, "complaints"),
     ]);
 
   return {
@@ -86,6 +89,7 @@ export async function loadStaffMessages(
     reports,
     profile,
     notifications,
+    complaints,
   } as AbstractIntlMessages;
 }
 
@@ -112,6 +116,7 @@ export async function loadMessages(
     reports,
     profile,
     notifications,
+    complaints,
   ] = await Promise.all([
     loadBundle(locale, "common"),
     loadBundle(locale, "errors"),
@@ -132,6 +137,7 @@ export async function loadMessages(
     loadBundle(locale, "reports"),
     loadBundle(locale, "profile"),
     loadBundle(locale, "notifications"),
+    loadBundle(locale, "complaints"),
   ]);
 
   return {
@@ -154,6 +160,7 @@ export async function loadMessages(
     reports,
     profile,
     notifications,
+    complaints,
   } as AbstractIntlMessages;
 }
 

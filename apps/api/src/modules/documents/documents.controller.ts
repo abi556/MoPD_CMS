@@ -73,7 +73,7 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post('upload')
-  @Permissions('document:upload', 'complaint:read')
+  @Permissions('document:upload')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -116,13 +116,14 @@ export class DocumentsController {
       user.id,
       file,
       request.correlationId,
+      user,
     );
     res.setHeader('Location', `/api/v1/documents/${record.id}`);
     return { data: toDocumentDto(record) };
   }
 
   @Get(':id')
-  @Permissions('document:read', 'complaint:read')
+  @Permissions('document:read')
   @ApiOperation({ summary: 'Get document metadata' })
   @ApiParam({ name: 'id', description: 'Document id' })
   @ApiOkResponse({ type: DocumentEnvelopeDto })
@@ -130,13 +131,16 @@ export class DocumentsController {
   @ApiForbiddenResponse({ type: ErrorResponseDto })
   @ApiNotFoundResponse({ type: ErrorResponseDto })
   @Throttle({ default: { limit: 180, ttl: 60000 } })
-  async getMetadata(@Param('id') id: string): Promise<{ data: DocumentDto }> {
-    const record = await this.documentsService.getMetadata(id);
+  async getMetadata(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+  ): Promise<{ data: DocumentDto }> {
+    const record = await this.documentsService.getMetadata(id, user);
     return { data: toDocumentDto(record) };
   }
 
   @Get(':id/download')
-  @Permissions('document:read', 'complaint:read')
+  @Permissions('document:read')
   @ApiOperation({ summary: 'Get pre-signed download URL for a clean document' })
   @ApiParam({ name: 'id', description: 'Document id' })
   @ApiOkResponse({ type: DocumentDownloadEnvelopeDto })
@@ -153,6 +157,7 @@ export class DocumentsController {
       id,
       user.id,
       request.correlationId,
+      user,
     );
     return { data: signed };
   }
@@ -171,6 +176,6 @@ export class DocumentsController {
     @CurrentUser() user: JwtUser,
     @Req() request: RequestWithCorrelationId,
   ): Promise<void> {
-    await this.documentsService.delete(id, user.id, request.correlationId);
+    await this.documentsService.delete(id, user.id, request.correlationId, user);
   }
 }

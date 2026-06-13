@@ -134,6 +134,7 @@ model Complaint {
   lastTransitionByUserId String?
   lastTransitionAt DateTime?
   lastTransitionReason String?
+  responseDraft   String?
   history         ComplaintHistory[]
   notes           CaseNote[]
   tasks           CaseTask[]

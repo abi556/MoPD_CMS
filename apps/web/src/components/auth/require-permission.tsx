@@ -2,7 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { hasAllPermissions } from "@/lib/permissions";
+import { hasAllPermissions, hasAnyPermission } from "@/lib/permissions";
 import { staffRoutes } from "@/lib/staff/routes";
 import { useSession } from "@/components/providers/auth-provider";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
@@ -10,12 +10,14 @@ import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 interface RequirePermissionProps {
   permission?: string;
   permissions?: string[];
+  anyOf?: string[];
   children: ReactNode;
 }
 
 export function RequirePermission({
   permission,
   permissions = [],
+  anyOf = [],
   children,
 }: RequirePermissionProps) {
   const { user, isLoading } = useSession();
@@ -23,7 +25,10 @@ export function RequirePermission({
   const required = permission ? [permission, ...permissions] : permissions;
 
   const allowed =
-    user && hasAllPermissions(user.permissions, required);
+    user &&
+    (anyOf.length > 0
+      ? hasAnyPermission(user.permissions, anyOf)
+      : hasAllPermissions(user.permissions, required));
 
   useEffect(() => {
     if (!isLoading && user && !allowed) {

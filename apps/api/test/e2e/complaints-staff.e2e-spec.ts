@@ -73,6 +73,9 @@ describe('Complaints Staff (e2e)', () => {
       .expect(200);
     const body = getBody<ComplaintListResponse>(response);
     expect(body.data).toHaveLength(1);
+    expect(body.data[0]).toMatchObject({
+      assignedToUserId: null,
+    });
   });
 
   it('returns complaint details by id for staff users', async () => {
@@ -107,6 +110,10 @@ describe('Complaints Staff (e2e)', () => {
       .expect(200);
     const detailsBody = getBody<ComplaintDetailResponse>(details);
     expect(detailsBody.data.id).toBe(createdBody.data.id);
+    expect(detailsBody.data).toMatchObject({
+      assignedToUserId: null,
+      priority: expect.any(String),
+    });
   });
 
   it('returns NOT_FOUND for unknown complaint id on staff detail route', async () => {
@@ -170,6 +177,7 @@ describe('Complaints Staff (e2e)', () => {
       .expect(200);
     const assignedBody = getBody<ComplaintDetailResponse>(assigned);
     expect(assignedBody.data.status).toBe('ASSIGNED');
+    expect(assignedBody.data.assignedToUserId).toBe('user-officer-0001');
   });
 
   it('transitions complaint from ASSIGNED to IN_INVESTIGATION', async () => {

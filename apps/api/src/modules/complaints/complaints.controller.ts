@@ -84,12 +84,29 @@ import {
 } from './dto/recovery-response.dto';
 import { getDocumentMaxBytes } from '../documents/document.config';
 import type { UploadedMulterFile } from '../documents/types/uploaded-file';
-import { DocumentEnvelopeDto } from '../documents/dto/document-response.dto';
+import { DocumentEnvelopeDto, DocumentDto, DocumentListEnvelopeDto } from '../documents/dto/document-response.dto';
+import type { DocumentRecord } from '../documents/documents.service';
 import { ReferenceDataService } from '../reference-data/reference-data.service';
-import {
-  ComplaintFormOptionsDataDto,
+import { ComplaintFormOptionsDataDto,
   ComplaintFormOptionsEnvelopeDto,
 } from './dto/complaint-form-options.dto';
+import { ComplaintPriority } from './dto/update-complaint.dto';
+
+function toDocumentDto(record: DocumentRecord): DocumentDto {
+  return {
+    id: record.id,
+    complaintId: record.complaintId,
+    ownerUserId: record.ownerUserId,
+    originalName: record.originalName,
+    mimeType: record.mimeType,
+    sizeBytes: record.sizeBytes,
+    scanStatus: record.scanStatus,
+    storageKey: record.storageKey,
+    scannedAt: record.scannedAt,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
+  };
+}
 
 function toComplaintDetailData(
   complaint: ComplaintRecord,
@@ -116,6 +133,8 @@ function toComplaintDetailData(
     lastTransitionByUserId: complaint.lastTransitionByUserId ?? null,
     lastTransitionAt: complaint.lastTransitionAt ?? null,
     lastTransitionReason: complaint.lastTransitionReason ?? null,
+    priority: (complaint.priority as ComplaintPriority) ?? null,
+    responseDraft: complaint.responseDraft ?? null,
   };
 }
 
@@ -175,6 +194,7 @@ export class ComplaintsController {
         locale: item.locale,
         categoryId: item.categoryId ?? null,
         orgUnitId: item.orgUnitId ?? null,
+        assignedToUserId: item.assignedToUserId ?? null,
       })),
       meta: result.meta,
     };
@@ -489,6 +509,45 @@ export class ComplaintsController {
         createdAt: item.createdAt,
       })),
     };
+  }
+
+  @Get(':id/documents')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:read')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'List documents attached to a complaint',
+    description:
+      'Returns metadata for all documents linked to the complaint, newest first.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Internal complaint id.',
+    example: 'cmojzpoy200006o9mjdpyn6w4',
+  })
+  @ApiOkResponse({
+    description: 'Complaint document list for staff view.',
+    type: DocumentListEnvelopeDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Access token is missing or invalid.',
+    type: ErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Authenticated user does not have required role.',
+    type: ErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Complaint id was not found.',
+    type: ErrorResponseDto,
+  })
+  @Throttle({ default: { limit: 180, ttl: 60000 } })
+  async listDocuments(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+  ): Promise<{ data: DocumentDto[] }> {
+    const items = await this.complaintsService.getDocumentsForStaff(id, user);
+    return { data: items.map(toDocumentDto) };
   }
 
   @Post(':id/assign')

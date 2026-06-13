@@ -1,5 +1,6 @@
 import { Module, Provider } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
+import { ComplaintAccessModule } from '../complaints/complaint-access.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { DocumentScanProcessor } from './document-scan.processor';
 import { DocumentsController } from './documents.controller';
@@ -15,7 +16,7 @@ const workerProviders: Provider[] =
   process.env.NODE_ENV === 'test' ? [] : [DocumentScanProcessor];
 
 @Module({
-  imports: [PrismaModule, AuditModule],
+  imports: [PrismaModule, AuditModule, ComplaintAccessModule],
   controllers: [DocumentsController],
   providers: [
     DocumentsService,

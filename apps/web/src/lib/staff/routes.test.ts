@@ -5,6 +5,7 @@ describe("staffRoutes", () => {
   it("defines core staff paths without locale prefix", () => {
     expect(staffRoutes.home).toBe("/dashboard");
     expect(staffRoutes.complaints).toBe("/dashboard/complaints");
+    expect(staffRoutes.complaintDetail("abc")).toBe("/dashboard/complaints/abc");
     expect(staffRoutes.recoveryInquiries).toBe("/dashboard/recovery-inquiries");
     expect(staffRoutes.reports.root).toBe("/dashboard/reports");
     expect(staffRoutes.reports.volume).toBe("/dashboard/reports/volume");

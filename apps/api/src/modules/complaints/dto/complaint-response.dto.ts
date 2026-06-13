@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ComplaintPriority } from './update-complaint.dto';
 import { ComplaintChannel, ComplaintLocale } from './create-complaint.dto';
 import { ComplaintStatusValue } from './complaint-status.enum';
 
@@ -193,6 +194,13 @@ export class ComplaintListItemDto {
     description: 'Organizational unit id.',
   })
   orgUnitId?: string | null;
+
+  @ApiProperty({
+    example: 'user-officer-0001',
+    nullable: true,
+    description: 'Current assignee user id.',
+  })
+  assignedToUserId!: string | null;
 }
 
 export class ComplaintListMetaDto {
@@ -373,6 +381,21 @@ export class ComplaintDetailDataDto {
     description: 'Reason for latest status transition.',
   })
   lastTransitionReason!: string | null;
+
+  @ApiProperty({
+    enum: ComplaintPriority,
+    example: ComplaintPriority.NORMAL,
+    nullable: true,
+    description: 'Complaint priority for SLA routing.',
+  })
+  priority!: ComplaintPriority | null;
+
+  @ApiProperty({
+    example: 'Dear complainant, following our investigation...',
+    nullable: true,
+    description: 'Draft response text pending QA review.',
+  })
+  responseDraft!: string | null;
 }
 
 export class ComplaintDetailEnvelopeDto {

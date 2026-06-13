@@ -207,6 +207,7 @@ export const ROLE_PERMISSION_IDS: Record<string, string[]> = {
     P['complaints:list'],
     P['complaints:detail'],
     P['complaints:history'],
+    P['document:read'],
   ],
   'role-communications-officer': [
     P['notification:manage'],

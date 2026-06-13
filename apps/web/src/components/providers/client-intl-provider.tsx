@@ -53,6 +53,15 @@ export function ClientIntlProvider({
   const [messages, setMessages] = useState<AbstractIntlMessages>(initialMessages);
   const pathname = usePathname();
 
+  // Keep bundles in sync when the server layout passes updated messages (deploy, new strings).
+  // Skip while the URL locale was switched client-side without a full navigation.
+  useEffect(() => {
+    if (initialLocale !== locale) {
+      return;
+    }
+    setMessages(initialMessages);
+  }, [initialLocale, initialMessages, locale]);
+
   // Follow server locale on real navigations (links, back/forward). Skip when the
   // URL was updated client-side via replaceState during switchLocale.
   useEffect(() => {

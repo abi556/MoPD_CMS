@@ -10,7 +10,7 @@ import {
   statusMixTotal,
   type DashboardAnalyticsSnapshot,
 } from "@/lib/staff/dashboard-analytics";
-import { staffRoutes, staffPathWithQuery } from "@/lib/staff/routes";
+import { staffRoutes } from "@/lib/staff/routes";
 
 function StatusMixChart({
   data,
@@ -267,7 +267,7 @@ export function DashboardAnalyticsPanel() {
           <StatusMixChart data={data.statusMix} labels={statusLabels} />
           <div className="mt-3">
             <Link
-              href={staffPathWithQuery(staffRoutes.complaints, { status: "OPEN" })}
+              href={staffRoutes.complaints}
               className="cursor-pointer text-xs font-medium text-staff-nav-active hover:underline"
             >
               {t("analytics.drillOpen")}

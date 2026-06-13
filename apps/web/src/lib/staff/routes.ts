@@ -3,6 +3,7 @@
 export const staffRoutes = {
   home: "/dashboard",
   complaints: "/dashboard/complaints",
+  complaintDetail: (id: string) => `/dashboard/complaints/${id}`,
   recoveryInquiries: "/dashboard/recovery-inquiries",
   notifications: "/dashboard/notifications",
   reports: {

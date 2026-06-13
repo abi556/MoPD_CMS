@@ -30,6 +30,9 @@ function segmentLabelKey(segment: string, parentSegment?: string): string | unde
   if (segment === "notifications" && parentSegment === "admin") {
     return "adminNotifications";
   }
+  if (parentSegment === "complaints" && segment !== "complaints") {
+    return "complaintCase";
+  }
   return SEGMENT_LABELS[segment];
 }
 

@@ -41,4 +41,43 @@ describe("apiGet envelope parsing", () => {
     expect(page.data).toHaveLength(1);
     expect(page.meta.total).toBe(1);
   });
+
+  it("accepts raw JSON arrays (reference-data admin list endpoints)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify([
+            { id: "cat-1", code: "CAT01", nameEn: "Test", isActive: true },
+          ]),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    const categories = await apiGet<Array<{ id: string; code: string }>>(
+      "/admin/complaint-categories",
+      { auth: false },
+    );
+    expect(categories).toHaveLength(1);
+    expect(categories[0].code).toBe("CAT01");
+  });
+
+  it("accepts raw JSON objects (reference-data admin create/patch)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({ id: "cat-1", code: "CAT01", nameEn: "Test" }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    const category = await apiGet<{ id: string; code: string }>(
+      "/admin/complaint-categories/cat-1",
+      { auth: false },
+    );
+    expect(category.id).toBe("cat-1");
+  });
 });

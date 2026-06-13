@@ -31,6 +31,7 @@ import { SlaService } from '../sla/sla.service';
 import { ComplaintAccessService } from './complaint-access.service';
 import { WorkflowPolicyService } from './workflow-policy.service';
 import { DocumentsService } from '../documents/documents.service';
+import type { DocumentRecord } from '../documents/documents.service';
 import type { UploadedMulterFile } from '../documents/types/uploaded-file';
 import { getDocumentMaxBytes } from '../documents/document.config';
 
@@ -92,6 +93,8 @@ export interface ComplaintRecord {
   lastTransitionByUserId?: string;
   lastTransitionAt?: string;
   lastTransitionReason?: string;
+  priority?: string;
+  responseDraft?: string | null;
 }
 
 export interface ComplaintListResult {
@@ -459,6 +462,14 @@ export class ComplaintsService {
         ...(payload.priority !== undefined
           ? { priority: payload.priority }
           : {}),
+        ...(payload.responseDraft !== undefined
+          ? {
+              responseDraft:
+                payload.responseDraft === null
+                  ? null
+                  : payload.responseDraft.trim() || null,
+            }
+          : {}),
       },
     });
 
@@ -611,6 +622,18 @@ export class ComplaintsService {
         );
       }
 
+      if (
+        fromStatus === ComplaintStatusValue.DRAFT_RESPONSE &&
+        toStatus === ComplaintStatusValue.QA_LEGAL_REVIEW
+      ) {
+        const draft = existing.responseDraft?.trim() ?? '';
+        if (draft.length < 20) {
+          throw new UnprocessableEntityException(
+            'A response draft of at least 20 characters is required before QA review.',
+          );
+        }
+      }
+
       const updatedComplaint = await tx.complaint.update({
         where: { id },
         data: {
@@ -690,6 +713,18 @@ export class ComplaintsService {
     return rows.map((row) => this.toHistoryRecord(row));
   }
 
+  async getDocumentsForStaff(
+    id: string,
+    user: JwtUser,
+  ): Promise<DocumentRecord[]> {
+    const exists = await this.prisma.complaint.findUnique({ where: { id } });
+    if (!exists) {
+      throw new NotFoundException('Complaint not found');
+    }
+    this.complaintAccessService.assertCanAccessComplaint(user, exists);
+    return this.documentsService.listByComplaint(id);
+  }
+
   async listForStaff(
     query: ListComplaintsQueryDto,
     user: JwtUser,
@@ -765,6 +800,8 @@ export class ComplaintsService {
       lastTransitionByUserId: complaint.lastTransitionByUserId ?? undefined,
       lastTransitionAt: complaint.lastTransitionAt?.toISOString(),
       lastTransitionReason: complaint.lastTransitionReason ?? undefined,
+      priority: complaint.priority ?? undefined,
+      responseDraft: complaint.responseDraft ?? null,
     };
   }
 

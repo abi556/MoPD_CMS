@@ -8,6 +8,7 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { DocumentScanStatus, type Document } from '@prisma/client';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
+import { ComplaintAccessService } from '../complaints/complaint-access.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { QUEUE_DOCUMENT_SCAN } from '../../queue/queue.constants';
 import { getLiveBucket } from './document.config';
@@ -32,7 +33,11 @@ describe('DocumentsService', () => {
     documents.clear();
     process.env.NODE_ENV = 'test';
 
-    complaintFindUnique.mockResolvedValue({ id: 'cmp_1' });
+    complaintFindUnique.mockResolvedValue({
+      id: 'cmp_1',
+      assignedToUserId: 'user-1',
+      status: 'ASSIGNED',
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -92,6 +97,10 @@ describe('DocumentsService', () => {
           },
         },
         { provide: AuditService, useValue: { logEvent } },
+        {
+          provide: ComplaintAccessService,
+          useValue: { assertCanAccessComplaint: jest.fn() },
+        },
         {
           provide: DocumentStorageFactory,
           useValue: { getStorage: () => memoryStorage },

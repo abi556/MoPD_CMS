@@ -5,6 +5,7 @@ import enNavStaff from "../../../messages/staff/nav-staff.en.json";
 import enPublic from "../../../messages/public/public.en.json";
 import enRecovery from "../../../messages/staff/recoveryInquiries.en.json";
 import enStaff from "../../../messages/staff/staff.en.json";
+import enComplaints from "../../../messages/staff/complaints.en.json";
 import amAuth from "../../../messages/staff/auth.am.json";
 import amNavPublic from "../../../messages/public/nav-public.am.json";
 import amNavStaff from "../../../messages/staff/nav-staff.am.json";
@@ -34,6 +35,7 @@ const EXPECTED_NAMESPACES = [
   "reports",
   "profile",
   "notifications",
+  "complaints",
 ] as const;
 
 function leafPaths(
@@ -125,6 +127,13 @@ describe("loadMessages", () => {
     expect((messages.recoveryInquiries as { title: string }).title).toBe(
       enRecovery.title,
     );
+    expect(
+      (messages["nav-staff"] as { complaintCase: string }).complaintCase,
+    ).toBe(enNavStaff.complaintCase);
+    expect(
+      (messages.complaints as { actions: { transitionReasonHint: string } })
+        .actions.transitionReasonHint,
+    ).toBe(enComplaints.actions.transitionReasonHint);
   });
 });
 
@@ -137,6 +146,7 @@ describe("loadStaffMessages", () => {
     expect(messages).toHaveProperty("nav-staff");
     expect(messages).toHaveProperty("auth");
     expect(messages).toHaveProperty("notifications");
+    expect(messages).toHaveProperty("complaints");
   });
 });
 

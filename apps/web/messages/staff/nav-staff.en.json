@@ -1,6 +1,7 @@
 {
   "dashboard": "Dashboard",
   "complaints": "Complaints",
+  "complaintCase": "Case detail",
   "recoveryInquiries": "Recovery",
   "reports": "Reports",
   "reportsOverview": "Overview",

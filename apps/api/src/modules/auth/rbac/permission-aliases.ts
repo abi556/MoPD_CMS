@@ -8,6 +8,7 @@ export const PERMISSION_ALIASES: Readonly<Record<string, readonly string[]>> = {
     'complaints:list',
     'complaints:detail',
     'complaints:history',
+    'complaint:read:own',
   ],
   'complaint:read:own': ['complaint:read:own'],
   'workflow:transition': ['complaints:transition', 'complaints:assign'],

@@ -67,6 +67,11 @@ async function parseEnvelope<T>(res: Response): Promise<T> {
     return (body as Envelope<T> & { data: T }).data;
   }
 
+  // Reference-data and SLA admin endpoints return raw arrays/objects (no envelope).
+  if (body !== null && body !== undefined) {
+    return body as T;
+  }
+
   throw new ApiError(res.status, { message: "Invalid API response envelope" });
 }
 

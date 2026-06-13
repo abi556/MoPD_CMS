@@ -36,6 +36,11 @@ export class DocumentDto {
   updatedAt!: string;
 }
 
+export class DocumentListEnvelopeDto {
+  @ApiProperty({ type: [DocumentDto] })
+  data!: DocumentDto[];
+}
+
 export class DocumentEnvelopeDto {
   @ApiProperty({ type: DocumentDto })
   data!: DocumentDto;

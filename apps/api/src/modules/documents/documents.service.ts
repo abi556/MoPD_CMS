@@ -12,6 +12,8 @@ import { DocumentScanStatus, type Document } from '@prisma/client';
 import type { Queue } from 'bullmq';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
+import { ComplaintAccessService } from '../complaints/complaint-access.service';
+import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import { PrismaService } from '../../prisma/prisma.service';
 import { QUEUE_DOCUMENT_SCAN } from '../../queue/queue.constants';
 import {
@@ -53,6 +55,7 @@ export class DocumentsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly complaintAccessService: ComplaintAccessService,
     private readonly storageFactory: DocumentStorageFactory,
     private readonly scannerFactory: VirusScannerFactory,
     @InjectQueue(QUEUE_DOCUMENT_SCAN)
@@ -76,9 +79,10 @@ export class DocumentsService implements OnModuleInit {
     ownerUserId: string,
     file: UploadedMulterFile,
     correlationId?: string,
+    actor?: JwtUser,
   ): Promise<DocumentRecord> {
     const normalizedFile = this.normalizeUpload(file);
-    await this.assertComplaintExists(complaintId);
+    await this.assertComplaintAccess(complaintId, actor);
     this.validateUpload(normalizedFile);
 
     const storage = this.storageFactory.getStorage();
@@ -145,8 +149,9 @@ export class DocumentsService implements OnModuleInit {
     return this.toRecord(row);
   }
 
-  async getMetadata(id: string): Promise<DocumentRecord> {
+  async getMetadata(id: string, actor?: JwtUser): Promise<DocumentRecord> {
     const row = await this.findDocumentOrThrow(id);
+    await this.assertComplaintAccess(row.complaintId, actor);
     return this.toRecord(row);
   }
 
@@ -154,8 +159,10 @@ export class DocumentsService implements OnModuleInit {
     id: string,
     actorUserId: string,
     correlationId?: string,
+    actor?: JwtUser,
   ): Promise<{ url: string; expiresAt: string }> {
     const row = await this.findDocumentOrThrow(id);
+    await this.assertComplaintAccess(row.complaintId, actor);
 
     if (row.scanStatus === DocumentScanStatus.INFECTED) {
       throw new ConflictException(
@@ -196,8 +203,10 @@ export class DocumentsService implements OnModuleInit {
     id: string,
     actorUserId: string,
     correlationId?: string,
+    actor?: JwtUser,
   ): Promise<void> {
     const row = await this.findDocumentOrThrow(id);
+    await this.assertComplaintAccess(row.complaintId, actor);
     const storage = this.storageFactory.getStorage();
     const quarantineBucket = getQuarantineBucket();
     const liveBucket = getLiveBucket();
@@ -505,15 +514,30 @@ export class DocumentsService implements OnModuleInit {
     return Buffer.concat(chunks);
   }
 
-  private async assertComplaintExists(complaintId: string): Promise<void> {
+  async listByComplaint(complaintId: string): Promise<DocumentRecord[]> {
+    const rows = await this.prisma.document.findMany({
+      where: { complaintId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((row) => this.toRecord(row));
+  }
+
+  private async assertComplaintAccess(
+    complaintId: string,
+    actor?: JwtUser,
+  ): Promise<void> {
     const complaint = await this.prisma.complaint.findUnique({
       where: { id: complaintId },
-      select: { id: true },
+      select: { id: true, assignedToUserId: true, status: true },
     });
     if (!complaint) {
       throw new NotFoundException('Complaint not found');
     }
+    if (actor) {
+      this.complaintAccessService.assertCanAccessComplaint(actor, complaint);
+    }
   }
+
 
   private async findDocumentOrThrow(id: string): Promise<Document> {
     const row = await this.prisma.document.findUnique({ where: { id } });

@@ -83,6 +83,7 @@ export interface ComplaintListResponse {
     subject: string;
     submittedAt: string;
     locale: 'en' | 'am';
+    assignedToUserId: string | null;
   }>;
   meta: {
     page: number;
@@ -113,6 +114,7 @@ export interface ComplaintDetailResponse {
     lastTransitionByUserId: string | null;
     lastTransitionAt: string | null;
     lastTransitionReason: string | null;
+    priority: string | null;
   };
 }
 

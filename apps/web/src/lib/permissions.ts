@@ -1,7 +1,7 @@
 /** Client-side permission checks (mirror server SDS + legacy aliases). */
 
 const PERMISSION_ALIASES: Record<string, readonly string[]> = {
-  "complaint:read": ["complaints:list", "complaints:detail", "complaints:history"],
+  "complaint:read": ["complaints:list", "complaints:detail", "complaints:history", "complaint:read:own"],
   "workflow:transition": ["complaints:transition", "complaints:assign"],
   "template:manage": ["config:manage"],
   "notification:manage": ["config:manage"],
@@ -73,6 +73,7 @@ export function hasAnyPermission(
 export function canUploadDocuments(permissions: readonly string[]): boolean {
   return (
     hasPermission(permissions, "document:upload") &&
-    hasPermission(permissions, "complaint:read")
+    (hasPermission(permissions, "complaint:read") ||
+      hasPermission(permissions, "complaint:read:own"))
   );
 }

@@ -48,3 +48,10 @@ export async function updateSlaConfig(
 ): Promise<SlaConfigItem> {
   return apiPatch<SlaConfigItem>(`/admin/sla-configs/${id}`, payload);
 }
+
+export async function escalateComplaint(
+  id: string,
+  payload: { reason: string },
+): Promise<void> {
+  await apiPost<void>(`/complaints/${id}/escalate`, payload);
+}

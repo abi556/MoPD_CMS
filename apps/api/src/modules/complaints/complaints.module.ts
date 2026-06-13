@@ -4,6 +4,7 @@ import { DocumentsModule } from '../documents/documents.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ReferenceDataModule } from '../reference-data/reference-data.module';
 import { SlaModule } from '../sla/sla.module';
+import { ComplaintAccessModule } from './complaint-access.module';
 import { ComplaintAccessService } from './complaint-access.service';
 import { ComplaintsController } from './complaints.controller';
 import { ComplaintRecoveryInquiryService } from './complaint-recovery-inquiry.service';
@@ -14,6 +15,7 @@ import { WorkflowPolicyService } from './workflow-policy.service';
 @Module({
   imports: [
     AuditModule,
+    ComplaintAccessModule,
     DocumentsModule,
     ReferenceDataModule,
     forwardRef(() => SlaModule),
@@ -22,7 +24,6 @@ import { WorkflowPolicyService } from './workflow-policy.service';
   controllers: [ComplaintsController],
   providers: [
     ComplaintsService,
-    ComplaintAccessService,
     ComplaintRecoveryService,
     ComplaintRecoveryInquiryService,
     WorkflowPolicyService,

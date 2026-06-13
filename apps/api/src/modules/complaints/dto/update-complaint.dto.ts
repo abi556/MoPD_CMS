@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 
 export enum ComplaintPriority {
   LOW = 'LOW',
@@ -23,4 +29,14 @@ export class UpdateComplaintDto {
   @IsOptional()
   @IsEnum(ComplaintPriority)
   priority?: ComplaintPriority;
+
+  @ApiPropertyOptional({
+    description: 'Draft response text for complainant-facing letter.',
+    maxLength: 50000,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50000)
+  responseDraft?: string | null;
 }
