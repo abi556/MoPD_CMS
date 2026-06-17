@@ -1,4 +1,7 @@
 {
+  "hub": {
+    "subtitle": "ተጠቃሚዎችን፣ የማጣቀሻ ውሂብን፣ ግንኙነት እና የስርዓት ቅንብሮችን ያስተዳድሩ።"
+  },
   "common": {
     "save": "አስቀምጥ",
     "cancel": "ሰርዝ",
@@ -153,5 +156,34 @@
     "bodyText": "ቀለል ያለ ጽሑፍ",
     "missingLocale": "ትርጉም የለም",
     "emptyDescription": "በመሠረተ ውሂብ ውስጥ አብነት አልተገኘም።"
+  },
+  "audit": {
+    "title": "ኦዲት መዝገብ",
+    "subtitle": "በማጣሪያ እና በከርሰር ገጽ መቀጠል የሚታይ የኦዲት መዝገብ አሳሽ።",
+    "exportCsv": "CSV ላክ",
+    "eventType": "የክስተት አይነት",
+    "actorUserId": "የተጠቃሚ መለያ",
+    "entityType": "የነገር አይነት",
+    "entityId": "የነገር መለያ",
+    "applyFilters": "ማጣሪያዎችን ተግብር",
+    "reset": "እንደገና አስጀምር",
+    "event": "ክስተት",
+    "actor": "ተጠቃሚ",
+    "entity": "ነገር",
+    "created": "ተፈጥሯል",
+    "details": "ዝርዝር",
+    "view": "እይ",
+    "loading": "በመጫን ላይ…",
+    "empty": "ኦዲት መዝገብ አልተገኘም።",
+    "loadFailed": "ኦዲት መዝገብ መጫን አልተሳካም",
+    "detailTitle": "የኦዲት ክስተት ዝርዝር",
+    "previous": "ቀዳሚ",
+    "next": "ቀጣይ",
+    "allEvents": "ሁሉም ክስተቶች",
+    "events": {
+      "authLoginSucceeded": "auth.login.succeeded",
+      "complaintTransitioned": "complaint.transitioned",
+      "reportExportRequested": "report.export.requested"
+    }
   }
 }

@@ -9,6 +9,8 @@
   "complaintIdLabel": "የቅሬታ መለያ",
   "processTitle": "ሂደቱ እንዴት ይሰራል",
   "processSubtitle": "ከመጀመሪያ ማስገባት እስከ መጨረሻ ውሳኔ ድረስ ግልጽ የሆነ አራት-ደረጃ ጉዞ።",
+  "trustSectionEyebrow": "መብቶችዎ የተጠበቁ",
+  "trustSectionTitle": "ዜጎች ይህን መድረክ ለምን ይታመኑበታል",
   "steps": {
     "submission": {
       "title": "ማስገባት",

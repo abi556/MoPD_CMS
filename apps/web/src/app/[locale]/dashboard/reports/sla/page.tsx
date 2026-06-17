@@ -1,10 +1,12 @@
-import { ReportsStubPage } from "@/app/[locale]/dashboard/reports/reports-stub-page";
+import { getTranslations } from "next-intl/server";
+import { RequirePermission } from "@/components/auth/require-permission";
+import { ReportsDashboardView } from "@/components/staff/reports/reports-dashboard-view";
 
-export default function ReportsSlaPage() {
+export default async function ReportsSlaPage() {
+  const t = await getTranslations("reports.sla");
   return (
-    <ReportsStubPage
-      title="SLA compliance"
-      description="On-time resolution and breach metrics — ships with GET /reports/dashboard/sla (RPT-03)."
-    />
+    <RequirePermission permission="report:view">
+      <ReportsDashboardView kind="sla" title={t("title")} subtitle={t("subtitle")} />
+    </RequirePermission>
   );
 }

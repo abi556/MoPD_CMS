@@ -49,13 +49,12 @@
       "sla": "SLA አደጋ"
     },
     "analytics": {
-      "sampleNote": "የሪፖርት API እስኪመጣ ድረስ የናሙና ውሂብ (GET /reports/dashboard/*)።",
       "statusTitle": "የቅሬታ ሁኔታ ድምር",
       "statusSubtitle": "የተላኩ፣ ክፍት፣ በግምገማ፣ የተፈቱ እና የተዘጉ",
       "slaTitle": "SLA ተገዢነት",
       "slaSubtitle": "በጊዜ መፍትሄ መጠን። ከተዋቀሩ የSLA ደንቦች።",
-      "volumeTitle": "ሳምንታዊ ግብዣ እና መዝጋት",
-      "volumeSubtitle": "ባለፉት ስድስት ሳምንታት የተላኩ እና የተዘጉ ቅሬታዎች",
+      "volumeTitle": "ዕለታዊ ግብዣ እና መዝጋት",
+      "volumeSubtitle": "ባለፉት 14 ቀናት የተላኩ እና የተዘጉ ቅሬታዎች",
       "channelsTitle": "በቻናል ግብዣ",
       "channelsSubtitle": "ቅሬታዎች በግብዣ ቻናል ድርሻ",
       "viewReport": "ሙሉ ሪፖርት ይመልከቱ",
@@ -72,7 +71,7 @@
       "channels": {
         "web": "የድር ፖርታል",
         "email": "ኢሜይል",
-        "sms": "SMS",
+        "telegram": "ቴሌግራም ቦት",
         "walkIn": "በቀጥታ መገኘት"
       }
     }

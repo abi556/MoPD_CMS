@@ -9,6 +9,8 @@
   "complaintIdLabel": "Complaint ID",
   "processTitle": "How the process works",
   "processSubtitle": "A transparent four-step journey from submission to final resolution.",
+  "trustSectionEyebrow": "Your rights, protected",
+  "trustSectionTitle": "Why citizens trust this platform",
   "steps": {
     "submission": {
       "title": "Submission",

@@ -15,7 +15,7 @@ import {
   AdminErrorAlert,
   AdminStatusBadge,
 } from "@/components/staff/admin/shared/admin-status-badge";
-import { DataTable } from "@/components/ui/data-table";
+import { StaffDataTable } from "@/components/staff/ui/staff-data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -162,7 +162,7 @@ export function UsersAdminPanel() {
         </div>
       ) : null}
 
-      <DataTable
+        <StaffDataTable
         columns={[
           {
             id: "email",

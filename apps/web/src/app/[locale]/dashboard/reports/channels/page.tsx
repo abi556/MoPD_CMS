@@ -1,10 +1,16 @@
-import { ReportsStubPage } from "@/app/[locale]/dashboard/reports/reports-stub-page";
+import { getTranslations } from "next-intl/server";
+import { RequirePermission } from "@/components/auth/require-permission";
+import { ReportsDashboardView } from "@/components/staff/reports/reports-dashboard-view";
 
-export default function ReportsChannelsPage() {
+export default async function ReportsChannelsPage() {
+  const t = await getTranslations("reports.channels");
   return (
-    <ReportsStubPage
-      title="Channel utilization"
-      description="Intake distribution across web, email, SMS, and other channels — ships with GET /reports/dashboard/channels (RPT-05)."
-    />
+    <RequirePermission permission="report:view">
+      <ReportsDashboardView
+        kind="channels"
+        title={t("title")}
+        subtitle={t("subtitle")}
+      />
+    </RequirePermission>
   );
 }

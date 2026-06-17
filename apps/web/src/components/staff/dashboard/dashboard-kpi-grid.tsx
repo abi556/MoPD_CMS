@@ -1,6 +1,5 @@
 "use client";
 
-import { Download } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PermissionGate } from "@/components/auth/permission-gate";
 import { Button } from "@/components/ui/button";
@@ -99,19 +98,6 @@ export function DashboardKpiGrid() {
           variant="warning"
         />
       </div>
-    </PermissionGate>
-  );
-}
-
-export function DashboardExportButton() {
-  const t = useTranslations("staff.dashboard");
-
-  return (
-    <PermissionGate permission="report:view">
-      <Button type="button" variant="brand" className="gap-2">
-        <Download size={16} aria-hidden />
-        {t("exportReport")}
-      </Button>
     </PermissionGate>
   );
 }

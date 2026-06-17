@@ -32,6 +32,15 @@ export class VolumeDashboardDataDto {
   @ApiProperty({ type: [VolumeSeriesDto] })
   series!: VolumeSeriesDto[];
 
+  @ApiProperty({
+    type: 'object',
+    properties: {
+      submitted: { type: 'array', items: { type: 'number' } },
+      closed: { type: 'array', items: { type: 'number' } },
+    },
+  })
+  events!: { submitted: number[]; closed: number[] };
+
   @ApiProperty()
   meta!: ReportMetaDto & { total: number };
 }

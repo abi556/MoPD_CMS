@@ -201,7 +201,7 @@ interface StoredDocument {
 interface StoredReportExport {
   id: string;
   requestedById: string;
-  format: 'csv' | 'xlsx';
+  format: 'csv' | 'xlsx' | 'pdf';
   status: 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED' | 'EXPIRED';
   filters: unknown;
   storageKey: string | null;

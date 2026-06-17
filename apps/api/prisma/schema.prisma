@@ -402,6 +402,7 @@ model NotificationDelivery {
 enum ReportExportFormat {
   csv
   xlsx
+  pdf
 }
 
 enum ReportExportStatus {

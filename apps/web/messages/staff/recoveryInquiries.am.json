@@ -11,6 +11,16 @@
   "contactEmail": "ኢሜይል",
   "reject": "አትቀበል (ኢሜይል ላክ)",
   "noItems": "ጥያቄ የለም።",
+  "refresh": "አድስ",
+  "loading": "በመጫን ላይ…",
+  "noCandidates": "አማራጭ የለም",
+  "statusAll": "ሁሉም",
+  "statusValues": {
+    "PENDING": "በመጠባበቅ ላይ",
+    "IN_REVIEW": "በግምገማ ላይ",
+    "RESOLVED": "ተፈትቷል",
+    "REJECTED": "ተቀባይነት አላገኘም"
+  },
   "errors": {
     "loadFailed": "መጫን አልተቻለም።"
   }

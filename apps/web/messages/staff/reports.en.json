@@ -1,1 +1,117 @@
-{}
+{
+  "hub": {
+    "title": "Reports overview",
+    "subtitle": "Analytics hub for volume, SLA, resolution, channels, and exports.",
+    "executiveTitle": "Executive insights",
+    "executiveDescription": "Decision-ready KPIs, trends, and risk signals in one view.",
+    "volumeTitle": "Volume dashboard",
+    "volumeDescription": "Track complaint counts by status and period.",
+    "slaTitle": "SLA compliance",
+    "slaDescription": "Monitor on-time, active, and breached SLA trackers.",
+    "resolutionTitle": "Resolution metrics",
+    "resolutionDescription": "Review backlog, closure rates, and resolution time trends.",
+    "channelsTitle": "Channel utilization",
+    "channelsDescription": "Understand complaint intake distribution by channel.",
+    "exportsTitle": "Export centre",
+    "exportsDescription": "Generate and download CSV, Excel, or branded PDF complaint exports."
+  },
+  "volume": {
+    "title": "Volume dashboard",
+    "subtitle": "Complaint counts by status and time bucket."
+  },
+  "sla": {
+    "title": "SLA compliance",
+    "subtitle": "On-time vs breached SLA performance."
+  },
+  "resolution": {
+    "title": "Resolution metrics",
+    "subtitle": "Backlog, closure rate, and average resolution time."
+  },
+  "channels": {
+    "title": "Channel utilization",
+    "subtitle": "Complaint intake distribution across channels."
+  },
+  "exports": {
+    "title": "Export centre",
+    "subtitle": "Generate and download CSV, Excel, or branded PDF complaint exports."
+  },
+  "executive": {
+    "title": "Executive insights",
+    "subtitle": "High-signal overview for decision makers (real data only).",
+    "submittedToday": "Submitted today",
+    "closedToday": "Closed today",
+    "intakeClosureTitle": "Intake vs closure",
+    "intakeClosureSubtitle": "Daily submission and closure activity (last 30 days).",
+    "intakeClosureNote": "Submitted = created on that day. Closed = transitioned to CLOSED on that day.",
+    "intakeHeatmapTitle": "Daily intake heatmap",
+    "intakeHeatmapSubtitle": "Last 14 days of submissions (darker = higher).",
+    "slaTitle": "SLA compliance",
+    "slaSubtitle": "On-time vs breached SLA trackers.",
+    "channelsTitle": "Intake by channel",
+    "channelsSubtitle": "Share of complaints by intake channel.",
+    "resolutionTitle": "Resolution performance",
+    "resolutionSubtitle": "Backlog and average resolution time trend.",
+    "platformTitle": "Platform health (coming soon)",
+    "platformSubtitle": "Uptime and technical incidents will be added when APIs are available.",
+    "platformNotAvailable": "Platform uptime and incident metrics are not available yet."
+  },
+  "filters": {
+    "from": "From",
+    "to": "To",
+    "bucket": "Bucket",
+    "category": "Category",
+    "orgUnit": "Org unit",
+    "apply": "Apply",
+    "reset": "Reset",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "allCategories": "All categories",
+    "allOrgUnits": "All org units"
+  },
+  "exportFormat": {
+    "csv": "CSV",
+    "xlsx": "Excel (.xlsx)",
+    "pdf": "Branded PDF (.pdf)"
+  },
+  "createExport": "Create export",
+  "empty": "No data for the selected filters.",
+  "error": "Could not load report data.",
+  "kpi": {
+    "totalComplaints": "Total complaints",
+    "buckets": "Buckets",
+    "statuses": "Statuses",
+    "totalTrackers": "Total trackers",
+    "onTimePct": "On-time %",
+    "breachedPct": "Breached %",
+    "avgResolutionHours": "Avg resolution (h)",
+    "resolutionRate": "Resolution rate",
+    "backlog": "Backlog",
+    "channels": "Channels"
+  },
+  "exportsTable": {
+    "jobId": "Job ID",
+    "status": "Status",
+    "created": "Created",
+    "completed": "Completed",
+    "actions": "Actions",
+    "download": "Download",
+    "empty": "No export jobs yet.",
+    "createFailed": "Failed to create export job",
+    "stillProcessing": "Export still processing. Please try again.",
+    "expired": "Export expired. Create a new export job.",
+    "downloadFailed": "Download failed"
+  },
+  "table": {
+    "status": "Status",
+    "metric": "Metric",
+    "value": "Value",
+    "onTime": "On time",
+    "breached": "Breached",
+    "active": "Active",
+    "bucket": "Bucket",
+    "avgHours": "Avg hours",
+    "channel": "Channel",
+    "count": "Count"
+  }
+}

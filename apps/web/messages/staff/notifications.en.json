@@ -10,6 +10,12 @@
   "filterStatus": "Status",
   "filterTo": "Recipient email",
   "filterTemplateKey": "Template key",
+  "statusValues": {
+    "queued": "Queued",
+    "sent": "Sent",
+    "failed": "Failed",
+    "dead_letter": "Dead letter"
+  },
   "emptyTitle": "No deliveries found",
   "emptyDescription": "Adjust filters or trigger a notification to see deliveries here.",
   "confirmResendTitle": "Resend notification?",

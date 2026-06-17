@@ -1,11 +1,11 @@
-import { ReportsStubPage } from "@/app/[locale]/dashboard/reports/reports-stub-page";
+import { RequirePermission } from "@/components/auth/require-permission";
+import { ReportsHub } from "@/components/staff/reports/reports-hub";
 
 export default function DashboardReportsPage() {
   return (
-    <ReportsStubPage
-      title="Reports overview"
-      description="Analytics hub for volume, SLA, resolution, and channel dashboards (RPT-01)."
-    />
+    <RequirePermission permission="report:view">
+      <ReportsHub />
+    </RequirePermission>
   );
 }
 

@@ -15,6 +15,18 @@ describe('CreateReportExportDto', () => {
     expect(errors).toHaveLength(0);
   });
 
+  it('accepts branded PDF export format', async () => {
+    const dto = plainToInstance(CreateReportExportDto, {
+      from: '2026-01-01',
+      to: '2026-12-31',
+      bucket: 'day',
+      format: 'pdf',
+      reportType: 'complaints',
+    });
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(0);
+  });
+
   it('ignores Swagger placeholder string for categoryId', async () => {
     const dto = plainToInstance(CreateReportExportDto, {
       from: '2026-01-01',

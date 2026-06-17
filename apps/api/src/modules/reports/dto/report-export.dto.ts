@@ -3,9 +3,9 @@ import { IsIn } from 'class-validator';
 import { DashboardReportQueryDto } from './dashboard-report.query.dto';
 
 export class CreateReportExportDto extends DashboardReportQueryDto {
-  @ApiProperty({ enum: ['csv', 'xlsx'] })
-  @IsIn(['csv', 'xlsx'])
-  format!: 'csv' | 'xlsx';
+  @ApiProperty({ enum: ['csv', 'xlsx', 'pdf'] })
+  @IsIn(['csv', 'xlsx', 'pdf'])
+  format!: 'csv' | 'xlsx' | 'pdf';
 
   @ApiProperty({ enum: ['complaints'], default: 'complaints' })
   @IsIn(['complaints'])

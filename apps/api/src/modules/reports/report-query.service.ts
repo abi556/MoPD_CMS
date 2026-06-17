@@ -10,6 +10,7 @@ import { ReportFilters, complaintWhereForFilters } from './report-filters';
 export interface VolumeDashboardResult {
   buckets: string[];
   series: Array<{ status: ComplaintStatus; counts: number[] }>;
+  events: { submitted: number[]; closed: number[] };
   meta: ReportFilters & { total: number };
 }
 
@@ -52,7 +53,7 @@ export class ReportQueryService {
     );
     const complaints = await this.prisma.complaint.findMany({
       where: complaintWhereForFilters(filters),
-      select: { status: true, submittedAt: true },
+      select: { id: true, status: true, submittedAt: true },
     });
 
     const statusSet = new Set<ComplaintStatus>();
@@ -79,12 +80,40 @@ export class ReportQueryService {
       }
     }
 
+    const submitted = buckets.map(() => 0);
+    for (const row of complaints) {
+      const idx = bucketIndexForDate(buckets, row.submittedAt, filters.bucket);
+      if (idx >= 0) {
+        submitted[idx] += 1;
+      }
+    }
+
+    const complaintIds = complaints.map((row) => row.id);
+    const closed = buckets.map(() => 0);
+    if (complaintIds.length > 0) {
+      const closedTransitions = await this.prisma.complaintHistory.findMany({
+        where: {
+          complaintId: { in: complaintIds },
+          toStatus: ComplaintStatus.CLOSED,
+          createdAt: { gte: filters.from, lte: filters.to },
+        },
+        select: { createdAt: true },
+      });
+      for (const transition of closedTransitions ?? []) {
+        const idx = bucketIndexForDate(buckets, transition.createdAt, filters.bucket);
+        if (idx >= 0) {
+          closed[idx] += 1;
+        }
+      }
+    }
+
     return {
       buckets,
       series: statuses.map((status) => ({
         status,
         counts: seriesMap.get(status) ?? buckets.map(() => 0),
       })),
+      events: { submitted, closed },
       meta: { ...filters, total: complaints.length },
     };
   }

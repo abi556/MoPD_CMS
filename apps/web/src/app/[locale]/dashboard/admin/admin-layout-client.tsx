@@ -6,6 +6,7 @@ import { useSession } from "@/components/providers/auth-provider";
 import { hasAnyAdminPermission } from "@/lib/navigation/build-admin-nav";
 import { staffRoutes } from "@/lib/staff/routes";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { AdminSubNav } from "@/components/staff/admin/admin-sub-nav";
 
 export function AdminLayoutClient({ children }: { children: ReactNode }) {
   const { user, isLoading } = useSession();
@@ -34,5 +35,10 @@ export function AdminLayoutClient({ children }: { children: ReactNode }) {
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <AdminSubNav />
+      {children}
+    </>
+  );
 }

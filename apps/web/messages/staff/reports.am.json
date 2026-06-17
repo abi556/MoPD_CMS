@@ -1,1 +1,117 @@
-{}
+{
+  "hub": {
+    "title": "የሪፖርት አጠቃላይ እይታ",
+    "subtitle": "ለመጠን፣ SLA፣ መፍትሄ፣ ቻነሎች እና ላክ የተዋሃደ የትንታኔ ማዕከል።",
+    "executiveTitle": "የአስፈጻሚ እይታ",
+    "executiveDescription": "ለውሳኔ ሰጪዎች የሚረዱ KPIዎች እና አዝማሚያዎች።",
+    "volumeTitle": "የመጠን ዳሽቦርድ",
+    "volumeDescription": "ቅሬታዎችን በሁኔታ እና በጊዜ መቁጠሪያ ይከታተሉ።",
+    "slaTitle": "SLA ተገዢነት",
+    "slaDescription": "በጊዜ የተፈጸሙ፣ ንቁ እና የተጣሱ SLA መከታተያዎችን ይከታተሉ።",
+    "resolutionTitle": "የመፍትሄ መለኪያዎች",
+    "resolutionDescription": "ቀሪ ጉዳዮች፣ የመዝጋት መጠን እና የመፍትሄ ጊዜ አዝማሚያዎችን ይገምግሙ።",
+    "channelsTitle": "የቻነል አጠቃቀም",
+    "channelsDescription": "ቅሬታ መግቢያ በቻነል እንዴት እንደሚሰራጭ ይረዱ።",
+    "exportsTitle": "የላክ ማዕከል",
+    "exportsDescription": "CSV፣ Excel ወይም ብራንድ ያለው PDF ቅሬታ ላክ ይፍጠሩ እና ያውርዱ።"
+  },
+  "volume": {
+    "title": "የመጠን ዳሽቦርድ",
+    "subtitle": "ቅሬታዎች በሁኔታ እና በጊዜ መቁጠሪያ።"
+  },
+  "sla": {
+    "title": "SLA ተገዢነት",
+    "subtitle": "በጊዜ ከተጣሱ SLA አፈጻጸም።"
+  },
+  "resolution": {
+    "title": "የመፍትሄ መለኪያዎች",
+    "subtitle": "ቀሪ ጉዳዮች፣ የመዝጋት መጠን እና አማካይ የመፍትሄ ጊዜ።"
+  },
+  "channels": {
+    "title": "የቻነል አጠቃቀም",
+    "subtitle": "ቅሬታ መግቢያ በቻነሎች መጠን።"
+  },
+  "exports": {
+    "title": "የላክ ማዕከል",
+    "subtitle": "CSV፣ Excel ወይም ብራንድ ያለው PDF ቅሬታ ላክ ይፍጠሩ እና ያውርዱ።"
+  },
+  "executive": {
+    "title": "የአስፈጻሚ እይታ",
+    "subtitle": "ለውሳኔ ሰጪዎች ከፍ ያለ እይታ (እውነተኛ ውሂብ ብቻ)።",
+    "submittedToday": "ዛሬ የተላኩ",
+    "closedToday": "ዛሬ የተዘጉ",
+    "intakeClosureTitle": "ግብዣ እና መዝጋት",
+    "intakeClosureSubtitle": "ዕለታዊ መላክ እና መዝጋት (ባለፉ 30 ቀናት)።",
+    "intakeClosureNote": "Submitted = በዚያ ቀን የተፈጠሩ። Closed = በዚያ ቀን ወደ CLOSED የተቀየሩ።",
+    "intakeHeatmapTitle": "ዕለታዊ ግብዣ ሂትማፕ",
+    "intakeHeatmapSubtitle": "ባለፉ 14 ቀናት የተላኩ (ይበልጥ ጨለማ = ከፍ ያለ)።",
+    "slaTitle": "SLA ተገዢነት",
+    "slaSubtitle": "በጊዜ ከተጣሱ SLA መከታተያዎች።",
+    "channelsTitle": "በቻነል ግብዣ",
+    "channelsSubtitle": "ቅሬታዎች በግብዣ ቻነል ድርሻ።",
+    "resolutionTitle": "የመፍትሄ አፈጻጸም",
+    "resolutionSubtitle": "ቀሪ ጉዳዮች እና የመፍትሄ ጊዜ አዝማሚያ።",
+    "platformTitle": "የፕላትፎርም ጤና (በቅርቡ)",
+    "platformSubtitle": "API ሲዘጋጅ የመቆየት ጊዜ እና ቴክኒካል ክስተቶች ይጨመራሉ።",
+    "platformNotAvailable": "የፕላትፎርም መቆየት ጊዜ እና ክስተት መለኪያዎች እስካሁን አልተዘጋጁም።"
+  },
+  "filters": {
+    "from": "ከ",
+    "to": "እስከ",
+    "bucket": "መቁጠሪያ",
+    "category": "ምድብ",
+    "orgUnit": "ድርጅታዊ ክፍል",
+    "apply": "ተግብር",
+    "reset": "እንደገና አስጀምር",
+    "day": "ቀን",
+    "week": "ሳምንት",
+    "month": "ወር",
+    "allCategories": "ሁሉም ምድቦች",
+    "allOrgUnits": "ሁሉም ድርጅታዊ ክፍሎች"
+  },
+  "exportFormat": {
+    "csv": "CSV",
+    "xlsx": "Excel (.xlsx)",
+    "pdf": "ብራንድ PDF (.pdf)"
+  },
+  "createExport": "ላክ ፍጠር",
+  "empty": "ለተመረጡት ማጣሪያዎች ውሂብ የለም።",
+  "error": "የሪፖርት ውሂብ መጫን አልተሳካም።",
+  "kpi": {
+    "totalComplaints": "ጠቅላላ ቅሬታዎች",
+    "buckets": "መቁጠሪያዎች",
+    "statuses": "ሁኔታዎች",
+    "totalTrackers": "ጠቅላላ መከታተያዎች",
+    "onTimePct": "በጊዜ %",
+    "breachedPct": "የተጣሱ %",
+    "avgResolutionHours": "አማካይ መፍትሄ (ሰ)",
+    "resolutionRate": "የመፍትሄ መጠን",
+    "backlog": "ቀሪ ጉዳዮች",
+    "channels": "ቻነሎች"
+  },
+  "exportsTable": {
+    "jobId": "የሥራ መለያ",
+    "status": "ሁኔታ",
+    "created": "ተፈጥሯል",
+    "completed": "ተጠናቋል",
+    "actions": "ድርጊቶች",
+    "download": "አውርድ",
+    "empty": "የላክ ሥራ አልተፈጠረም።",
+    "createFailed": "ላክ መፍጠር አልተሳካም",
+    "stillProcessing": "ላኩ እየተሰራ ነው። እንደገና ይሞክሩ።",
+    "expired": "ላኩ ጊዜው አልፏል። አዲስ ላክ ይፍጠሩ።",
+    "downloadFailed": "ማውረድ አልተሳካም"
+  },
+  "table": {
+    "status": "ሁኔታ",
+    "metric": "መለኪያ",
+    "value": "ዋጋ",
+    "onTime": "በጊዜ",
+    "breached": "የተጣሱ",
+    "active": "ንቁ",
+    "bucket": "መቁጠሪያ",
+    "avgHours": "አማካይ ሰዓታት",
+    "channel": "ቻነል",
+    "count": "ብዛት"
+  }
+}

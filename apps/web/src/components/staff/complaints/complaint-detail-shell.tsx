@@ -30,7 +30,8 @@ import { useToast } from "@/components/providers/toast-provider";
 import { DashboardPageHeader } from "@/components/staff/dashboard/dashboard-page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { StaffTabs } from "@/components/staff/ui/staff-tabs";
+import { StaffEmptyState } from "@/components/staff/ui/staff-empty-state";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { SlaCountdown } from "@/components/staff/complaints/sla-countdown";
 import { ComplaintOverviewTab } from "@/components/staff/complaints/complaint-overview-tab";
@@ -146,7 +147,7 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
 
   if (notFound || !complaint || !user) {
     return (
-      <EmptyState
+      <StaffEmptyState
         title={t("notFoundTitle")}
         description={t("notFoundDescription")}
         action={
@@ -239,40 +240,35 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
       </div>
 
       {complaint.status === "QA_LEGAL_REVIEW" ? (
-        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm font-medium text-amber-900">{t("qaReviewBanner")}</p>
+        <div className="mb-6 rounded-xl border border-warning/30 bg-warning/10 p-4">
+          <p className="text-sm font-medium text-staff-text">{t("qaReviewBanner")}</p>
           {complaint.responseDraft?.trim() ? (
-            <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm text-amber-950">
+            <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm text-staff-text-muted">
               {complaint.responseDraft}
             </p>
           ) : (
-            <p className="mt-2 text-sm text-amber-800">{t("qaReviewMissingDraft")}</p>
+            <p className="mt-2 text-sm text-staff-text-muted">{t("qaReviewMissingDraft")}</p>
           )}
           <button
             type="button"
             onClick={() => setTab("response")}
-            className="mt-3 text-sm font-medium text-amber-900 underline hover:no-underline"
+            className="mt-3 cursor-pointer text-sm font-medium text-staff-nav-active underline hover:no-underline"
           >
             {t("viewFullDraft")}
           </button>
         </div>
       ) : null}
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {(Object.keys(TAB_LABEL_KEYS) as DetailTab[]).map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={`min-h-11 cursor-pointer rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              tab === id
-                ? "bg-staff-nav-active-bg text-staff-nav-active-text"
-                : "text-staff-text-muted hover:bg-staff-surface"
-            }`}
-          >
-            {t(TAB_LABEL_KEYS[id])}
-          </button>
-        ))}
+      <div className="mb-4">
+        <StaffTabs
+          ariaLabel={t("tabsLabel")}
+          activeId={tab}
+          onChange={(id) => setTab(id as DetailTab)}
+          tabs={(Object.keys(TAB_LABEL_KEYS) as DetailTab[]).map((id) => ({
+            id,
+            label: t(TAB_LABEL_KEYS[id]),
+          }))}
+        />
       </div>
 
       {tab === "overview" ? (

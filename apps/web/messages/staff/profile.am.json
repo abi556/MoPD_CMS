@@ -1,6 +1,10 @@
 {
   "title": "መገለጫ",
   "subtitle": "መለያዎን፣ የይለፍ ቃልዎን እና የመግቢያ ደህንነትዎን ያስተዳድሩ።",
+  "tabsLabel": "የመገለጫ ክፍሎች",
+  "tabAccount": "መለያ",
+  "tabPassword": "የይለፍ ቃል",
+  "tabSecurity": "ደህንነት",
   "accountTitle": "መለያ",
   "accountSubtitle": "በ MoPD CMS ውስጥ የሰራተኛ ማንነትዎ።",
   "emailLabel": "ኢሜይል",

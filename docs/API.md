@@ -529,7 +529,7 @@ All routes under `/admin/*` below require Bearer auth + `config:manage`.
 - **Permission:** `report:export`
 - **Body (`CreateReportExportDto`):**
   - dashboard filter fields (`from`, `to`, etc.)
-  - `format`: `csv|xlsx`
+  - `format`: `csv|xlsx|pdf`
   - `reportType`: `complaints`
 - **Response:** `{ data: { id, status, createdAt } }`
 - **Status:** `201` (+ `Location` header)

@@ -7,7 +7,7 @@ import { deleteRole, listRoles, type RoleListItem } from "@/lib/staff/roles-api"
 import { DashboardPageHeader } from "@/components/staff/dashboard/dashboard-page-header";
 import { RoleFormDialog } from "@/components/staff/admin/roles/role-form-dialog";
 import { AdminErrorAlert } from "@/components/staff/admin/shared/admin-status-badge";
-import { DataTable } from "@/components/ui/data-table";
+import { StaffDataTable } from "@/components/staff/ui/staff-data-table";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
@@ -97,7 +97,7 @@ export function RolesAdminPanel() {
         </div>
       ) : null}
 
-      <DataTable
+        <StaffDataTable
         columns={[
           {
             id: "name",

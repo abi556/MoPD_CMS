@@ -1,6 +1,10 @@
 {
   "title": "Profile",
   "subtitle": "Manage your account, password, and sign-in security.",
+  "tabsLabel": "Profile sections",
+  "tabAccount": "Account",
+  "tabPassword": "Password",
+  "tabSecurity": "Security",
   "accountTitle": "Account",
   "accountSubtitle": "Your staff identity in MoPD CMS.",
   "emailLabel": "Email",

@@ -1,10 +1,12 @@
-import { ReportsStubPage } from "@/app/[locale]/dashboard/reports/reports-stub-page";
+import { getTranslations } from "next-intl/server";
+import { RequirePermission } from "@/components/auth/require-permission";
+import { ReportsDashboardView } from "@/components/staff/reports/reports-dashboard-view";
 
-export default function ReportsVolumePage() {
+export default async function ReportsVolumePage() {
+  const t = await getTranslations("reports.volume");
   return (
-    <ReportsStubPage
-      title="Volume dashboard"
-      description="Complaint volume by category, channel, and period — ships with GET /reports/dashboard/volume (RPT-02)."
-    />
+    <RequirePermission permission="report:view">
+      <ReportsDashboardView kind="volume" title={t("title")} subtitle={t("subtitle")} />
+    </RequirePermission>
   );
 }

@@ -10,6 +10,12 @@
   "filterStatus": "ሁኔታ",
   "filterTo": "የተቀባይ ኢሜይል",
   "filterTemplateKey": "የአብነት ቁልፍ",
+  "statusValues": {
+    "queued": "በመጠባበቅ ላይ",
+    "sent": "ተላከ",
+    "failed": "አልተሳካም",
+    "dead_letter": "የመጨረሻ ስህተት"
+  },
   "emptyTitle": "ማድረሻ አልተገኘም",
   "emptyDescription": "ማጣሪያዎችን ያስተካክሉ ወይም ማሳወቂያ ያስነሱ።",
   "confirmResendTitle": "ማሳወቂያ እንደገና ይላክ?",

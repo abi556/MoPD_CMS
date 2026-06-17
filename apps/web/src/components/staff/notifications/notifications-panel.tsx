@@ -9,9 +9,10 @@ import {
   type NotificationDeliveryItem,
   type NotificationDeliveryStatus,
 } from "@/lib/staff/notifications-api";
-import { DashboardPageHeader } from "@/components/staff/dashboard/dashboard-page-header";
-import { AdminErrorAlert } from "@/components/staff/admin/shared/admin-status-badge";
-import { DataTable } from "@/components/ui/data-table";
+import { StaffPageShell } from "@/components/staff/ui/staff-page-shell";
+import { StaffAlert } from "@/components/staff/ui/staff-alert";
+import { StaffFilterPanel } from "@/components/staff/ui/staff-filter-panel";
+import { StaffDataTable } from "@/components/staff/ui/staff-data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -97,63 +98,68 @@ export function NotificationsPanel() {
   };
 
   return (
-    <div>
-      <DashboardPageHeader title={t("title")} subtitle={t("subtitle")} />
+    <StaffPageShell
+      title={t("title")}
+      subtitle={t("subtitle")}
+      filterBar={
+        <StaffFilterPanel>
+          <div className="flex flex-wrap gap-3">
+            <div className="w-40">
+              <Select
+                label={t("filterStatus")}
+                name="status"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value as NotificationDeliveryStatus | "");
+                  setPage(1);
+                }}
+                options={[
+                  { value: "", label: tc("all") },
+                  { value: "queued", label: t("statusValues.queued") },
+                  { value: "sent", label: t("statusValues.sent") },
+                  { value: "failed", label: t("statusValues.failed") },
+                  { value: "dead_letter", label: t("statusValues.dead_letter") },
+                ]}
+              />
+            </div>
+            <div className="min-w-[10rem] flex-1">
+              <Input
+                label={t("filterTo")}
+                name="to"
+                value={toFilter}
+                onChange={(e) => {
+                  setToFilter(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+            <div className="min-w-[10rem] flex-1">
+              <Input
+                label={t("filterTemplateKey")}
+                name="templateKey"
+                value={templateKeyFilter}
+                onChange={(e) => {
+                  setTemplateKeyFilter(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+          </div>
+        </StaffFilterPanel>
+      }
+    >
+      {listError ? <StaffAlert>{listError}</StaffAlert> : null}
 
-      <div className="mb-4 flex flex-wrap gap-3">
-        <div className="w-40">
-          <Select
-            label={t("filterStatus")}
-            name="status"
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value as NotificationDeliveryStatus | "");
-              setPage(1);
-            }}
-            options={[
-              { value: "", label: tc("all") },
-              { value: "queued", label: "queued" },
-              { value: "sent", label: "sent" },
-              { value: "failed", label: "failed" },
-              { value: "dead_letter", label: "dead_letter" },
-            ]}
-          />
-        </div>
-        <div className="min-w-[10rem] flex-1">
-          <Input
-            label={t("filterTo")}
-            name="to"
-            value={toFilter}
-            onChange={(e) => {
-              setToFilter(e.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
-        <div className="min-w-[10rem] flex-1">
-          <Input
-            label={t("filterTemplateKey")}
-            name="templateKey"
-            value={templateKeyFilter}
-            onChange={(e) => {
-              setTemplateKeyFilter(e.target.value);
-              setPage(1);
-            }}
-          />
-        </div>
-      </div>
-
-      {listError ? (
-        <div className="mb-4">
-          <AdminErrorAlert>{listError}</AdminErrorAlert>
-        </div>
-      ) : null}
-
-      <DataTable
+      <StaffDataTable
         columns={[
           { id: "templateKey", header: t("templateKey"), cell: (row) => row.templateKey },
           { id: "to", header: t("to"), cell: (row) => row.to },
-          { id: "status", header: t("status"), cell: (row) => row.status },
+          {
+            id: "status",
+            header: t("status"),
+            cell: (row) =>
+              t(`statusValues.${row.status}` as "statusValues.queued"),
+          },
           {
             id: "sentAt",
             header: t("sentAt"),
@@ -172,6 +178,7 @@ export function NotificationsPanel() {
                 type="button"
                 variant="secondary"
                 size="sm"
+                className="min-h-11"
                 disabled={row.status === "queued"}
                 onClick={() => setResendTarget(row)}
               >
@@ -201,6 +208,6 @@ export function NotificationsPanel() {
         cancelLabel={tc("cancel")}
         loading={resending}
       />
-    </div>
+    </StaffPageShell>
   );
 }

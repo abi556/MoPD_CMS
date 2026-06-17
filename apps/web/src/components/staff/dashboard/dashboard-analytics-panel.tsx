@@ -116,11 +116,11 @@ function WeeklyBars({
     <div className="space-y-3">
       <div className="flex gap-4 text-xs text-staff-text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-[var(--staff-chart-submitted-bar)]" />
+          <span className="h-2.5 w-2.5 rounded-sm bg-(--staff-chart-submitted-bar)" />
           {submittedLabel}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-[var(--staff-chart-closed-bar)]" />
+          <span className="h-2.5 w-2.5 rounded-sm bg-(--staff-chart-closed-bar)" />
           {closedLabel}
         </span>
       </div>
@@ -131,16 +131,40 @@ function WeeklyBars({
             className="flex min-w-0 flex-1 flex-col items-center gap-1.5"
           >
             <div className="flex h-32 w-full items-end justify-center gap-1.5">
-              <div
-                className="w-4 max-w-[18px] flex-1 rounded-t bg-[var(--staff-chart-submitted-bar)]"
-                style={{ height: `${(week.submitted / max) * 100}%` }}
-                title={`${submittedLabel}: ${week.submitted}`}
-              />
-              <div
-                className="w-4 max-w-[18px] flex-1 rounded-t bg-[var(--staff-chart-closed-bar)]"
-                style={{ height: `${(week.closed / max) * 100}%` }}
-                title={`${closedLabel}: ${week.closed}`}
-              />
+              <div className="group relative flex h-full w-4 max-w-[18px] flex-1 items-end">
+                <div
+                  className="w-full rounded-t bg-(--staff-chart-submitted-bar)"
+                  style={{
+                    height:
+                      week.submitted > 0
+                        ? `${Math.max((week.submitted / max) * 100, 6)}%`
+                        : "0%",
+                  }}
+                  title={`${submittedLabel}: ${week.submitted}`}
+                />
+                {week.submitted > 0 ? (
+                  <span className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-staff-surface px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-staff-text opacity-0 shadow-sm ring-1 ring-staff-border transition-opacity group-hover:opacity-100">
+                    {week.submitted}
+                  </span>
+                ) : null}
+              </div>
+              <div className="group relative flex h-full w-4 max-w-[18px] flex-1 items-end">
+                <div
+                  className="w-full rounded-t bg-(--staff-chart-closed-bar)"
+                  style={{
+                    height:
+                      week.closed > 0
+                        ? `${Math.max((week.closed / max) * 100, 6)}%`
+                        : "0%",
+                  }}
+                  title={`${closedLabel}: ${week.closed}`}
+                />
+                {week.closed > 0 ? (
+                  <span className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-staff-surface px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-staff-text opacity-0 shadow-sm ring-1 ring-staff-border transition-opacity group-hover:opacity-100">
+                    {week.closed}
+                  </span>
+                ) : null}
+              </div>
             </div>
             <span className="text-[10px] text-staff-text-muted">{week.label}</span>
           </div>
@@ -221,9 +245,33 @@ function AnalyticsCard({
 export function DashboardAnalyticsPanel() {
   const t = useTranslations("staff.dashboard");
   const [data, setData] = useState<DashboardAnalyticsSnapshot | null>(null);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    void fetchDashboardAnalytics().then(setData);
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const snapshot = await fetchDashboardAnalytics();
+        if (!cancelled) {
+          setData(snapshot);
+          setHasError(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setHasError(true);
+        }
+      }
+    };
+
+    void load();
+    const timer = setInterval(() => {
+      void load();
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
 
   if (!data) {
@@ -250,13 +298,13 @@ export function DashboardAnalyticsPanel() {
   const channelLabels = {
     web: t("analytics.channels.web"),
     email: t("analytics.channels.email"),
-    sms: t("analytics.channels.sms"),
+    telegram: t("analytics.channels.telegram"),
     walkIn: t("analytics.channels.walkIn"),
   };
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-staff-text-muted">{t("analytics.sampleNote")}</p>
+      {hasError ? <p className="text-xs text-danger">{t("error")}</p> : null}
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <AnalyticsCard
           title={t("analytics.statusTitle")}

@@ -2,10 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { DashboardAnalyticsPanel } from "@/components/staff/dashboard/dashboard-analytics-panel";
-import {
-  DashboardExportButton,
-  DashboardKpiGrid,
-} from "@/components/staff/dashboard/dashboard-kpi-grid";
+import { DashboardKpiGrid } from "@/components/staff/dashboard/dashboard-kpi-grid";
 import { DashboardPageHeader } from "@/components/staff/dashboard/dashboard-page-header";
 import { DashboardTabs } from "@/components/staff/dashboard/dashboard-tabs";
 
@@ -31,11 +28,7 @@ export function DashboardHome() {
 
   return (
     <>
-      <DashboardPageHeader
-        title={t("title")}
-        subtitle={t("subtitle")}
-        action={<DashboardExportButton />}
-      />
+      <DashboardPageHeader title={t("title")} subtitle={t("subtitle")} />
       <DashboardKpiGrid />
       <DashboardTabs />
       <DashboardAnalyticsPanel />

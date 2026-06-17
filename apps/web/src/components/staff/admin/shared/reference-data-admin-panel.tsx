@@ -17,10 +17,12 @@ import {
   type ReferenceDataFormMode,
   type ReferenceDataFormValues,
 } from "@/components/staff/admin/shared/reference-data-form-dialog";
-import { DataTable } from "@/components/ui/data-table";
+import { StaffDataTable } from "@/components/staff/ui/staff-data-table";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
+const DEPTH_PADDING = ["pl-0", "pl-5", "pl-10", "pl-[3.75rem]", "pl-20"] as const;
 
 type ActiveFilter = "all" | "active" | "inactive";
 
@@ -186,13 +188,17 @@ export function ReferenceDataAdminPanel<T extends ReferenceDataItem>({
         </div>
       ) : null}
 
-      <DataTable
+        <StaffDataTable
         columns={[
           {
             id: "name",
             header: t("nameEn"),
             cell: (row) => (
-              <span style={{ paddingLeft: `${row.depth * 1.25}rem` }}>
+              <span
+                className={
+                  DEPTH_PADDING[Math.min(row.depth, DEPTH_PADDING.length - 1)] ?? "pl-20"
+                }
+              >
                 <span className="font-medium text-staff-text">{row.item.nameEn}</span>
                 {row.item.nameAm ? (
                   <span className="ml-2 text-staff-text-muted">/ {row.item.nameAm}</span>

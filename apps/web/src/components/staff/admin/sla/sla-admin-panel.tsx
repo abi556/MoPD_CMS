@@ -12,7 +12,7 @@ import {
   AdminStatusBadge,
 } from "@/components/staff/admin/shared/admin-status-badge";
 import { SlaFormDialog } from "@/components/staff/admin/sla/sla-form-dialog";
-import { DataTable } from "@/components/ui/data-table";
+import { StaffDataTable } from "@/components/staff/ui/staff-data-table";
 import { Button } from "@/components/ui/button";
 
 type ViewMode = "list" | "matrix";
@@ -112,7 +112,7 @@ export function SlaAdminPanel() {
       ) : null}
 
       {viewMode === "list" ? (
-        <DataTable
+        <StaffDataTable
           columns={[
             { id: "name", header: t("name"), cell: (row) => row.name },
             { id: "priority", header: t("priority"), cell: (row) => t(`priorities.${row.priority}`) },

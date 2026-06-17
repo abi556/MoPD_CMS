@@ -1,10 +1,16 @@
-import { ReportsStubPage } from "@/app/[locale]/dashboard/reports/reports-stub-page";
+import { getTranslations } from "next-intl/server";
+import { RequirePermission } from "@/components/auth/require-permission";
+import { ReportsDashboardView } from "@/components/staff/reports/reports-dashboard-view";
 
-export default function ReportsResolutionPage() {
+export default async function ReportsResolutionPage() {
+  const t = await getTranslations("reports.resolution");
   return (
-    <ReportsStubPage
-      title="Resolution metrics"
-      description="Resolution rate, backlog, and average time — ships with GET /reports/dashboard/resolution (RPT-04)."
-    />
+    <RequirePermission permission="report:view">
+      <ReportsDashboardView
+        kind="resolution"
+        title={t("title")}
+        subtitle={t("subtitle")}
+      />
+    </RequirePermission>
   );
 }

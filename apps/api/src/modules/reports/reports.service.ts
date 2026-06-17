@@ -24,11 +24,12 @@ import { DocumentStorageFactory } from '../documents/storage/document-storage.fa
 import { PrismaService } from '../../prisma/prisma.service';
 import { complaintsToCsv } from './report-export-csv.util';
 import { complaintsToXlsxBuffer } from './report-export-xlsx.util';
+import { complaintsToPdfBuffer } from './report-export-pdf.util';
 import { ReportQueryService } from './report-query.service';
 import { ReportFilters, normalizeReportFilters } from './report-filters';
 
 export interface CreateExportInput {
-  format: 'csv' | 'xlsx';
+  format: 'csv' | 'xlsx' | 'pdf';
   reportType: 'complaints';
   from: string;
   to: string;
@@ -79,6 +80,7 @@ export class ReportsService {
     return {
       buckets: result.buckets,
       series: result.series,
+      events: result.events,
       meta: { ...metaToResponse(result.meta), total: result.meta.total },
     };
   }
@@ -131,6 +133,8 @@ export class ReportsService {
         format:
           input.format === 'xlsx'
             ? ReportExportFormat.xlsx
+            : input.format === 'pdf'
+              ? ReportExportFormat.pdf
             : ReportExportFormat.csv,
         status: ReportExportStatus.PENDING,
         filters: {
@@ -227,7 +231,12 @@ export class ReportsService {
         orgUnitId: row.orgUnitId,
       }));
 
-      const ext = record.format === ReportExportFormat.xlsx ? 'xlsx' : 'csv';
+      const ext =
+        record.format === ReportExportFormat.xlsx
+          ? 'xlsx'
+          : record.format === ReportExportFormat.pdf
+            ? 'pdf'
+            : 'csv';
       const storageKey = `reports/${exportId}.${ext}`;
       const storage = this.storageFactory.getStorage();
       await storage.ensureBuckets();
@@ -238,6 +247,9 @@ export class ReportsService {
         body = await complaintsToXlsxBuffer(exportRows);
         mimeType =
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      } else if (record.format === ReportExportFormat.pdf) {
+        body = await complaintsToPdfBuffer(exportRows);
+        mimeType = 'application/pdf';
       } else {
         body = Buffer.from(complaintsToCsv(exportRows), 'utf-8');
         mimeType = 'text/csv; charset=utf-8';

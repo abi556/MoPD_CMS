@@ -1,10 +1,12 @@
-import { ReportsStubPage } from "@/app/[locale]/dashboard/reports/reports-stub-page";
+import { getTranslations } from "next-intl/server";
+import { RequirePermission } from "@/components/auth/require-permission";
+import { ReportsExportsView } from "@/components/staff/reports/reports-exports-view";
 
-export default function ReportsExportsPage() {
+export default async function ReportsExportsPage() {
+  const t = await getTranslations("reports.exports");
   return (
-    <ReportsStubPage
-      title="Export centre"
-      description="Generate and download CSV or Excel exports — ships with POST /reports/export (RPT-06)."
-    />
+    <RequirePermission permission="report:export">
+      <ReportsExportsView title={t("title")} subtitle={t("subtitle")} />
+    </RequirePermission>
   );
 }

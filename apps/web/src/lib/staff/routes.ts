@@ -13,6 +13,7 @@ export const staffRoutes = {
     resolution: "/dashboard/reports/resolution",
     channels: "/dashboard/reports/channels",
     exports: "/dashboard/reports/exports",
+    executive: "/dashboard/reports/executive",
   },
   admin: {
     root: "/dashboard/admin",

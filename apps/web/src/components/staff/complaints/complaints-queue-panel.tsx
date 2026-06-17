@@ -23,10 +23,10 @@ import { hasExactPermission, hasPermission } from "@/lib/permissions";
 import { staffRoutes } from "@/lib/staff/routes";
 import { useSession } from "@/components/providers/auth-provider";
 import { DashboardPageHeader } from "@/components/staff/dashboard/dashboard-page-header";
-import { AdminErrorAlert } from "@/components/staff/admin/shared/admin-status-badge";
+import { StaffDataTable } from "@/components/staff/ui/staff-data-table";
+import { StaffAlert } from "@/components/staff/ui/staff-alert";
 import { ComplaintQueueFiltersBar } from "@/components/staff/complaints/complaint-queue-filters";
 import { ComplaintQueueCard } from "@/components/staff/complaints/complaint-queue-card";
-import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge, SlaBadge } from "@/components/ui/status-badge";
 import { Link } from "@/i18n/navigation";
 
@@ -130,7 +130,7 @@ export function ComplaintsQueuePanel() {
 
       {listError ? (
         <div className="mb-4">
-          <AdminErrorAlert>{listError}</AdminErrorAlert>
+          <StaffAlert>{listError}</StaffAlert>
         </div>
       ) : null}
 
@@ -147,7 +147,7 @@ export function ComplaintsQueuePanel() {
       </div>
 
       <div className="hidden md:block">
-        <DataTable
+        <StaffDataTable
           columns={[
             {
               id: "reference",

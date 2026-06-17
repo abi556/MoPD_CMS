@@ -1,4 +1,7 @@
 {
+  "hub": {
+    "subtitle": "Configure users, reference data, communications, and system settings."
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -153,5 +156,34 @@
     "bodyText": "Plain text body",
     "missingLocale": "Missing translation",
     "emptyDescription": "No templates found in the database."
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Filterable, cursor-based audit log explorer.",
+    "exportCsv": "Export CSV",
+    "eventType": "Event type",
+    "actorUserId": "Actor user id",
+    "entityType": "Entity type",
+    "entityId": "Entity id",
+    "applyFilters": "Apply filters",
+    "reset": "Reset",
+    "event": "Event",
+    "actor": "Actor",
+    "entity": "Entity",
+    "created": "Created",
+    "details": "Details",
+    "view": "View",
+    "loading": "Loading…",
+    "empty": "No audit logs found.",
+    "loadFailed": "Failed to load audit logs",
+    "detailTitle": "Audit event details",
+    "previous": "Previous",
+    "next": "Next",
+    "allEvents": "All events",
+    "events": {
+      "authLoginSucceeded": "auth.login.succeeded",
+      "complaintTransitioned": "complaint.transitioned",
+      "reportExportRequested": "report.export.requested"
+    }
   }
 }

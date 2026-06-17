@@ -49,13 +49,12 @@
       "sla": "SLA at risk"
     },
     "analytics": {
-      "sampleNote": "Sample data until report APIs ship (GET /reports/dashboard/*).",
       "statusTitle": "Complaint status mix",
       "statusSubtitle": "Submitted, open, in review, resolved, and closed",
       "slaTitle": "SLA compliance",
       "slaSubtitle": "On-time resolution rate. Targets from configured SLA rules.",
-      "volumeTitle": "Weekly intake vs closure",
-      "volumeSubtitle": "Submitted and closed complaints over the last six weeks",
+      "volumeTitle": "Daily intake vs closure",
+      "volumeSubtitle": "Submitted and closed complaints over the last 14 days",
       "channelsTitle": "Intake by channel",
       "channelsSubtitle": "Share of complaints by intake channel",
       "viewReport": "View full report",
@@ -72,7 +71,7 @@
       "channels": {
         "web": "Web portal",
         "email": "Email",
-        "sms": "SMS",
+        "telegram": "Telegram bot",
         "walkIn": "Walk-in"
       }
     }

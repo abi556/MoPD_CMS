@@ -11,6 +11,16 @@
   "contactEmail": "Contact email",
   "reject": "Reject (email citizen)",
   "noItems": "No inquiries in this queue.",
+  "refresh": "Refresh",
+  "loading": "Loading…",
+  "noCandidates": "No candidates",
+  "statusAll": "All",
+  "statusValues": {
+    "PENDING": "Pending",
+    "IN_REVIEW": "In review",
+    "RESOLVED": "Resolved",
+    "REJECTED": "Rejected"
+  },
   "errors": {
     "loadFailed": "Could not load inquiries."
   }

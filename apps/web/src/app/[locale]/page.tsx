@@ -40,22 +40,37 @@ export default async function LandingPage({
 
   const t = await getTranslations("public");
 
-  const trustCards = [
+  const processSteps = [
     {
-      key: "secure",
-      icon: Shield,
-      delay: "100ms",
+      step: "1",
+      title: t("steps.submission.title"),
+      body: t("steps.submission.body"),
+      icon: FileDown,
     },
     {
-      key: "tracking",
-      icon: Clock,
-      delay: "200ms",
+      step: "2",
+      title: t("steps.review.title"),
+      body: t("steps.review.body"),
+      icon: Eye,
     },
     {
-      key: "citizenCentered",
-      icon: UserCheck,
-      delay: "300ms",
+      step: "3",
+      title: t("steps.investigation.title"),
+      body: t("steps.investigation.body"),
+      icon: Search,
     },
+    {
+      step: "4",
+      title: t("steps.resolution.title"),
+      body: t("steps.resolution.body"),
+      icon: CheckCircle2,
+    },
+  ] as const;
+
+  const trustPillars = [
+    { key: "secure", icon: Shield },
+    { key: "tracking", icon: Clock },
+    { key: "citizenCentered", icon: UserCheck },
   ] as const;
 
   return (
@@ -120,57 +135,27 @@ export default async function LandingPage({
           </div>
           
           <div className="grid gap-6 md:grid-cols-4">
-            {[
-              {
-                step: "1",
-                title: t("steps.submission.title"),
-                body: t("steps.submission.body"),
-                icon: FileDown,
-                color: "bg-primary/10 text-primary",
-              },
-              {
-                step: "2",
-                title: t("steps.review.title"),
-                body: t("steps.review.body"),
-                icon: Eye,
-                color: "bg-primary/10 text-primary",
-              },
-              {
-                step: "3",
-                title: t("steps.investigation.title"),
-                body: t("steps.investigation.body"),
-                icon: Search,
-                color: "bg-primary/10 text-primary",
-              },
-              {
-                step: "4",
-                title: t("steps.resolution.title"),
-                body: t("steps.resolution.body"),
-                icon: CheckCircle2,
-                color: "bg-primary/10 text-primary",
-              },
-            ].map(({ step, title, body, icon: Icon, color }, index) => (
+            {processSteps.map(({ step, title, body, icon: Icon }, index) => (
               <article
                 key={step}
                 style={{ animationDelay: `${200 + index * 80}ms` }}
                 className="group relative rounded-none border border-border-standard bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md animate-fade-in-up fill-mode-both"
               >
-                {/* Connecting Arrow for larger screens */}
-                {index < 3 && (
+                {index < processSteps.length - 1 ? (
                   <div className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 text-border-standard md:block transition-transform duration-300 group-hover:translate-x-1">
                     <ArrowRight className="h-5 w-5" />
                   </div>
-                )}
-                
+                ) : null}
+
                 <div className="flex items-center justify-between">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-none transition-transform duration-300 group-hover:scale-110 ${color}`}>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-none bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
                     <Icon className="h-6 w-6" />
                   </div>
                   <span className="font-mono text-4xl font-bold text-border-standard/60 select-none">
                     0{step}
                   </span>
                 </div>
-                
+
                 <h3 className="mt-6 font-h3 text-h3 text-on-surface font-semibold group-hover:text-primary transition-colors duration-200">
                   {title}
                 </h3>
@@ -180,10 +165,51 @@ export default async function LandingPage({
               </article>
             ))}
           </div>
+
+          <div
+            className="mt-14 border-t border-border-standard/60 pt-10 md:mt-16 md:pt-12 animate-fade-in-up fill-mode-both [animation-delay:520ms]"
+            aria-labelledby="trust-section-title"
+          >
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="font-overline text-overline uppercase tracking-widest text-primary">
+                {t("trustSectionEyebrow")}
+              </p>
+              <h3
+                id="trust-section-title"
+                className="mt-2 font-h2 text-h2 text-on-background tracking-tight"
+              >
+                {t("trustSectionTitle")}
+              </h3>
+            </div>
+
+            <ul className="mt-8 grid gap-6 md:mt-10 md:grid-cols-3 md:gap-0 md:divide-x md:divide-border-standard/80">
+              {trustPillars.map(({ key, icon: Icon }, index) => (
+                <li
+                  key={key}
+                  style={{ animationDelay: `${560 + index * 80}ms` }}
+                  className="animate-fade-in-up fill-mode-both md:px-8 lg:px-10"
+                >
+                  <div className="flex gap-4">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary shadow-sm">
+                      <Icon className="h-5 w-5" aria-hidden />
+                    </div>
+                    <div className="min-w-0 pt-0.5">
+                      <h4 className="font-h3 text-base font-semibold text-on-surface sm:text-h3">
+                        {t(`trust.${key}.title`)}
+                      </h4>
+                      <p className="mt-1.5 text-body-sm leading-relaxed text-text-secondary">
+                        {t(`trust.${key}.body`)}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
-      {/* Trust & Transparency Section & CTA */}
+      {/* Landmarks CTA */}
       <section className="relative overflow-hidden bg-neutral-950" aria-label={t("landmarksAlt")}>
         <div className="relative">
           <div className="pointer-events-none absolute inset-0">
@@ -195,51 +221,25 @@ export default async function LandingPage({
               className="object-cover object-center"
               aria-hidden
             />
-            <div className="absolute inset-0 bg-neutral-950/50 md:bg-neutral-950/40" />
+            <div className="absolute inset-0 bg-neutral-950/25 md:bg-neutral-950/15" />
           </div>
 
-          <div className="relative z-10 mx-auto w-full max-w-max-width px-gutter py-10 sm:py-12 md:py-10 lg:min-h-[320px] lg:py-12">
-            <div className="flex flex-col gap-8 lg:min-h-[280px] lg:justify-between lg:gap-10">
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-6">
-                {trustCards.map(({ key, icon: Icon, delay }) => (
-                  <div
-                    key={key}
-                    className="flex min-w-0 gap-4 border border-white/10 bg-black/25 p-4 backdrop-blur-sm animate-fade-in-up fill-mode-both sm:p-5"
-                    style={{ animationDelay: delay }}
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/20 text-primary-fixed">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="font-h3 text-base font-semibold text-white sm:text-h3">
-                        {t(`trust.${key}.title`)}
-                      </h4>
-                      <p className="mt-1.5 text-body-sm leading-relaxed text-white/90">
-                        {t(`trust.${key}.body`)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="relative overflow-hidden rounded-none border border-white/10 bg-black/30 p-5 backdrop-blur-sm animate-fade-in-up fill-mode-both [animation-delay:400ms] sm:p-6 md:p-8">
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] opacity-5" />
-
-                <div className="relative z-10 flex flex-col gap-5 sm:gap-6 md:flex-row md:items-center md:justify-between">
-                  <div className="min-w-0">
-                    <h2 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
-                      {t("readyTitle")}
-                    </h2>
-                    <p className="mt-1.5 max-w-xl text-body-sm leading-relaxed text-white/90">
-                      {t("readyBody")}
-                    </p>
-                  </div>
-                  <Link href="/complaints/new" className="w-full shrink-0 md:w-auto">
-                    <Button type="button" size="lg" fullWidth className="md:w-auto">
-                      {t("startSubmission")}
-                    </Button>
-                  </Link>
+          <div className="relative z-10 mx-auto flex w-full max-w-max-width items-center px-gutter py-12 sm:py-16 md:py-20 lg:min-h-[280px]">
+            <div className="relative w-full overflow-hidden rounded-none border border-white/20 bg-white/5 p-5 shadow-lg shadow-black/10 backdrop-blur-md animate-fade-in-up fill-mode-both sm:p-6 md:p-8">
+              <div className="relative z-10 flex flex-col gap-5 sm:gap-6 md:flex-row md:items-center md:justify-between">
+                <div className="min-w-0">
+                  <h2 className="font-display text-xl font-semibold tracking-tight text-white drop-shadow-sm sm:text-2xl md:text-3xl">
+                    {t("readyTitle")}
+                  </h2>
+                  <p className="mt-1.5 max-w-xl text-body-sm leading-relaxed text-white/95 drop-shadow-sm">
+                    {t("readyBody")}
+                  </p>
                 </div>
+                <Link href="/complaints/new" className="w-full shrink-0 md:w-auto">
+                  <Button type="button" size="lg" fullWidth className="md:w-auto">
+                    {t("startSubmission")}
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
