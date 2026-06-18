@@ -176,6 +176,11 @@ export class DocumentsController {
     @CurrentUser() user: JwtUser,
     @Req() request: RequestWithCorrelationId,
   ): Promise<void> {
-    await this.documentsService.delete(id, user.id, request.correlationId, user);
+    await this.documentsService.delete(
+      id,
+      user.id,
+      request.correlationId,
+      user,
+    );
   }
 }

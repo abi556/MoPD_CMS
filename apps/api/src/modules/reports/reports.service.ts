@@ -135,7 +135,7 @@ export class ReportsService {
             ? ReportExportFormat.xlsx
             : input.format === 'pdf'
               ? ReportExportFormat.pdf
-            : ReportExportFormat.csv,
+              : ReportExportFormat.csv,
         status: ReportExportStatus.PENDING,
         filters: {
           reportType: input.reportType,

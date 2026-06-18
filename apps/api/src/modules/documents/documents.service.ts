@@ -538,7 +538,6 @@ export class DocumentsService implements OnModuleInit {
     }
   }
 
-
   private async findDocumentOrThrow(id: string): Promise<Document> {
     const row = await this.prisma.document.findUnique({ where: { id } });
     if (!row) {

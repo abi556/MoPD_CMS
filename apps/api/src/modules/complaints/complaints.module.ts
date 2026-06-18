@@ -5,7 +5,6 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { ReferenceDataModule } from '../reference-data/reference-data.module';
 import { SlaModule } from '../sla/sla.module';
 import { ComplaintAccessModule } from './complaint-access.module';
-import { ComplaintAccessService } from './complaint-access.service';
 import { ComplaintsController } from './complaints.controller';
 import { ComplaintRecoveryInquiryService } from './complaint-recovery-inquiry.service';
 import { ComplaintRecoveryService } from './complaint-recovery.service';

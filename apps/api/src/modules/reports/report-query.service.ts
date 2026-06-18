@@ -100,7 +100,11 @@ export class ReportQueryService {
         select: { createdAt: true },
       });
       for (const transition of closedTransitions ?? []) {
-        const idx = bucketIndexForDate(buckets, transition.createdAt, filters.bucket);
+        const idx = bucketIndexForDate(
+          buckets,
+          transition.createdAt,
+          filters.bucket,
+        );
         if (idx >= 0) {
           closed[idx] += 1;
         }
