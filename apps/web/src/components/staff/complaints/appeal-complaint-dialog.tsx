@@ -68,14 +68,15 @@ export function AppealComplaintDialog({
     <Dialog
       open={open}
       onClose={onClose}
+      tone="staff"
       title={t("appealTitle")}
       description={t("appealDescription")}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={submitting}>
+          <Button variant="staffSecondary" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>
-          <Button onClick={() => void handleSubmit()} disabled={submitting}>
+          <Button variant="brand" onClick={() => void handleSubmit()} disabled={submitting}>
             {t("appealSubmit")}
           </Button>
         </div>
@@ -83,7 +84,7 @@ export function AppealComplaintDialog({
     >
       <div className="space-y-4">
         {error ? (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-red-400" role="alert">
             {error}
           </p>
         ) : null}

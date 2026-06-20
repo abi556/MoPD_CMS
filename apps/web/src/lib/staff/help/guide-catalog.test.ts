@@ -9,6 +9,7 @@ describe("guide-catalog", () => {
   it("maps slugs to message keys", () => {
     expect(staffGuideMessageKey("getting-started")).toBe("gettingStarted");
     expect(staffGuideMessageKey("recovery-inquiries")).toBe("recoveryInquiries");
+    expect(staffGuideMessageKey("escalation")).toBe("escalation");
   });
 
   it("validates guide slugs", () => {

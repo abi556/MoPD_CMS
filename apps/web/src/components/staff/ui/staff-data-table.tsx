@@ -1,9 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { DashboardPager, StaffPagerIconButton } from "@/components/staff/dashboard/dashboard-pager";
 import { StaffEmptyState } from "./staff-empty-state";
 import { getTotalPages, type DataTableColumn } from "@/components/ui/data-table";
 
@@ -99,33 +98,19 @@ export function StaffDataTable<T>({
       {!hidePagination ? (
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-staff-border/30 bg-staff-shell/30 px-4 py-3 text-sm text-staff-text-muted">
         <span>{total === 0 ? "0 results" : `${from}–${to} of ${total}`}</span>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="min-h-11"
-            disabled={page <= 1 || loading}
-            onClick={() => onPageChange(page - 1)}
-            aria-label="Previous page"
-          >
-            <ChevronLeft size={16} aria-hidden />
-          </Button>
-          <span className="min-w-[5rem] text-center tabular-nums">
-            Page {totalPages === 0 ? 0 : page} / {totalPages}
-          </span>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="min-h-11"
-            disabled={page >= totalPages || loading || totalPages === 0}
-            onClick={() => onPageChange(page + 1)}
-            aria-label="Next page"
-          >
-            <ChevronRight size={16} aria-hidden />
-          </Button>
-        </div>
+        <DashboardPager
+          previousLabel="Previous page"
+          nextLabel="Next page"
+          previousDisabled={page <= 1 || loading}
+          nextDisabled={page >= totalPages || loading || totalPages === 0}
+          onPrevious={() => onPageChange(page - 1)}
+          onNext={() => onPageChange(page + 1)}
+          center={
+            <span className="tabular-nums">
+              {totalPages === 0 ? "0 / 0" : `${page} / ${totalPages}`}
+            </span>
+          }
+        />
       </div>
       ) : null}
     </div>
@@ -149,24 +134,18 @@ export function StaffCursorPagination({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-staff-border bg-staff-surface px-4 py-3">
-      <Button
-        type="button"
-        variant="secondary"
-        className="min-h-11"
+      <StaffPagerIconButton
+        direction="previous"
+        label={previousLabel}
         disabled={previousDisabled}
         onClick={onPrevious}
-      >
-        {previousLabel}
-      </Button>
-      <Button
-        type="button"
-        variant="secondary"
-        className="min-h-11"
+      />
+      <StaffPagerIconButton
+        direction="next"
+        label={nextLabel}
         disabled={nextDisabled}
         onClick={onNext}
-      >
-        {nextLabel}
-      </Button>
+      />
     </div>
   );
 }

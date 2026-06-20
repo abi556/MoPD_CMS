@@ -9,7 +9,11 @@ const variants = {
   brand: "bg-brand-deep text-white shadow-sm hover:bg-brand-deep/90 hover:shadow-md",
   secondary:
     "border border-border-standard bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low hover:shadow-md",
+  staffSecondary:
+    "rounded-lg border border-staff-border/80 bg-staff-shell/40 text-staff-text shadow-sm hover:border-staff-nav-active/35 hover:bg-staff-nav-hover hover:text-staff-nav-active",
   ghost: "text-primary hover:bg-surface-container-low",
+  staffGhost:
+    "rounded-lg text-staff-text-muted hover:bg-staff-nav-hover hover:text-staff-nav-active",
 } as const;
 
 const sizes = {

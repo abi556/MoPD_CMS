@@ -18,7 +18,7 @@ export function HistoryTimeline({ items }: { items: ComplaintHistoryItem[] }) {
   }
 
   return (
-    <ol className="relative space-y-6 border-l border-staff-border pl-6">
+    <ol className="relative space-y-6 border-l border-staff-border/50 pl-6">
       {items.map((item) => (
         <li key={item.id} className="relative">
           <span className="absolute -left-[1.6rem] top-1 h-3 w-3 rounded-full bg-staff-nav-active-bg" />

@@ -13,6 +13,7 @@ export interface ConfirmDialogProps {
   cancelLabel?: string;
   destructive?: boolean;
   loading?: boolean;
+  tone?: "default" | "staff";
 }
 
 export function ConfirmDialog({
@@ -25,16 +26,22 @@ export function ConfirmDialog({
   cancelLabel = "Cancel",
   destructive = false,
   loading = false,
+  tone = "staff",
 }: ConfirmDialogProps) {
   return (
     <Dialog
       open={open}
       onClose={onClose}
+      tone={tone}
       title={title}
       description={description}
       footer={
         <>
-          <Button type="button" variant="secondary" onClick={onClose}>
+          <Button
+            type="button"
+            variant={tone === "staff" ? "staffSecondary" : "secondary"}
+            onClick={onClose}
+          >
             {cancelLabel}
           </Button>
           <Button

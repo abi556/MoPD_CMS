@@ -79,11 +79,63 @@
     "steps": [
       {
         "title": "Move a case to the next status",
-        "body": "Open the case → Transition → choose the target status → enter a factual reason → submit. If the action is blocked, read the error — permission vs invalid workflow step."
+        "body": "Open the case → Transition → choose the target status → enter a factual reason → submit. If the action is blocked, read the error — permission vs invalid workflow step. For supervisor attention without a status change, see the Escalating complaints guide."
       },
       {
         "title": "Add an internal note or task",
         "body": "Use the case collaboration panel. Notes are staff-only. Tasks can have assignees and due dates; @mentions notify colleagues in the bell inbox."
+      }
+    ],
+    "openInAppHref": "/dashboard/complaints",
+    "openInAppLabel": "Complaints queue"
+  },
+  "escalation": {
+    "title": "Escalating complaints",
+    "summary": "When to use Escalate (not Transition), how to record it, and what to write in the escalation reason and internal notes.",
+    "dos": [
+      "Use Escalate when the case needs supervisor or Complaints Admin attention but is not ready for the next workflow status.",
+      "Write a factual escalation reason (at least 3 characters): what is blocked, since when, and what you need.",
+      "Add an internal note on the case after escalating — include actions already taken, pending items, and who should act next.",
+      "Escalate early when SLA is in warning and you cannot meet the deadline after reassignment is ruled out.",
+      "Mention the reference number and current status if you follow up by phone or email per unit SOP."
+    ],
+    "donts": [
+      "Do not use Escalate to skip workflow steps — use Transition when the current stage is genuinely complete.",
+      "Do not confuse Escalate with Appeal: Appeal is a status change when a citizen disputes a response; Escalate does not change status.",
+      "Do not close a case to clear SLA pressure when work is incomplete.",
+      "Do not put citizen PII in the escalation reason field — use internal notes for sensitive detail when policy allows.",
+      "Do not escalate without documenting what you already tried (calls, requests, missing documents)."
+    ],
+    "scenarios": [
+      {
+        "title": "SLA warning — you cannot finish on time",
+        "body": "Open the case from the bell notification. Summarize progress in an internal note. If you cannot complete investigation or draft response before the deadline, click Escalate and state the blocker (e.g. awaiting field report, legal opinion). Ask Complaints Admin to reassign or prioritize per SOP."
+      },
+      {
+        "title": "Blocked by another unit or missing evidence",
+        "body": "Record what you requested and from whom in an internal note. Escalate with a short reason: what is missing, date of last follow-up, and impact on the citizen timeline. Do not Transition to the next stage until the blocker is resolved or your supervisor directs otherwise."
+      },
+      {
+        "title": "Case outside your scope or wrong assignee",
+        "body": "If you cannot see the case or it belongs to another officer, contact Complaints Admin. If you can see it but lack expertise or org unit, Escalate and note the correct category, location, or suggested assignee. Reassignment may still require Admin action."
+      },
+      {
+        "title": "Escalate vs Transition — quick check",
+        "body": "Transition = this workflow step is done (e.g. investigation complete → draft response). Escalate = this step is not done, but someone above you should know (deadline risk, policy question, inter-unit delay). If both apply, finish your note first, then Escalate — do not Transition prematurely."
+      }
+    ],
+    "steps": [
+      {
+        "title": "How to escalate a case",
+        "body": "Open the complaint → Escalate (top action bar) → enter a clear reason (minimum 3 characters) → submit. The case status stays the same; the action is recorded in the audit trail for oversight."
+      },
+      {
+        "title": "What to write in the escalation reason",
+        "body": "Use one or two sentences: (1) why you are escalating now, (2) what you need. Good example: \"Field verification overdue 10 days; need supervisor to chase Regional office.\" Avoid vague text like \"urgent\" or \"help needed\" without context."
+      },
+      {
+        "title": "Internal note to leave on the case",
+        "body": "After escalating, add an internal note with: current facts, dates, contacts tried, documents received or missing, and recommended next step. Use @mention if a specific colleague must act. This note is what supervisors read first — the Escalate reason is the alert headline."
       }
     ],
     "openInAppHref": "/dashboard/complaints",
@@ -120,7 +172,7 @@
     "steps": [
       {
         "title": "Review SLA at risk on the dashboard",
-        "body": "The dashboard KPI and charts highlight open cases with warned or breached SLA. Drill into complaints filtered by status or open the SLA report for trends."
+        "body": "The dashboard KPI and charts highlight open cases with warned or breached SLA. Drill into complaints filtered by status or open the SLA report for trends. When you cannot meet the deadline, follow the Escalating complaints guide before the breach."
       }
     ],
     "openInAppHref": "/dashboard/reports/sla",

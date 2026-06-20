@@ -284,6 +284,7 @@ export function ProfileSecuritySection() {
           setShowRegenerate(false);
           setRegeneratePassword("");
         }}
+        tone="staff"
         title={t("backupCodesRegenerateTitle")}
         description={t("backupCodesRegenerateHint")}
         footer={
@@ -322,6 +323,7 @@ export function ProfileSecuritySection() {
       <Dialog
         open={newBackupCodes !== null}
         onClose={() => setNewBackupCodes(null)}
+        tone="staff"
         title={t("backupCodesNewTitle")}
         description={t("backupCodesNewWarning")}
         footer={

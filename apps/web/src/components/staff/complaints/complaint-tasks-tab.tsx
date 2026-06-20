@@ -147,7 +147,7 @@ export function ComplaintTasksTab({
             </div>
           ) : null}
           {error ? (
-            <p className="mt-2 text-sm text-red-600" role="alert">
+            <p className="mt-2 text-sm text-red-400" role="alert">
               {error}
             </p>
           ) : null}
@@ -166,7 +166,7 @@ export function ComplaintTasksTab({
       ) : tasks.length === 0 ? (
         <StaffEmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
       ) : (
-        <ul className="divide-y divide-staff-border/40 rounded-xl border border-staff-border/40 bg-staff-surface">
+        <ul className="divide-y divide-staff-border rounded-lg border border-staff-border">
           {tasks.map((task) => (
             <li key={task.id} className="space-y-2 px-4 py-3 text-sm">
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -178,7 +178,7 @@ export function ComplaintTasksTab({
                     onChange={(e) =>
                       void handleStatusChange(task, e.target.value as CaseTaskStatus)
                     }
-                    className="min-h-11 rounded-lg border border-staff-border bg-staff-input-bg px-3 py-2 text-sm text-staff-text"
+                    className="min-h-11 rounded-lg border border-staff-border bg-staff-input-bg px-3 py-2 text-sm"
                   >
                     {TASK_STATUSES.map((status) => (
                       <option key={status} value={status}>

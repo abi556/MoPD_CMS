@@ -117,7 +117,7 @@ export function ComplaintQueueFiltersBar({
 
           <Button
             type="button"
-            variant="secondary"
+            variant="staffSecondary"
             className="min-h-10 shrink-0 cursor-pointer gap-1.5 self-end"
             onClick={() => setShowMore((value) => !value)}
             aria-expanded={showMore}
@@ -189,7 +189,7 @@ export function ComplaintQueueFiltersBar({
       <details className="group rounded-xl border border-staff-border/30 bg-staff-shell/40 px-4 py-3 text-sm">
         <summary className="cursor-pointer list-none font-medium text-staff-text-muted marker:content-none [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
-            {t("loadPreset")}
+            {t("savedFilters")}
             <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
           </span>
         </summary>

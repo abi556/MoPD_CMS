@@ -62,14 +62,15 @@ export function EscalateComplaintDialog({
     <Dialog
       open={open}
       onClose={onClose}
+      tone="staff"
       title={t("escalateTitle")}
       description={t("escalateDescription")}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={submitting}>
+          <Button variant="staffSecondary" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>
-          <Button onClick={() => void handleSubmit()} disabled={submitting}>
+          <Button variant="brand" onClick={() => void handleSubmit()} disabled={submitting}>
             {t("escalateSubmit")}
           </Button>
         </div>
@@ -77,7 +78,7 @@ export function EscalateComplaintDialog({
     >
       <div className="space-y-4">
         {error ? (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-red-400" role="alert">
             {error}
           </p>
         ) : null}

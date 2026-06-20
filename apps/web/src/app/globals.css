@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
-@custom-variant staff-dark (&:where(.staff-shell[data-theme=dark], .staff-shell[data-theme=dark] *));
+@custom-variant staff-dark (
+  &:where(
+    .staff-shell[data-theme=dark],
+    .staff-shell[data-theme=dark] *,
+    .staff-dialog[data-theme=dark],
+    .staff-dialog[data-theme=dark] *
+  )
+);
 
 :root {
   --background: #fcf9f8;
@@ -90,86 +97,21 @@
   --staff-chart-channel-email: #60a5fa;
   --staff-chart-channel-sms: #fbbf24;
   --staff-chart-channel-walkin: #a78bfa;
-}
 
-/* Native controls + public design tokens → staff palette inside the console */
-.staff-shell {
-  color-scheme: light;
-}
-
-.staff-shell[data-theme="dark"] {
   color-scheme: dark;
-}
 
-.staff-shell .text-on-surface {
-  color: var(--staff-text);
-}
-
-.staff-shell .text-text-secondary {
-  color: var(--staff-text-muted);
-}
-
-.staff-shell label.text-sm.font-medium.text-on-surface {
-  color: var(--staff-text-muted);
-}
-
-.staff-shell .bg-surface-container-lowest {
-  background-color: var(--staff-input-bg);
-}
-
-.staff-shell .bg-surface-container-low {
-  background-color: var(--staff-nav-hover);
-}
-
-.staff-shell .border-border-standard {
-  border-color: var(--staff-border);
-}
-
-.staff-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-.staff-shell select,
-.staff-shell textarea {
-  background-color: var(--staff-input-bg);
-  color: var(--staff-text);
-  border-color: var(--staff-border);
-}
-
-.staff-shell input::placeholder,
-.staff-shell textarea::placeholder {
-  color: var(--staff-text-muted);
-  opacity: 0.85;
-}
-
-.staff-shell input:focus-visible,
-.staff-shell select:focus-visible,
-.staff-shell textarea:focus-visible {
-  border-color: color-mix(in srgb, var(--staff-nav-active) 50%, var(--staff-border));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--staff-nav-active) 28%, transparent);
-}
-
-.staff-shell .focus-visible\:ring-focus-ring:focus-visible {
-  --tw-ring-color: color-mix(in srgb, var(--staff-nav-active) 45%, transparent);
-}
-
-.staff-shell .focus-visible\:ring-offset-2:focus-visible {
-  --tw-ring-offset-color: var(--staff-shell-bg);
-}
-
-.staff-shell button.border-border-standard.bg-surface-container-lowest {
-  background-color: var(--staff-surface);
-  color: var(--staff-text);
-  border-color: var(--staff-border);
-}
-
-.staff-shell button.border-border-standard.bg-surface-container-lowest:hover {
-  background-color: var(--staff-nav-hover);
-}
-
-.staff-shell .border-dashed.bg-surface-container-lowest {
-  background-color: color-mix(in srgb, var(--staff-surface) 88%, var(--staff-shell-bg));
-}
-
-.staff-shell[data-theme="dark"] .border-dashed.bg-surface-container-lowest {
-  background-color: color-mix(in srgb, var(--staff-surface) 70%, var(--staff-shell-bg));
+  /* Remap public UI tokens so inputs/buttons/empty states match staff dark palette */
+  --color-surface-container-lowest: var(--staff-input-bg);
+  --color-surface-container-low: #1f2822;
+  --color-surface-container-highest: #2a352e;
+  --color-surface-dim: #141a16;
+  --color-on-surface: var(--staff-text);
+  --color-on-surface-variant: var(--staff-text-muted);
+  --color-text-secondary: var(--staff-text-muted);
+  --color-border-standard: var(--staff-border);
+  --color-outline-variant: var(--staff-border);
+  --color-text-placeholder: #6b7f72;
+  --color-focus-ring: var(--staff-nav-active);
 }
 
 /* Staff utilities reference scoped CSS vars on .staff-shell (not @theme — vars are undefined at :root). */
@@ -223,6 +165,88 @@
 }
 @utility border-staff-shell-divider {
   border-color: var(--staff-shell-divider);
+}
+
+/* Staff dark: ensure native controls (select menu, date picker) follow dark scheme */
+.staff-shell[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+.staff-shell[data-theme="dark"] select,
+.staff-shell[data-theme="dark"] textarea {
+  background-color: var(--staff-input-bg);
+  color: var(--staff-text);
+  border-color: var(--staff-border);
+}
+
+.staff-shell[data-theme="dark"] input::placeholder,
+.staff-shell[data-theme="dark"] textarea::placeholder {
+  color: var(--staff-text-muted);
+  opacity: 0.85;
+}
+
+.staff-shell[data-theme="dark"] label {
+  color: var(--staff-text);
+}
+
+/* Portaled staff dialogs (outside .staff-shell) carry their own theme tokens */
+.staff-dialog {
+  --staff-shell-bg: #f1f5f9;
+  --staff-sidebar-bg: #ffffff;
+  --staff-surface: #ffffff;
+  --staff-border: #e2e8f0;
+  --staff-text: #1c1b1b;
+  --staff-text-muted: #475569;
+  --staff-nav-active: #527f47;
+  --staff-nav-active-text: #ffffff;
+  --staff-nav-active-bg: #527f47;
+  --staff-nav-hover: #f6f3f2;
+  --staff-input-bg: #f6f3f2;
+  --staff-card-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.staff-dialog[data-theme="dark"] {
+  --staff-shell-bg: #0f1210;
+  --staff-sidebar-bg: #141a16;
+  --staff-surface: #1a221c;
+  --staff-border: #2a352e;
+  --staff-text: #e8efe8;
+  --staff-text-muted: #94a89a;
+  --staff-nav-active: #6fa362;
+  --staff-nav-active-text: #ffffff;
+  --staff-nav-active-bg: #527f47;
+  --staff-nav-hover: rgba(255, 255, 255, 0.06);
+  --staff-input-bg: #141a16;
+  --staff-card-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+
+  color-scheme: dark;
+
+  --color-surface-container-lowest: var(--staff-input-bg);
+  --color-surface-container-low: #1f2822;
+  --color-surface-container-highest: #2a352e;
+  --color-surface-dim: #141a16;
+  --color-on-surface: var(--staff-text);
+  --color-on-surface-variant: var(--staff-text-muted);
+  --color-text-secondary: var(--staff-text-muted);
+  --color-border-standard: var(--staff-border);
+  --color-outline-variant: var(--staff-border);
+  --color-text-placeholder: #6b7f72;
+  --color-focus-ring: var(--staff-nav-active);
+}
+
+.staff-dialog[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+.staff-dialog[data-theme="dark"] select,
+.staff-dialog[data-theme="dark"] textarea {
+  background-color: var(--staff-input-bg);
+  color: var(--staff-text);
+  border-color: var(--staff-border);
+}
+
+.staff-dialog[data-theme="dark"] input::placeholder,
+.staff-dialog[data-theme="dark"] textarea::placeholder {
+  color: var(--staff-text-muted);
+  opacity: 0.85;
+}
+
+.staff-dialog[data-theme="dark"] label {
+  color: var(--staff-text);
 }
 
 @theme inline {

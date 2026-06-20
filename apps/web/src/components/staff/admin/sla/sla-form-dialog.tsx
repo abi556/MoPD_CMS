@@ -121,6 +121,7 @@ export function SlaFormDialog({
     <Dialog
       open={open}
       onClose={onClose}
+      tone="staff"
       title={mode === "create" ? t("create") : t("edit")}
       footer={
         <div className="flex justify-end gap-2">

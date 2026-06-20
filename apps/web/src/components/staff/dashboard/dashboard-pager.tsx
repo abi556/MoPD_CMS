@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const iconButtonClass =
   "inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-staff-border/80 bg-staff-shell/40 text-staff-text-muted transition-colors hover:border-staff-nav-active/35 hover:bg-staff-nav-hover hover:text-staff-nav-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-staff-nav-active/40 focus-visible:ring-offset-2 focus-visible:ring-offset-staff-surface disabled:cursor-not-allowed disabled:border-staff-border/60 disabled:bg-transparent disabled:text-staff-text-muted/35 disabled:hover:bg-transparent disabled:hover:text-staff-text-muted/35";
 
-function PagerIconButton({
+export function StaffPagerIconButton({
   direction,
   disabled,
   label,
@@ -56,14 +56,14 @@ export function DashboardSidePager({
     <div
       className={`flex gap-1 ${align === "end" ? "items-end" : "items-center"}`}
     >
-      <PagerIconButton
+      <StaffPagerIconButton
         direction="previous"
         disabled={previousDisabled}
         label={previousLabel}
         onClick={onPrevious}
       />
       <div className="min-w-0 flex-1">{children}</div>
-      <PagerIconButton
+      <StaffPagerIconButton
         direction="next"
         disabled={nextDisabled}
         label={nextLabel}
@@ -92,7 +92,7 @@ export function DashboardPager({
 }) {
   return (
     <div className="flex items-center justify-center gap-3">
-      <PagerIconButton
+      <StaffPagerIconButton
         direction="previous"
         disabled={previousDisabled}
         label={previousLabel}
@@ -105,7 +105,7 @@ export function DashboardPager({
         </div>
       ) : null}
 
-      <PagerIconButton
+      <StaffPagerIconButton
         direction="next"
         disabled={nextDisabled}
         label={nextLabel}

@@ -88,7 +88,7 @@ export function ComplaintNotesTab({
             rows={4}
           />
           {error ? (
-            <p className="mt-2 text-sm text-red-600" role="alert">
+            <p className="mt-2 text-sm text-red-400" role="alert">
               {error}
             </p>
           ) : null}
@@ -114,7 +114,7 @@ export function ComplaintNotesTab({
           {notes.map((note) => (
             <li
               key={note.id}
-              className="rounded-xl border border-staff-border/40 bg-staff-surface p-4"
+              className="rounded-xl border border-staff-border/40 bg-staff-surface p-4 shadow-staff-card"
             >
               <p className="whitespace-pre-wrap text-sm text-staff-text">
                 {note.body}

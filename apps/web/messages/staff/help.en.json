@@ -20,6 +20,11 @@
       "description": "Queue, case detail, status transitions, notes, tasks, and attachments.",
       "cardHint": "Triage, transitions, notes, assignments, and workflow errors."
     },
+    "escalation": {
+      "title": "Escalating complaints",
+      "description": "When to escalate, how to use Escalate, and what to write in reasons and notes.",
+      "cardHint": "Escalate vs Transition, SLA risk, and good escalation notes."
+    },
     "sla": {
       "title": "SLA rules & deadlines",
       "description": "Warnings, breaches, escalation, and when to act.",

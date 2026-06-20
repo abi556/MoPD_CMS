@@ -21,6 +21,11 @@
       "description": "ወረፋ፣ ሁኔታ ሽግግር፣ ማስታወሻዎች እና አባሒዎች።",
       "cardHint": "ትሪያዥ፣ ሽግግሮች፣ ማስታወሻዎች እና የስራ ፍሰት ስህተቶች።"
     },
+    "escalation": {
+      "title": "ቅሬታ ማሳደግ",
+      "description": "መቼ ማሳደግ፣ Escalate እንዴት መጠቀም እና በምክንያት/ማስታወሻ ምን መጻፍ።",
+      "cardHint": "Escalate ከTransition፣ SLA አደጋ እና ጥሩ የማሳደግ ማስታወሻ።"
+    },
     "sla": {
       "title": "SLA ደንቦች",
       "description": "ማስጠንቀቂያዎች፣ ብልሽቶች እና ማሳደግ።",

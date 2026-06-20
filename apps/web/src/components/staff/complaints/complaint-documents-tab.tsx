@@ -132,7 +132,7 @@ export function ComplaintDocumentsTab({
   }
 
   return (
-    <div className="space-y-4 rounded-xl border border-staff-border bg-staff-surface p-6">
+    <div className="space-y-4 rounded-xl border border-staff-border/40 bg-staff-surface p-6 shadow-staff-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-staff-text">{t("title")}</h3>
@@ -164,7 +164,7 @@ export function ComplaintDocumentsTab({
       ) : null}
 
       {error ? (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-red-400" role="alert">
           {error}
         </p>
       ) : null}

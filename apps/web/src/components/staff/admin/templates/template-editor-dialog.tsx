@@ -108,6 +108,7 @@ export function TemplateEditorDialog({
     <Dialog
       open={open}
       onClose={onClose}
+      tone="staff"
       title={t("editTitle", { key: templateKey })}
       footer={
         <div className="flex justify-end gap-2">

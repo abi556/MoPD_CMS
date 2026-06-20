@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from "lucide-react";
 import {
+  AlertTriangle,
   BarChart3,
   Bell,
   BookOpen,
@@ -38,6 +39,7 @@ import {
 const GUIDE_ICONS: Record<StaffGuideSlug, LucideIcon> = {
   "getting-started": User,
   "complaints-workflow": Inbox,
+  escalation: AlertTriangle,
   sla: Clock,
   "recovery-inquiries": MailQuestion,
   "reports-analytics": BarChart3,
@@ -48,6 +50,7 @@ const GUIDE_ICONS: Record<StaffGuideSlug, LucideIcon> = {
 const GUIDE_CARD_KEYS: Record<StaffGuideSlug, string> = {
   "getting-started": "gettingStarted",
   "complaints-workflow": "complaints",
+  escalation: "escalation",
   sla: "sla",
   "recovery-inquiries": "recovery",
   "reports-analytics": "reports",

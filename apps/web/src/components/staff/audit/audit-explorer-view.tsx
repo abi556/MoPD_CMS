@@ -230,6 +230,7 @@ export function AuditExplorerView() {
       <Dialog
         open={selected !== null}
         onClose={() => setSelected(null)}
+        tone="staff"
         title={t("detailTitle")}
         description={selected?.id}
       >

@@ -204,7 +204,7 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
           ) : null}
           {showReturn ? (
             <Button
-              variant="secondary"
+              variant="staffSecondary"
               className="min-h-11 cursor-pointer"
               onClick={() => setTransitionVariant("return")}
             >
@@ -213,7 +213,7 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
           ) : null}
           {showTransition ? (
             <Button
-              variant="secondary"
+              variant="staffSecondary"
               className="min-h-11 cursor-pointer"
               onClick={() => setTransitionVariant("default")}
             >
@@ -222,7 +222,7 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
           ) : null}
           {showAppeal ? (
             <Button
-              variant="secondary"
+              variant="staffSecondary"
               className="min-h-11 cursor-pointer"
               onClick={() => setAppealOpen(true)}
             >
@@ -231,7 +231,7 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
           ) : null}
           {showEscalate ? (
             <Button
-              variant="secondary"
+              variant="staffSecondary"
               className="min-h-11 cursor-pointer"
               onClick={() => setEscalateOpen(true)}
             >

@@ -149,10 +149,10 @@ export function ComplaintOverviewTab({
               {t("save")}
             </Button>
             {message ? (
-              <span className="text-sm text-green-700">{message}</span>
+              <span className="text-sm text-staff-nav-active">{message}</span>
             ) : null}
             {error ? (
-              <span className="text-sm text-red-600" role="alert">
+              <span className="text-sm text-red-400" role="alert">
                 {error}
               </span>
             ) : null}

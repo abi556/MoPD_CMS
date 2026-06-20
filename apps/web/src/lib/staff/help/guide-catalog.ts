@@ -1,6 +1,7 @@
 export const STAFF_GUIDE_SLUGS = [
   "getting-started",
   "complaints-workflow",
+  "escalation",
   "sla",
   "recovery-inquiries",
   "reports-analytics",

@@ -72,7 +72,7 @@ export function ComplaintResponseTab({
   };
 
   return (
-    <div className="space-y-4 rounded-xl border border-staff-border bg-staff-surface p-6">
+    <div className="space-y-4 rounded-xl border border-staff-border/40 bg-staff-surface p-6 shadow-staff-card">
       <div>
         <h3 className="text-sm font-semibold text-staff-text">{t("title")}</h3>
         <p className="mt-1 text-sm text-staff-text-muted">{t("description")}</p>
@@ -109,10 +109,10 @@ export function ComplaintResponseTab({
               {t("save")}
             </Button>
             {message ? (
-              <span className="text-sm text-green-700">{message}</span>
+              <span className="text-sm text-staff-nav-active">{message}</span>
             ) : null}
             {error ? (
-              <span className="text-sm text-red-600" role="alert">
+              <span className="text-sm text-red-400" role="alert">
                 {error}
               </span>
             ) : null}
