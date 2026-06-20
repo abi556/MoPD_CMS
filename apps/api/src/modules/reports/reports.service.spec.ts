@@ -6,6 +6,7 @@ import { ReportQueryService } from './report-query.service';
 import { AuditService } from '../audit/audit.service';
 import { DocumentStorageFactory } from '../documents/storage/document-storage.factory';
 import { PrismaService } from '../../prisma/prisma.service';
+import { InAppNotificationService } from '../notifications/in-app-notification.service';
 
 describe('ReportsService', () => {
   let service: ReportsService;
@@ -37,6 +38,10 @@ describe('ReportsService', () => {
         { provide: AuditService, useValue: audit },
         { provide: DocumentStorageFactory, useValue: storageFactory },
         { provide: 'BullQueue_report-export', useValue: queue },
+        {
+          provide: InAppNotificationService,
+          useValue: { notify: jest.fn().mockResolvedValue(null) },
+        },
       ],
     }).compile();
     service = moduleRef.get(ReportsService);

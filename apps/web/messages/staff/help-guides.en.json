@@ -1,0 +1,285 @@
+{
+  "backToHelp": "Back to help",
+  "dosTitle": "Do",
+  "dontsTitle": "Don't",
+  "scenariosTitle": "Common scenarios",
+  "stepsTitle": "How to",
+  "openInApp": "Open in console",
+  "gettingStarted": {
+    "title": "Getting started",
+    "summary": "How to sign in safely, set up your profile, and use the staff console day to day.",
+    "dos": [
+      "Enroll MFA when prompted and keep your recovery options up to date with ICT policy.",
+      "Change your password from Profile if you suspect it was shared or exposed.",
+      "Set your preferred language (English / Amharic) and theme in Profile → Preferences.",
+      "Sign out on shared computers when you finish your shift."
+    ],
+    "donts": [
+      "Do not share your password or MFA codes with colleagues or citizens.",
+      "Do not ignore the weekly MFA reminder — enroll before access is restricted.",
+      "Do not use a personal email for staff login unless your administrator assigned it."
+    ],
+    "scenarios": [
+      {
+        "title": "Session expired while working a case",
+        "body": "You will be redirected to sign in again. After login you can return to the same complaint via the queue or notification link. Unsaved text in open forms may be lost — save notes and transitions before long breaks."
+      },
+      {
+        "title": "403 — you do not have access",
+        "body": "Your role does not include permission for that page. Note the URL and contact ICT for an access request, or your supervisor if you believe the role assignment is wrong."
+      },
+      {
+        "title": "Forgot password",
+        "body": "Use Forgot password on the sign-in page, or contact the MoPD ICT service desk if self-service reset is unavailable for your account."
+      }
+    ],
+    "steps": [
+      {
+        "title": "First sign-in after account creation",
+        "body": "Sign in with the email and temporary password from your administrator. You may be asked to change your password and enroll MFA before reaching the dashboard."
+      },
+      {
+        "title": "Update profile and preferences",
+        "body": "Open Profile from the user menu. Update display details, password, MFA, locale, and light/dark theme as needed."
+      }
+    ],
+    "openInAppHref": "/dashboard/profile",
+    "openInAppLabel": "Profile"
+  },
+  "complaintsWorkflow": {
+    "title": "Complaints & workflow",
+    "summary": "Rules for triage, assignment, status changes, internal notes, tasks, and attachments on live cases.",
+    "dos": [
+      "Read the full case timeline and attachments before changing status.",
+      "Enter a clear transition reason (at least 5 characters) that would make sense to an auditor.",
+      "Use internal notes for staff-only context; @mention colleagues when you need their attention.",
+      "Assign or reassign to the correct officer and org unit based on category and location.",
+      "Upload supporting documents through the case — do not exchange sensitive files outside the CMS."
+    ],
+    "donts": [
+      "Do not skip workflow steps (e.g. jump to Closed) to clear a queue — follow MoPD SOP.",
+      "Do not transition a case you cannot see; a “not found” response may mean it is outside your scope.",
+      "Do not put citizen PII in note titles or export filenames.",
+      "Do not reassign without informing the current assignee when handover is required by policy."
+    ],
+    "scenarios": [
+      {
+        "title": "Case Officer — “Complaint not found” on a link",
+        "body": "Case Officers are scoped to their own assignments plus unassigned items in triage/submitted. If the ID belongs to another officer, the system hides it by design. Ask Complaints Admin to reassign or escalate."
+      },
+      {
+        "title": "422 workflow_forbidden",
+        "body": "Your role cannot perform this transition from the current status. Check allowed next steps in the case detail panel. Reviewers and Complaints Admins may have different options than Case Officers."
+      },
+      {
+        "title": "New intake in triage",
+        "body": "Verify category and org unit, confirm attachments scanned clean, then assign to the appropriate officer or move to investigation per unit SOP."
+      }
+    ],
+    "steps": [
+      {
+        "title": "Move a case to the next status",
+        "body": "Open the case → Transition → choose the target status → enter a factual reason → submit. If the action is blocked, read the error — permission vs invalid workflow step."
+      },
+      {
+        "title": "Add an internal note or task",
+        "body": "Use the case collaboration panel. Notes are staff-only. Tasks can have assignees and due dates; @mentions notify colleagues in the bell inbox."
+      }
+    ],
+    "openInAppHref": "/dashboard/complaints",
+    "openInAppLabel": "Complaints queue"
+  },
+  "sla": {
+    "title": "SLA rules & deadlines",
+    "summary": "How SLA timers work, what warnings mean, and when to escalate instead of waiting.",
+    "dos": [
+      "Check SLA indicators on the dashboard and case detail before end of day.",
+      "Act on SLA warning notifications in your bell inbox promptly.",
+      "Escalate through the case when policy requires supervisor involvement on breach risk.",
+      "Use Reports → SLA compliance for unit-level trends and leadership briefings."
+    ],
+    "donts": [
+      "Do not close a case only to stop an SLA clock when work is incomplete.",
+      "Do not ignore repeated breaches on the same category — raise to Complaints Admin.",
+      "Do not change SLA rules in Admin unless you are authorized; misconfiguration affects all cases."
+    ],
+    "scenarios": [
+      {
+        "title": "SLA warning notification",
+        "body": "A case assigned to you is approaching its deadline. Open the case from the notification link, update status or notes to reflect progress, and reassign or escalate if you cannot meet the deadline."
+      },
+      {
+        "title": "SLA breached",
+        "body": "Document what caused the delay in an internal note. Follow unit SOP for breach reporting. Complaints Admin may reassign or prioritize the case."
+      },
+      {
+        "title": "Citizen asks why response is delayed",
+        "body": "Do not quote internal SLA codes. Use approved public language. Continue case work in the CMS — citizens track via reference number on the public portal."
+      }
+    ],
+    "steps": [
+      {
+        "title": "Review SLA at risk on the dashboard",
+        "body": "The dashboard KPI and charts highlight open cases with warned or breached SLA. Drill into complaints filtered by status or open the SLA report for trends."
+      }
+    ],
+    "openInAppHref": "/dashboard/reports/sla",
+    "openInAppLabel": "SLA report"
+  },
+  "recoveryInquiries": {
+    "title": "Recovery inquiries",
+    "summary": "When and how staff manually help citizens who lost a complaint reference number.",
+    "dos": [
+      "Treat each inquiry as a potential identity verification — match email, date, category, and subject fragment carefully.",
+      "Use Load candidates and compare multiple fields before resolving.",
+      "Resolve with the correct reference only when confidence is high; the citizen receives it by email.",
+      "Reject with guidance when evidence is insufficient so the citizen can submit a new complaint if needed.",
+      "Record your reasoning in internal notes on the matched case when policy requires it."
+    ],
+    "donts": [
+      "Do not send a reference to an email that does not match the inquiry without supervisor approval.",
+      "Do not resolve multiple candidates — pick one verified match or reject.",
+      "Do not use recovery to bypass normal complaint access for staff browsing.",
+      "Do not share another citizen’s case details in the rejection email — the system sends templated messages only."
+    ],
+    "scenarios": [
+      {
+        "title": "Strong match — same email, date, and category",
+        "body": "Load candidates, confirm one clear match, set status to Resolved with the reference number. The citizen receives the reference by email automatically."
+      },
+      {
+        "title": "Several possible matches",
+        "body": "If more than one candidate fits, do not guess. Request additional verification through the rejection path or follow MoPD manual verification SOP before resolving."
+      },
+      {
+        "title": "No candidates",
+        "body": "Reject the inquiry so the citizen receives instructions to submit again with complete details. Note patterns of fraud or abuse for Complaints Admin if applicable."
+      },
+      {
+        "title": "Citizen contacted by phone instead of the form",
+        "body": "Direct them to official channels. Staff recovery queue is for submitted inquiries only — phone verification may follow separate MoPD policy outside this screen."
+      }
+    ],
+    "steps": [
+      {
+        "title": "Process a pending inquiry",
+        "body": "Open Recovery in the sidebar → select the inquiry → Load candidates → verify fields → Resolve with reference or Reject. Refresh the queue after each action."
+      },
+      {
+        "title": "Decide resolve vs reject",
+        "body": "Resolve when you can tie the inquiry to exactly one complaint with high confidence. Reject when identity or case linkage cannot be established — never resolve to “clear the queue.”"
+      }
+    ],
+    "openInAppHref": "/dashboard/recovery-inquiries",
+    "openInAppLabel": "Recovery queue"
+  },
+  "reportsAnalytics": {
+    "title": "Reports & analytics",
+    "summary": "Which reports to use, how to read them, and rules for exporting data.",
+    "dos": [
+      "Use Volume for intake trends, SLA report for deadline compliance, Resolution for outcomes, Channels for intake mix.",
+      "Export only data you are permitted to handle under MoPD data policy.",
+      "Wait for the export-ready notification before sharing large CSV/Excel files.",
+      "Use executive summaries for leadership when your role includes oversight reports."
+    ],
+    "donts": [
+      "Do not export citizen PII to personal devices or unsecured email.",
+      "Do not treat dashboard charts as legal evidence without official export and audit trail.",
+      "Do not share report links outside the government network unless policy allows."
+    ],
+    "scenarios": [
+      {
+        "title": "Monthly unit briefing",
+        "body": "Start with dashboard KPIs, then Reports → Volume and SLA for the period. Export if slides require attachment — use the exports page and note the job id from your notification."
+      },
+      {
+        "title": "Export failed notification",
+        "body": "Retry from Reports → Exports. If it fails again, note the time and contact CMS application support with your user email and report type."
+      }
+    ],
+    "steps": [
+      {
+        "title": "Run a standard analytics report",
+        "body": "Sidebar → Reports → choose Volume, SLA, Resolution, or Channels. Filters apply per page. Use View full report links from the dashboard for the same datasets."
+      }
+    ],
+    "openInAppHref": "/dashboard/reports",
+    "openInAppLabel": "Reports hub"
+  },
+  "notifications": {
+    "title": "In-app notifications",
+    "summary": "Bell inbox vs email admin, notification types, and how to stay current.",
+    "dos": [
+      "Check the bell regularly for assignments, SLA alerts, and export completion.",
+      "Use Mark all read after processing a batch so the badge reflects real unread items.",
+      "Click through notification links to open the related case or report.",
+      "Distinguish your personal inbox from Admin → Email deliveries (outbound citizen email log)."
+    ],
+    "donts": [
+      "Do not assume email was sent because you see an in-app alert — types differ (assignment vs export ready).",
+      "Do not disable MFA because of reminder notifications — enroll instead.",
+      "Do not manage notification templates from the bell; use Admin → Templates if authorized."
+    ],
+    "scenarios": [
+      {
+        "title": "Assigned to a new complaint",
+        "body": "Bell shows complaint assigned. Open from the notification or complaints queue. Acknowledge with a note or status update per SOP."
+      },
+      {
+        "title": "Weekly MFA reminder",
+        "body": "Complete MFA enrollment under Profile → MFA. The reminder deduplicates — act once to clear future nudges."
+      },
+      {
+        "title": "Report export ready",
+        "body": "Download from the link in the notification or Exports page. Store per records management policy."
+      }
+    ],
+    "steps": [
+      {
+        "title": "Clear your inbox",
+        "body": "Open Notifications from the bell → filter Unread only if needed → open each item → Mark all read when done. Badge updates on navigation and periodically while you work."
+      }
+    ],
+    "openInAppHref": "/dashboard/notifications",
+    "openInAppLabel": "Notification inbox"
+  },
+  "administration": {
+    "title": "Administration",
+    "summary": "Guidelines for users, roles, reference data, templates, audit, and system health.",
+    "dos": [
+      "Follow least privilege — assign the smallest role that covers duties.",
+      "Document why roles were changed when auditors may ask.",
+      "Update categories, org units, and SLA rules only through change control.",
+      "Use the audit log to investigate who changed sensitive settings or accessed exports.",
+      "Test template changes in a non-production environment when available."
+    ],
+    "donts": [
+      "Do not create shared “team” logins — one person per account.",
+      "Do not grant SuperAdmin for convenience.",
+      "Do not delete categories or org units in use without migration plan.",
+      "Do not resend outbound emails from delivery log without checking content and recipient."
+    ],
+    "scenarios": [
+      {
+        "title": "Officer needs complaint access",
+        "body": "Confirm role (Case Officer vs Complaints Admin). Update user roles in Admin → Users. They must sign out and in for JWT permissions to refresh."
+      },
+      {
+        "title": "New complaint category",
+        "body": "Complaints Admin adds category and maps SLA if needed. Communicate to case teams before citizens see it on the public form."
+      },
+      {
+        "title": "Audit investigation",
+        "body": "Auditor uses Admin → Audit log with filters. Correlate with case history on specific complaints. Export audit data only under legal/policy guidance."
+      }
+    ],
+    "steps": [
+      {
+        "title": "Add a staff user",
+        "body": "Admin → Users → create user with email, org unit, and roles → ensure temporary password is communicated securely → user enrolls MFA on first login."
+      }
+    ],
+    "openInAppHref": "/dashboard/admin",
+    "openInAppLabel": "Admin hub"
+  }
+}

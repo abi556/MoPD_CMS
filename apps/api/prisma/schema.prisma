@@ -218,21 +218,24 @@ model CaseTask {
 }
 
 model User {
-  id                 String     @id @default(uuid())
-  email              String     @unique
+  id                 String            @id @default(uuid())
+  email              String            @unique
   passwordHash       String
-  passwordVersion    Int        @default(0)
-  mustChangePassword Boolean    @default(false)
-  mustEnrollMfa      Boolean    @default(false)
-  mfaEnabled         Boolean    @default(false)
+  passwordVersion    Int               @default(0)
+  mustChangePassword Boolean           @default(false)
+  mustEnrollMfa      Boolean           @default(false)
+  mfaEnabled         Boolean           @default(false)
   mfaMethod          String?
   totpSecret         String?
   totpVerifiedAt     DateTime?
-  isActive           Boolean    @default(true)
+  preferredLocale    ComplaintLocale?
+  lastMfaReminderAt  DateTime?
+  isActive           Boolean           @default(true)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   userRoles          UserRole[]
   documents          Document[]
+  notifications      UserNotification[]
 }
 
 model Document {
@@ -353,6 +356,45 @@ model ComplaintSla {
 
   @@index([status])
   @@index([targetAt])
+}
+
+enum UserNotificationType {
+  complaint_assigned
+  case_task_assigned
+  case_task_reassigned
+  sla_warning
+  sla_breached
+  account_password_changed
+  account_email_changed
+  security_mfa_reminder
+  report_export_ready
+  report_export_failed
+}
+
+enum UserNotificationSeverity {
+  info
+  success
+  warning
+  critical
+}
+
+model UserNotification {
+  id            String                   @id @default(uuid())
+  userId        String
+  type          UserNotificationType
+  severity      UserNotificationSeverity @default(info)
+  messageKey    String
+  messageParams Json?
+  link          String?
+  entityType    String?
+  entityId      String?
+  dedupKey      String?
+  readAt        DateTime?
+  createdAt     DateTime                 @default(now())
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupKey])
+  @@index([userId, readAt, createdAt])
 }
 
 enum NotificationChannel {

@@ -46,12 +46,11 @@ describe("nav permission matrix", () => {
     expect(hrefs).not.toContain(staffRoutes.admin.root);
   });
 
-  it("CommunicationsOfficer sees admin and notifications", () => {
+  it("CommunicationsOfficer sees admin without top-level inbox nav", () => {
     const hrefs = navHrefs("CommunicationsOfficer");
     expect(hrefs).toEqual([
       staffRoutes.home,
       staffRoutes.admin.root,
-      staffRoutes.notifications,
       staffRoutes.profile,
     ]);
   });
@@ -89,5 +88,12 @@ describe("nav permission matrix", () => {
     expect(hrefs).toContain(staffRoutes.reports.root);
     expect(hrefs).toContain(staffRoutes.complaints);
     expect(hrefs).not.toContain(staffRoutes.admin.root);
+  });
+
+  it("SuperAdmin sees complaints, reports, and admin", () => {
+    const hrefs = navHrefs("SuperAdmin");
+    expect(hrefs).toContain(staffRoutes.complaints);
+    expect(hrefs).toContain(staffRoutes.reports.root);
+    expect(hrefs).toContain(staffRoutes.admin.root);
   });
 });

@@ -1,11 +1,5 @@
-import { redirect } from "@/i18n/navigation";
-import { staffRoutes } from "@/lib/staff/routes";
+import { ProfilePageContent } from "@/components/staff/profile/profile-page-content";
 
-export default async function ProfileMfaPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  redirect({ href: `${staffRoutes.profile}#security`, locale });
+export default function ProfileMfaPage() {
+  return <ProfilePageContent section="security" />;
 }

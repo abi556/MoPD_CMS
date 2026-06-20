@@ -55,3 +55,10 @@ export async function escalateComplaint(
 ): Promise<void> {
   await apiPost<void>(`/complaints/${id}/escalate`, payload);
 }
+
+export async function fetchSlaAtRiskCount(): Promise<number> {
+  const response = await apiGet<{ count: number }>(
+    "/complaints/sla-at-risk/count",
+  );
+  return response.count;
+}

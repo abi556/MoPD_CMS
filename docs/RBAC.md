@@ -95,8 +95,8 @@ All codes below are defined in `apps/api/src/modules/auth/rbac/seed-catalog.ts` 
 | `complaint:escalate` | Escalate / open appeal handling |
 | `config:manage` | Categories, org units, broad config |
 | `sla:configure` | SLA rule configuration |
-| `notification:manage` | Notification delivery admin |
-| `notification:read` | Read notification delivery status (**seed only; no route guard yet**) |
+| `notification:manage` | Outbound email delivery admin (resend, delivery log) |
+| `notification:read` | Read outbound email delivery log (**seed only; `GET /notifications` uses `notification:manage` today**) |
 | `template:manage` | Notification template admin |
 | `case:read` | List case notes/tasks on a complaint |
 | `case:write` | Create/update case notes and tasks |
@@ -202,7 +202,7 @@ Roles are defined in `apps/api/src/modules/auth/rbac/role-catalog.ts`. Permissio
 
 **Permissions:** `notification:manage`, `notification:read`, `template:manage`
 
-**Typical use:** notification templates and delivery admin. `notification:read` is seeded but not bound to a controller guard today.
+**Typical use:** outbound email templates and delivery admin. In-app staff inbox (`/users/me/notifications`) is available to any authenticated user without a separate permission.
 
 ### Auditor
 
@@ -391,7 +391,7 @@ All require `config:manage`:
 | `DELETE` | `/roles/:id` | `role:manage` |
 | `GET` | `/permissions` | `role:manage` |
 
-### Notifications
+### Notifications (outbound email admin)
 
 | Method | Path | `@Permissions` |
 |--------|------|----------------|
@@ -401,6 +401,15 @@ All require `config:manage`:
 | `GET` | `/notification-templates/:id` | `template:manage` |
 | `POST` | `/notification-templates` | `template:manage` |
 | `PATCH` | `/notification-templates/:id` | `template:manage` |
+
+### In-app inbox (authenticated self)
+
+| Method | Path | `@Permissions` |
+|--------|------|----------------|
+| `GET` | `/users/me/notifications` | _(JWT only)_ |
+| `GET` | `/users/me/notifications/unread-count` | _(JWT only)_ |
+| `PATCH` | `/users/me/notifications/:id/read` | _(JWT only)_ |
+| `POST` | `/users/me/notifications/read-all` | _(JWT only)_ |
 
 ### Reports
 
@@ -496,4 +505,4 @@ For page-level nav matrices, see `CMS SRS + SDS/MoPD_CMS_Frontend_UI_Plan.md` §
 | Workflow policy | `workflow-policy.service.ts` |
 | JWT user shape | `interfaces/jwt-user.interface.ts`, `auth.service.ts` (`toAuthUser`) |
 
-This file documents only behavior present in the codebase at the time of writing. Permissions without controller guards (e.g. `notification:read`) are listed for seed completeness but are not API-enforced yet.
+This file documents only behavior present in the codebase at the time of writing. `notification:read` remains seeded for delivery-log read access but is not bound to a controller guard today (use `notification:manage` for `/notifications`).

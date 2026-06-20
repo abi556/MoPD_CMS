@@ -1,0 +1,31 @@
+{
+  "title": "ማሳወቂያዎች",
+  "subtitle": "ተመደቡልዎት ጉዳዮች፣ SLA ማስጠንቀቂያዎች እና የመለያ ዝመናዎች",
+  "filterAll": "ሁሉ",
+  "filterUnread": "ያልተነበቡ",
+  "markAllRead": "ሁሉንም እንደተነበቡ ምልክት አድርግ",
+  "emptyTitle": "ማሳወቂያ የለም",
+  "emptyUnreadTitle": "ሁሉንም አንብበዋል",
+  "emptyDescription": "የተመደቡ ጉዳዮች፣ SLA እና የመለያ ማስጠንቀቂያዎች እዚህ ይታያሉ።",
+  "emptyUnreadDescription": "ያልተነበቡ ማሳወቂያዎች የሉዎትም።",
+  "loadError": "ማሳወቂያዎችን ማስገባት አልተሳካም።",
+  "retry": "እንደገና ይሞክሩ",
+  "groupToday": "ዛሬ",
+  "groupYesterday": "ትናንት",
+  "groupEarlier": "ቀደም ብሎ",
+  "unreadBadge": "{count, plural, =1 {1 ያልተነበበ ማሳወቂያ} other {# ያልተነበቡ ማሳወቂያዎች}}",
+  "bellLabel": "ማሳወቂያዎች",
+  "bellLabelWithCount": "ማሳወቂያዎች፣ {count} ያልተነበቡ",
+  "types": {
+    "complaintAssigned": "ቅሬታ {reference} ተመድቦልዎታል",
+    "caseTaskAssigned": "ተግባር ተመድቦልዎታል፡ {title}",
+    "caseTaskReassigned": "ተግባር ወደ እርስዎ ተመለሰ፡ {title}",
+    "slaWarning": "SLA ማስጠንቀቂያ፡ {reference} የዒላማ ጊዜውን {thresholdPct}% ደርሷል",
+    "slaBreached": "SLA ተጣስቷል፡ {reference}",
+    "accountPasswordChanged": "የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል",
+    "accountEmailChanged": "ኢሜይልዎ ወደ {email} ተዘምኗል",
+    "securityMfaReminder": "መለያዎን ለመጠበቅ ባለብዙ-ደረጃ ማረጋገጫ ያቀናብሩ",
+    "reportExportReady": "የሪፖርት ማስመጣት ዝግጁ ነው ({format}፣ {rowCount} ረድፎች)",
+    "reportExportFailed": "የሪፖርት ማስመጣት አልተሳካም ({format})"
+  }
+}

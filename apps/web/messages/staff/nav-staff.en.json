@@ -24,12 +24,20 @@
   "adminOrgUnits": "Org units",
   "adminSla": "SLA rules",
   "adminTemplates": "Templates",
+  "adminEmailDeliveries": "Email deliveries",
   "adminNotifications": "Notifications",
   "notifications": "Notifications",
   "adminAudit": "Audit log",
   "adminSystem": "System health",
   "profile": "Profile",
+  "help": "Help",
   "logout": "Sign out",
+  "home": "Home",
+  "login": "Sign in",
   "menu": "Menu",
-  "openMenu": "Open navigation menu"
+  "openMenu": "Open navigation menu",
+  "collapseSidebar": "Collapse sidebar",
+  "expandSidebar": "Expand sidebar",
+  "offlineBanner": "You are offline. Some actions may be unavailable until your connection returns.",
+  "more": "More"
 }

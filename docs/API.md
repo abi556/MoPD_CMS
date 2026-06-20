@@ -96,7 +96,7 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 - **Response:** `{ data: { message } }`
 - **Errors:** `401` (wrong current password), `422` (same as current)
 - **Rate limit:** 10 req/min
-- **Notes:** Bumps `passwordVersion` (invalidates all existing sessions). Clears `mustChangePassword` flag.
+- **Notes:** Bumps `passwordVersion` (invalidates all existing sessions). Clears `mustChangePassword` flag. Creates in-app `account_password_changed` notification.
 
 ### GET `/auth/mfa/status`
 - **Auth:** Bearer
@@ -194,8 +194,9 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 
 #### PATCH `/users/me`
 - **Auth:** Bearer
-- **Body:** `{ email }`
+- **Body:** `{ email?, preferredLocale? }` (`preferredLocale`: `en` | `am`)
 - **Response:** `{ data: UserItemDto }`
+- **Side effect:** when `email` changes, creates an in-app `account_email_changed` notification for the user
 
 ### Roles and permissions
 
@@ -463,7 +464,57 @@ All routes under `/admin/*` below require Bearer auth + `config:manage`.
 
 ## 11) Notifications
 
-### Delivery admin (`/notifications`)
+Staff notifications are split into two surfaces:
+
+| Surface | Purpose | Auth |
+|---------|---------|------|
+| **In-app inbox** (`/users/me/notifications`) | Personal alerts (assignments, SLA, account, exports) | Bearer JWT only — no extra permission |
+| **Outbound email admin** (`/notifications`, `/notification-templates`) | Email/SMS template and delivery log management | `notification:manage` / `template:manage` |
+
+### In-app inbox (`/users/me/notifications`)
+
+Persisted in `UserNotification`. The web staff UI renders `messageKey` + `messageParams` via `next-intl` (keys under `inbox.types.*`). `link` is a staff-console path without locale prefix.
+
+**Notification types** (enum `UserNotificationType`):
+
+| Type | Typical trigger | Severity |
+|------|-----------------|----------|
+| `complaint_assigned` | Complaint assigned to user | `info` |
+| `case_task_assigned` | Case task created for assignee | `info` |
+| `case_task_reassigned` | Case task assignee changed | `info` |
+| `sla_warning` | SLA reaches warning threshold (~80%) | `warning` |
+| `sla_breached` | SLA target exceeded (assignee + escalation role) | `critical` |
+| `account_password_changed` | User changed password | `success` |
+| `account_email_changed` | User/admin updated email | `success` |
+| `security_mfa_reminder` | Weekly job for users without MFA | `warning` |
+| `report_export_ready` | Async report export completed | `success` |
+| `report_export_failed` | Async report export failed | `warning` |
+
+Duplicate domain events are suppressed when a `dedupKey` is set (e.g. one SLA warning per tracker).
+
+#### GET `/users/me/notifications`
+- **Auth:** Bearer
+- **Query:** `page?` (default `1`), `pageSize?` (default `20`, max `100`), `unreadOnly?` (`true` | `false`)
+- **Response:** `{ data: UserNotificationItemDto[], meta: { page, pageSize, total, totalPages } }`
+- **UserNotificationItemDto:** `{ id, type, severity, messageKey, messageParams, link?, entityType?, entityId?, readAt?, createdAt }`
+
+#### GET `/users/me/notifications/unread-count`
+- **Auth:** Bearer
+- **Response:** `{ data: { count: number } }`
+- **Purpose:** Header bell badge polling
+
+#### PATCH `/users/me/notifications/:id/read`
+- **Auth:** Bearer
+- **Body:** none
+- **Response:** `{ data: UserNotificationItemDto }` (with `readAt` set)
+- **Errors:** `404` if notification does not exist or belongs to another user
+
+#### POST `/users/me/notifications/read-all`
+- **Auth:** Bearer
+- **Body:** none
+- **Response:** `{ data: { updated: number } }`
+
+### Outbound delivery admin (`/notifications`)
 
 #### GET `/notifications`
 - **Permission:** `notification:manage`

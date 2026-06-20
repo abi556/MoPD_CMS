@@ -1,0 +1,41 @@
+{
+  "name": "MoPD CMS Staff Console",
+  "short_name": "MoPD Staff",
+  "description": "MoPD staff console for complaint triage, case management, and reporting.",
+  "id": "/en/dashboard",
+  "start_url": "/en/dashboard?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fcf9f8",
+  "theme_color": "#3A6B35",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["government", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Complaints queue",
+      "short_name": "Complaints",
+      "url": "/en/dashboard/complaints?source=pwa"
+    },
+    {
+      "name": "Reports",
+      "short_name": "Reports",
+      "url": "/en/dashboard/reports?source=pwa"
+    }
+  ]
+}

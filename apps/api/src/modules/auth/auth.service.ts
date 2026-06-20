@@ -22,6 +22,12 @@ import { JwtPayload, JwtUser } from './interfaces/jwt-user.interface';
 import { LoginAttemptService } from './login-attempt.service';
 import { MfaService } from './mfa.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { InAppNotificationService } from '../notifications/in-app-notification.service';
+import {
+  INBOX_LINK,
+  INBOX_MESSAGE_KEY,
+} from '../notifications/in-app-notification.paths';
+import { UserNotificationSeverity, UserNotificationType } from '@prisma/client';
 import {
   isStrongPassword,
   PASSWORD_POLICY_MESSAGE,
@@ -149,6 +155,7 @@ export class AuthService implements OnModuleInit {
     private readonly loginAttemptService: LoginAttemptService,
     private readonly mfaService: MfaService,
     private readonly notificationsService: NotificationsService,
+    private readonly inAppNotifications: InAppNotificationService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -578,6 +585,7 @@ export class AuthService implements OnModuleInit {
     mustEnroll: boolean;
     totpOnly: boolean;
     canSkipEnroll: boolean;
+    backupCodesRemaining: number;
   }> {
     const user = await this.userService.findActiveById(userId);
     if (!user) {
@@ -598,6 +606,7 @@ export class AuthService implements OnModuleInit {
       mustEnroll,
       totpOnly: rolePolicy.totpOnly,
       canSkipEnroll,
+      backupCodesRemaining: this.mfaService.getBackupCodeRemainingCount(userId),
     };
   }
 
@@ -627,6 +636,7 @@ export class AuthService implements OnModuleInit {
     mfaEnrolled: boolean;
     mfaMethod: 'totp' | 'email' | null;
     canSkipMfaEnroll: boolean;
+    preferredLocale: 'en' | 'am' | null;
   }> {
     const user = await this.userService.findActiveById(userId);
     if (!user) {
@@ -645,6 +655,7 @@ export class AuthService implements OnModuleInit {
       mfaEnrolled: user.mfaEnabled,
       mfaMethod: mfaStatus.method,
       canSkipMfaEnroll: mfaStatus.canSkipEnroll,
+      preferredLocale: user.preferredLocale ?? null,
     };
   }
 
@@ -683,6 +694,15 @@ export class AuthService implements OnModuleInit {
       eventType: AUDIT_EVENT.AUTH_PASSWORD_CHANGE_COMPLETED,
       actorUserId: userId,
       correlationId,
+    });
+    await this.inAppNotifications.notify({
+      userId,
+      type: UserNotificationType.account_password_changed,
+      severity: UserNotificationSeverity.success,
+      messageKey: INBOX_MESSAGE_KEY.accountPasswordChanged,
+      link: INBOX_LINK.profile,
+      entityType: 'user',
+      entityId: userId,
     });
   }
 
@@ -769,7 +789,8 @@ export class AuthService implements OnModuleInit {
       | 'verified'
       | 'verify_failed'
       | 'disabled'
-      | 'method_changed',
+      | 'method_changed'
+      | 'backup_codes_regenerated',
     userId: string,
     correlationId?: string,
     metadata?: Record<string, string | number | boolean | null>,
@@ -782,6 +803,7 @@ export class AuthService implements OnModuleInit {
       verify_failed: AUDIT_EVENT.AUTH_MFA_VERIFY_FAILED,
       disabled: AUDIT_EVENT.AUTH_MFA_DISABLED,
       method_changed: AUDIT_EVENT.AUTH_MFA_METHOD_CHANGED,
+      backup_codes_regenerated: AUDIT_EVENT.AUTH_MFA_BACKUP_CODES_REGENERATED,
     } as const;
 
     await this.auditService.logEvent({

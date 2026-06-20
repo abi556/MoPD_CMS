@@ -24,11 +24,13 @@ import { staffRoutes } from "@/lib/staff/routes";
 import { useSession } from "@/components/providers/auth-provider";
 import { DashboardPageHeader } from "@/components/staff/dashboard/dashboard-page-header";
 import { StaffDataTable } from "@/components/staff/ui/staff-data-table";
+import { StaffEmptyState } from "@/components/staff/ui/staff-empty-state";
 import { StaffAlert } from "@/components/staff/ui/staff-alert";
 import { ComplaintQueueFiltersBar } from "@/components/staff/complaints/complaint-queue-filters";
 import { ComplaintQueueCard } from "@/components/staff/complaints/complaint-queue-card";
 import { StatusBadge, SlaBadge } from "@/components/ui/status-badge";
 import { Link } from "@/i18n/navigation";
+import { buttonClassName } from "@/components/ui/button";
 
 const PAGE_SIZE = 20;
 
@@ -59,6 +61,13 @@ export function ComplaintsQueuePanel() {
     hasExactPermission(user.permissions, "complaint:read:own") &&
     !hasPermission(user.permissions, "complaint:read");
 
+  const canCreateAssisted =
+    user &&
+    hasPermission(user.permissions, "workflow:transition") &&
+    (hasPermission(user.permissions, "complaint:read") ||
+      hasPermission(user.permissions, "complaint:read:own") ||
+      hasPermission(user.permissions, "complaint:recovery:manage"));
+
   const syncUrl = useCallback(
     (next: ComplaintQueueFilters) => {
       const query = serializeComplaintFilters(next);
@@ -83,6 +92,7 @@ export function ComplaintsQueuePanel() {
         locale: resolved.locale,
         submittedFrom: resolved.submittedFrom,
         submittedTo: resolved.submittedTo,
+        q: resolved.q,
       });
       setRows(res.data);
       setTotal(res.meta.total);
@@ -115,10 +125,23 @@ export function ComplaintsQueuePanel() {
 
   return (
     <div>
-      <DashboardPageHeader title={t("title")} subtitle={t("subtitle")} />
+      <DashboardPageHeader
+        title={t("title")}
+        subtitle={t("subtitle")}
+        action={
+          canCreateAssisted ? (
+            <Link
+              href={staffRoutes.complaintsNew}
+              className={buttonClassName({ variant: "brand", className: "min-h-11" })}
+            >
+              {t("newComplaint")}
+            </Link>
+          ) : null
+        }
+      />
 
       {isScopedOfficer ? (
-        <p className="mb-4 rounded-xl border border-staff-border bg-staff-surface px-4 py-3 text-sm text-staff-text-muted">
+        <p className="mb-4 rounded-xl border border-staff-nav-active/15 bg-staff-nav-active-bg/8 px-4 py-2.5 text-sm text-staff-text-muted">
           {t("scopedHint")}
         </p>
       ) : null}
@@ -135,6 +158,14 @@ export function ComplaintsQueuePanel() {
       ) : null}
 
       <div className="space-y-3 md:hidden">
+        {loading
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={`skel-card-${i}`}
+                className="h-28 animate-pulse rounded-xl border border-staff-border/30 bg-staff-surface"
+              />
+            ))
+          : null}
         {!loading &&
           rows.map((row) => (
             <ComplaintQueueCard
@@ -144,6 +175,12 @@ export function ComplaintsQueuePanel() {
               sla={slaMap.get(row.id) ?? null}
             />
           ))}
+        {!loading && rows.length === 0 ? (
+          <StaffEmptyState
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
+          />
+        ) : null}
       </div>
 
       <div className="hidden md:block">
@@ -152,10 +189,11 @@ export function ComplaintsQueuePanel() {
             {
               id: "reference",
               header: t("reference"),
+              className: "w-[8.5rem] whitespace-nowrap",
               cell: (row) => (
                 <Link
                   href={staffRoutes.complaintDetail(row.id)}
-                  className="cursor-pointer font-mono text-sm font-medium text-staff-nav-active hover:underline"
+                  className="cursor-pointer font-mono text-xs font-semibold text-staff-nav-active hover:underline"
                 >
                   {row.referenceNo}
                 </Link>
@@ -164,28 +202,44 @@ export function ComplaintsQueuePanel() {
             {
               id: "status",
               header: t("status"),
+              className: "w-[9rem]",
               cell: (row) => <StatusBadge status={row.status} />,
             },
             {
               id: "subject",
               header: t("subject"),
+              className: "min-w-[12rem] max-w-[20rem]",
               cell: (row) => (
-                <span className="line-clamp-1 max-w-md">{row.subject}</span>
+                <span className="line-clamp-2 text-sm leading-snug text-staff-text">
+                  {row.subject}
+                </span>
               ),
             },
             {
               id: "submittedAt",
               header: t("submittedAt"),
-              cell: (row) => new Date(row.submittedAt).toLocaleString(),
+              className: "w-[9rem] whitespace-nowrap text-staff-text-muted",
+              cell: (row) =>
+                new Date(row.submittedAt).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }),
             },
             {
               id: "assignee",
               header: t("assignee"),
-              cell: (row) => assigneeLabel(row.assignedToUserId),
+              className: "max-w-[10rem]",
+              cell: (row) => (
+                <span className="block truncate text-staff-text-muted">
+                  {assigneeLabel(row.assignedToUserId)}
+                </span>
+              ),
             },
             {
               id: "sla",
               header: t("sla"),
+              className: "w-[7.5rem]",
               cell: (row) => (
                 <SlaBadge state={mapSlaToState(slaMap.get(row.id) ?? null)} />
               ),

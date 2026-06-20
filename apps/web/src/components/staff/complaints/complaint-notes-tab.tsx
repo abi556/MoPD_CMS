@@ -11,7 +11,7 @@ import {
 import { hasPermission } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { EmptyState } from "@/components/ui/empty-state";
+import { StaffEmptyState } from "@/components/staff/ui/staff-empty-state";
 
 interface ComplaintNotesTabProps {
   complaintId: string;
@@ -69,7 +69,7 @@ export function ComplaintNotesTab({
 
   if (!canRead) {
     return (
-      <EmptyState
+      <StaffEmptyState
         title={t("emptyTitle")}
         description={t("emptyDescription")}
       />
@@ -79,7 +79,7 @@ export function ComplaintNotesTab({
   return (
     <div className="space-y-6">
       {canWrite ? (
-        <div className="rounded-xl border border-staff-border bg-staff-surface p-4">
+        <div className="rounded-xl border border-staff-border/40 bg-staff-surface p-4 shadow-staff-card">
           <Textarea
             label={t("body")}
             name="noteBody"
@@ -105,7 +105,7 @@ export function ComplaintNotesTab({
       {loading ? (
         <p className="text-sm text-staff-text-muted">Loading…</p>
       ) : notes.length === 0 ? (
-        <EmptyState
+        <StaffEmptyState
           title={t("emptyTitle")}
           description={t("emptyDescription")}
         />
@@ -114,7 +114,7 @@ export function ComplaintNotesTab({
           {notes.map((note) => (
             <li
               key={note.id}
-              className="rounded-xl border border-staff-border bg-staff-surface p-4"
+              className="rounded-xl border border-staff-border/40 bg-staff-surface p-4"
             >
               <p className="whitespace-pre-wrap text-sm text-staff-text">
                 {note.body}

@@ -1,0 +1,89 @@
+{
+  "title": "Help & support",
+  "subtitle": "Guides, keyboard shortcuts, and internal contacts for CMS staff",
+  "nav": {
+    "docs": "Documentation",
+    "shortcuts": "Keyboard shortcuts",
+    "support": "Staff support"
+  },
+  "docs": {
+    "title": "Help center",
+    "intro": "Staff guides with do's, don'ts, and step-by-step scenarios. Open a topic to read the full guide — not the live console screen.",
+    "readGuide": "Read guide",
+    "gettingStarted": {
+      "title": "Getting started",
+      "description": "Sign-in, profile, password, MFA, locale, and theme preferences.",
+      "cardHint": "Sign-in, MFA, session timeout, and access errors."
+    },
+    "complaints": {
+      "title": "Complaints & workflow",
+      "description": "Queue, case detail, status transitions, notes, tasks, and attachments.",
+      "cardHint": "Triage, transitions, notes, assignments, and workflow errors."
+    },
+    "sla": {
+      "title": "SLA rules & deadlines",
+      "description": "Warnings, breaches, escalation, and when to act.",
+      "cardHint": "SLA warnings, breaches, and escalation decisions."
+    },
+    "recovery": {
+      "title": "Recovery inquiries",
+      "description": "Lost reference numbers and citizen recovery requests.",
+      "cardHint": "When to resolve vs reject a lost-reference inquiry."
+    },
+    "reports": {
+      "title": "Reports & analytics",
+      "description": "Volume, SLA, resolution, channels, and exports.",
+      "cardHint": "Which report to use and safe export practices."
+    },
+    "notifications": {
+      "title": "In-app notifications",
+      "description": "Bell inbox for assignments, SLA alerts, and account events.",
+      "cardHint": "Bell inbox types and how they differ from email admin."
+    },
+    "admin": {
+      "title": "Administration",
+      "description": "Users, roles, reference data, templates, and audit log.",
+      "cardHint": "Users, roles, reference data, templates, and audit."
+    }
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "intro": "Press a shortcut key anywhere in the staff console, or click a row below to try it.",
+    "columnAction": "Action",
+    "columnKeys": "Keys",
+    "groups": {
+      "general": "General",
+      "navigation": "Navigation"
+    },
+    "openHelp": "Open help",
+    "focusSearch": "Focus complaint search",
+    "toggleSidebar": "Toggle sidebar",
+    "goDashboard": "Go to dashboard",
+    "goComplaints": "Go to complaints",
+    "goNotifications": "Go to notifications",
+    "tryNow": "Click to try",
+    "unavailable": "Not available for your role"
+  },
+  "support": {
+    "title": "Staff support",
+    "intro": "Internal contacts for CMS staff. For citizen inquiries, use the public website — not these channels.",
+    "phone": "Phone",
+    "email": "Email",
+    "hours": "Hours",
+    "ict": {
+      "title": "MoPD ICT service desk",
+      "when": "Password reset, MFA device issues, account lock, VPN, or browser problems."
+    },
+    "cms": {
+      "title": "CMS application support",
+      "when": "Software defects, missing permissions, workflow errors, or failed exports."
+    },
+    "program": {
+      "title": "Program office",
+      "when": "Business rules, triage procedures, categories, and org structure."
+    },
+    "hoursDefault": "Monday–Thursday 8:30–17:30; Friday 8:30–17:30 (closed weekends)",
+    "publicContactNote": "Citizens and public inquiries:",
+    "publicContactLink": "public contact page"
+  }
+}

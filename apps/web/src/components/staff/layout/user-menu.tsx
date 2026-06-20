@@ -13,7 +13,7 @@ export function UserAvatarButton() {
   return (
     <Link
       href={staffRoutes.profile}
-      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-staff-nav-active-bg font-label text-sm font-semibold uppercase text-staff-nav-active-text transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-staff-nav-active focus-visible:ring-offset-2 focus-visible:ring-offset-staff-surface"
+      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-staff-nav-active/25 bg-staff-nav-active-bg font-label text-sm font-semibold uppercase text-staff-nav-active-text shadow-sm transition-colors hover:border-staff-nav-active/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-staff-nav-active/40 focus-visible:ring-offset-2 focus-visible:ring-offset-staff-surface"
       aria-label={t("profile")}
       title={user?.email ?? t("profile")}
     >

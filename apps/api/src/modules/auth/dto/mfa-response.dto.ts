@@ -80,6 +80,12 @@ export class MfaStatusDataDto {
       'Whether the user may defer enrollment and use the console now.',
   })
   canSkipEnroll!: boolean;
+
+  @ApiProperty({
+    description: 'Unused backup codes remaining (when MFA enrolled).',
+    example: 8,
+  })
+  backupCodesRemaining!: number;
 }
 
 export class MfaStatusResponseDto {

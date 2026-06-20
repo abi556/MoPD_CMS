@@ -10,6 +10,7 @@ export interface MfaStatus {
   mustEnroll: boolean;
   totpOnly: boolean;
   canSkipEnroll: boolean;
+  backupCodesRemaining: number;
 }
 
 export async function fetchMfaStatus(): Promise<MfaStatus> {
@@ -28,5 +29,13 @@ export async function disableMfa(password: string): Promise<{ message: string }>
   return apiRequest<{ message: string }>("/auth/mfa", {
     method: "DELETE",
     body: { password },
+  });
+}
+
+export async function regenerateBackupCodes(
+  password: string,
+): Promise<{ backupCodes: string[] }> {
+  return apiPost<{ backupCodes: string[] }>("/auth/mfa/backup-codes/regenerate", {
+    password,
   });
 }

@@ -16,8 +16,8 @@ export const siteConfig = {
   shortName: "MoPD CMS",
   description:
     "Submit and track complaints to the Ministry of Planning and Development (MoPD) of Ethiopia. A secure, bilingual (Amharic/English) citizen-centered portal for transparent and accountable public service.",
-  // Keep in sync with the brand primary color in globals.css.
-  themeColor: "#58874b",
+  // Keep in sync with the staff console brand primary (#3A6B35).
+  themeColor: "#3A6B35",
   backgroundColor: "#fcf9f8",
   locales: ["en", "am"] as const,
   defaultLocale: "en" as const,

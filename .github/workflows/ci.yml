@@ -87,7 +87,7 @@ jobs:
         uses: trufflesecurity/trufflehog@v3.95.4
         with:
           # Scan current branch/PR diff; this is safe for public CI usage.
-          scanArguments: --no-update --only-verified
+          extra_args: --no-update --only-verified
 
       # API steps (run if api changed OR workflow changed)
       - name: Generate Prisma Client (API)
@@ -110,6 +110,14 @@ jobs:
       - name: Lint (web and shared)
         if: steps.changes.outputs.web == 'true' || steps.changes.outputs.workflows == 'true'
         run: pnpm turbo run lint --filter=@mopd-cms/web --filter=@mopd-cms/shared
+
+      - name: Web unit tests
+        if: steps.changes.outputs.web == 'true' || steps.changes.outputs.workflows == 'true'
+        run: pnpm --filter @mopd-cms/web test
+
+      - name: Web typecheck
+        if: steps.changes.outputs.web == 'true' || steps.changes.outputs.workflows == 'true'
+        run: pnpm --filter @mopd-cms/web typecheck
 
       # Build (run if either api or web changed OR workflow changed)
       - name: Build

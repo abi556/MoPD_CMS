@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { CaseCollaborationController } from './case-collaboration.controller';
 import { CaseCollaborationService } from './case-collaboration.service';
 
@@ -8,7 +9,7 @@ import { CaseCollaborationService } from './case-collaboration.service';
  * Routes remain nested under complaints per API contract.
  */
 @Module({
-  imports: [AuditModule],
+  imports: [AuditModule, NotificationsModule],
   controllers: [CaseCollaborationController],
   providers: [CaseCollaborationService],
   exports: [CaseCollaborationService],

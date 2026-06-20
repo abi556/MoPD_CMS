@@ -8,6 +8,7 @@ import { ApiError } from "@/lib/api-client";
 import {
   disableMfa,
   fetchMfaStatus,
+  regenerateBackupCodes,
   switchMfaMethod,
   type MfaStatus,
 } from "@/lib/auth/mfa-api";
@@ -16,6 +17,7 @@ import { useSession } from "@/components/providers/auth-provider";
 import { AdminErrorAlert } from "@/components/staff/admin/shared/admin-status-badge";
 import { AuthFieldInput } from "@/components/forms/auth-field-input";
 import { Button, buttonClassName } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 
 export function ProfileSecuritySection() {
   const tAuth = useTranslations("auth");
@@ -27,6 +29,10 @@ export function ProfileSecuritySection() {
   const [disabling, setDisabling] = useState(false);
   const [showDisable, setShowDisable] = useState(false);
   const [disablePassword, setDisablePassword] = useState("");
+  const [showRegenerate, setShowRegenerate] = useState(false);
+  const [regeneratePassword, setRegeneratePassword] = useState("");
+  const [regenerating, setRegenerating] = useState(false);
+  const [newBackupCodes, setNewBackupCodes] = useState<string[] | null>(null);
   const [message, setMessage] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
 
@@ -100,6 +106,23 @@ export function ProfileSecuritySection() {
     }
   };
 
+  const onRegenerateBackupCodes = async () => {
+    setRegenerating(true);
+    setError(undefined);
+    try {
+      const res = await regenerateBackupCodes(regeneratePassword);
+      setNewBackupCodes(res.backupCodes);
+      setShowRegenerate(false);
+      setRegeneratePassword("");
+      await loadStatus();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : tAuth("mfaSettingsError"));
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  const backupRemaining = status?.backupCodesRemaining ?? 0;
   const enrolled = status?.enrolled ?? user?.mfaEnrolled ?? false;
   const currentMethod = status?.method ?? user?.mfaMethod ?? null;
   const elevatedRole =
@@ -153,6 +176,29 @@ export function ProfileSecuritySection() {
                     ? tAuth("mfaMethodTotp")
                     : tAuth("mfaMethodNone")}
               </dd>
+            </div>
+
+            <div className="border-t border-staff-border pt-4">
+              <dt className="font-medium text-staff-text">{t("backupCodesTitle")}</dt>
+              <dd className="mt-1 text-staff-text-muted">
+                {t("backupCodesRemaining", { count: backupRemaining })}
+              </dd>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="min-h-11"
+                  onClick={() => setShowRegenerate(true)}
+                >
+                  {t("backupCodesRegenerate")}
+                </Button>
+                <Link
+                  href={staffRoutes.auth.mfaEnroll}
+                  className={buttonClassName({ variant: "secondary", className: "min-h-11" })}
+                >
+                  {t("mfaReenrollCta")}
+                </Link>
+              </div>
             </div>
 
             {status?.totpOnly ? (
@@ -231,6 +277,67 @@ export function ProfileSecuritySection() {
           </dl>
         )}
       </div>
+
+      <Dialog
+        open={showRegenerate}
+        onClose={() => {
+          setShowRegenerate(false);
+          setRegeneratePassword("");
+        }}
+        title={t("backupCodesRegenerateTitle")}
+        description={t("backupCodesRegenerateHint")}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setShowRegenerate(false);
+                setRegeneratePassword("");
+              }}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="brand"
+              disabled={regenerating || regeneratePassword.length < 8}
+              onClick={() => void onRegenerateBackupCodes()}
+            >
+              {regenerating ? "…" : t("backupCodesRegenerateConfirm")}
+            </Button>
+          </>
+        }
+      >
+        <AuthFieldInput
+          type="password"
+          autoComplete="current-password"
+          aria-label={t("backupCodesPasswordLabel")}
+          value={regeneratePassword}
+          onChange={(e) => setRegeneratePassword(e.target.value)}
+          className="min-h-11 w-full rounded-xl border border-staff-border bg-staff-input-bg px-4 py-2.5 text-sm text-staff-text"
+        />
+      </Dialog>
+
+      <Dialog
+        open={newBackupCodes !== null}
+        onClose={() => setNewBackupCodes(null)}
+        title={t("backupCodesNewTitle")}
+        description={t("backupCodesNewWarning")}
+        footer={
+          <Button type="button" variant="brand" onClick={() => setNewBackupCodes(null)}>
+            {t("backupCodesDismiss")}
+          </Button>
+        }
+      >
+        <ul className="grid gap-2 font-mono text-sm sm:grid-cols-2">
+          {newBackupCodes?.map((code) => (
+            <li key={code} className="rounded-lg bg-staff-input-bg px-3 py-2">
+              {code}
+            </li>
+          ))}
+        </ul>
+      </Dialog>
     </section>
   );
 }

@@ -11,9 +11,12 @@
     "body": "Your account does not have permission to view this page. Contact your system administrator if you believe this is an error."
   },
   "shell": {
-    "searchPlaceholder": "Search dashboard…",
+    "searchPlaceholder": "Search complaints by reference or subject…",
     "notifications": "Notifications",
-    "help": "Help"
+    "help": "Help",
+    "footerPrivacy": "Privacy Policy",
+    "footerTerms": "Terms of Service",
+    "footerContact": "Contact Support"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -22,8 +25,7 @@
     "triageQueue": "Triage queue",
     "qaReview": "QA / legal review",
     "slaAtRisk": "SLA at risk",
-    "slaPlaceholder": "—",
-    "slaTooltip": "SLA metrics ship in Phase 2",
+    "slaTooltip": "Open cases with warned or breached SLA",
     "loading": "Loading metrics…",
     "error": "Could not load dashboard metrics.",
     "retry": "Try again",
@@ -36,6 +38,17 @@
     "topCategoriesHint": "Based on complaint volume in the last 30 days",
     "recentQueue": "Recent queue activity",
     "recentQueueHint": "Latest triage and assignment events",
+    "insights": {
+      "noCategories": "No categorized complaints yet",
+      "noCategoriesHint": "Categories will appear once complaints are submitted in the last 30 days.",
+      "noQueueActivity": "No recent queue activity",
+      "noQueueActivityHint": "Triage and assignment events will show up here as cases move through the queue.",
+      "eventAssigned": "Assigned to officer",
+      "eventTriage": "Moved to triage",
+      "queuePrevious": "Previous",
+      "queueNext": "Next",
+      "queuePage": "Page {page} of {total}"
+    },
     "tabs": {
       "overview": "Overview",
       "byStatus": "By status",
@@ -54,13 +67,15 @@
       "slaTitle": "SLA compliance",
       "slaSubtitle": "On-time resolution rate. Targets from configured SLA rules.",
       "volumeTitle": "Daily intake vs closure",
-      "volumeSubtitle": "Submitted and closed complaints over the last 14 days",
+      "volumeSubtitle": "Submitted and closed complaints over the last 14 days (7 shown)",
       "channelsTitle": "Intake by channel",
       "channelsSubtitle": "Share of complaints by intake channel",
       "viewReport": "View full report",
       "drillOpen": "View open complaints",
       "submitted": "Submitted",
       "closed": "Closed",
+      "volumePreviousWeek": "Show previous week",
+      "volumeNextWeek": "Show latest week",
       "status": {
         "submitted": "Submitted",
         "open": "Open / triage",

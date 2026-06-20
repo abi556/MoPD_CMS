@@ -15,15 +15,39 @@
     "filterLocale": "Locale",
     "filterFrom": "Submitted from",
     "filterTo": "Submitted to",
+    "filterSearch": "Search",
+    "searchPlaceholder": "Reference or subject",
     "allStatuses": "All statuses",
     "allChannels": "All channels",
     "allLocales": "All locales",
     "savePreset": "Save preset",
-    "loadPreset": "Load preset",
+    "loadPreset": "Saved filters",
+    "applyPreset": "Apply saved filter",
     "presetName": "Preset name",
     "emptyTitle": "No complaints found",
     "emptyDescription": "Adjust filters or wait for new submissions.",
-    "openCase": "Open case"
+    "openCase": "Open case",
+    "newComplaint": "Assisted intake",
+    "filtersTitle": "Filters",
+    "moreFilters": "More filters",
+    "statusLabels": {
+      "SUBMITTED": "Submitted",
+      "TRIAGE": "Triage",
+      "ASSIGNED": "Assigned",
+      "IN_INVESTIGATION": "Investigation",
+      "DRAFT_RESPONSE": "Draft response",
+      "QA_LEGAL_REVIEW": "QA / Legal",
+      "RESPONSE_ISSUED": "Response issued",
+      "AWAITING_FEEDBACK": "Awaiting feedback",
+      "APPEAL": "Appeal",
+      "CLOSED": "Closed"
+    },
+    "channelLabels": {
+      "WEB": "Web",
+      "EMAIL": "Email",
+      "PHONE": "Phone",
+      "IN_PERSON": "In person"
+    }
   },
   "detail": {
     "notFoundTitle": "Complaint not found",
@@ -95,6 +119,9 @@
     "uploadFailed": "Upload failed",
     "downloadFailed": "Download failed",
     "deleteFailed": "Delete failed",
+    "deleteConfirmTitle": "Delete document?",
+    "deleteConfirmDescription": "Remove “{name}” from this case. This cannot be undone.",
+    "deleteCancel": "Cancel",
     "downloadNotReady": "Download is available after the file passes virus scanning.",
     "scanStatus": {
       "PENDING": "Scan pending",
@@ -161,6 +188,45 @@
     "emptyDescription": "Add an internal note for collaborators on this case.",
     "author": "Author",
     "createdAt": "Created"
+  },
+  "tasks": {
+    "titleLabel": "Task title",
+    "assignee": "Assignee",
+    "assigneeId": "Assignee {id}",
+    "statusLabel": "Status",
+    "submit": "Create task",
+    "loading": "Loading tasks…",
+    "loadFailed": "Failed to load tasks",
+    "createFailed": "Failed to create task",
+    "updateFailed": "Failed to update task",
+    "emptyTitle": "No tasks yet",
+    "emptyDescription": "Create follow-up tasks for this case.",
+    "noAccessDescription": "You do not have permission to view tasks on this case.",
+    "status": {
+      "OPEN": "Open",
+      "IN_PROGRESS": "In progress",
+      "DONE": "Done",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "intake": {
+    "title": "Assisted complaint intake",
+    "subtitle": "Register a walk-in or phone complaint on behalf of a citizen.",
+    "subject": "Subject",
+    "description": "Description",
+    "complainantName": "Complainant name",
+    "complainantEmail": "Complainant email",
+    "complainantPhone": "Complainant phone",
+    "category": "Category",
+    "consent": "I confirm the complainant consented to data processing.",
+    "submit": "Submit complaint",
+    "submitting": "Submitting…",
+    "success": "Complaint registered.",
+    "submitFailed": "Could not submit complaint.",
+    "validationSubject": "Subject must be at least 5 characters.",
+    "validationDescription": "Description must be at least 20 characters.",
+    "validationConsent": "Consent is required.",
+    "selectCategory": "Select category (optional)"
   },
   "sla": {
     "countdown": "SLA",

@@ -11,6 +11,7 @@ export interface SessionUser {
   mfaEnrolled?: boolean;
   mfaMethod?: "totp" | "email" | null;
   canSkipMfaEnroll?: boolean;
+  preferredLocale?: "en" | "am" | null;
 }
 
 export interface LoginSessionPayload {

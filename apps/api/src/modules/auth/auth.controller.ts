@@ -46,6 +46,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MfaConfirmDto } from './dto/mfa-confirm.dto';
 import { MfaVerifyDto } from './dto/mfa-verify.dto';
 import { MfaDisableDto } from './dto/mfa-disable.dto';
+import { MfaRegenerateBackupCodesDto } from './dto/mfa-regenerate-backup-codes.dto';
 import { MfaMethodDto } from './dto/mfa-method.dto';
 import type { JwtUser } from './interfaces/jwt-user.interface';
 import { AuthService } from './auth.service';
@@ -503,6 +504,29 @@ export class AuthController {
       request.correlationId,
     );
     return { data: { message: 'MFA has been disabled.' } };
+  }
+
+  @Post('mfa/backup-codes/regenerate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Regenerate MFA backup codes (requires password; invalidates old codes)',
+  })
+  @ApiOkResponse({ type: MfaEnrollmentResponseDto })
+  async mfaRegenerateBackupCodes(
+    @CurrentUser() user: JwtUser,
+    @Req() request: RequestWithCorrelationId,
+    @Body() body: MfaRegenerateBackupCodesDto,
+  ): Promise<{ data: { backupCodes: string[] } }> {
+    await this.authService.verifyUserPassword(user.id, body.password);
+    const backupCodes = await this.mfaService.regenerateBackupCodes(user.id);
+    await this.authService.auditMfaEvent(
+      'backup_codes_regenerated',
+      user.id,
+      request.correlationId,
+    );
+    return { data: { backupCodes } };
   }
 
   @UseGuards(JwtAuthGuard)

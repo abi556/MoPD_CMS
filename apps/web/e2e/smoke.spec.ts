@@ -7,8 +7,15 @@ test("public home loads in English", async ({ page }) => {
 
 test("locale switch to Amharic", async ({ page }) => {
   await page.goto("/en");
-  await page.getByRole("button", { name: "am", exact: true }).click();
+  await expect(
+    page.getByText("Submit a complaint, receive a reference number"),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Switch to Amharic" }).click();
   await expect(page).toHaveURL(/\/am$/);
+  await expect(
+    page.getByText("ቅሬታ ያስገቡ፣ የመከታተያ ቁጥር ይቀበሉ"),
+  ).toBeVisible();
 });
 
 test("login page renders", async ({ page }) => {

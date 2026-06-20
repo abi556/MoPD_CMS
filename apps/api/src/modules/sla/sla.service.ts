@@ -1,8 +1,21 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Priority, SlaStatus } from '@prisma/client';
+import {
+  ComplaintStatus,
+  Priority,
+  SlaStatus,
+  UserNotificationSeverity,
+  UserNotificationType,
+} from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
+import { ComplaintAccessService } from '../complaints/complaint-access.service';
+import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { PrismaService } from '../../prisma/prisma.service';
+import { InAppNotificationService } from '../notifications/in-app-notification.service';
+import {
+  INBOX_LINK,
+  INBOX_MESSAGE_KEY,
+} from '../notifications/in-app-notification.paths';
 import { CreateSlaConfigDto } from './dto/create-sla-config.dto';
 import { UpdateSlaConfigDto } from './dto/update-sla-config.dto';
 import {
@@ -17,6 +30,8 @@ export class SlaService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly complaintAccessService: ComplaintAccessService,
+    private readonly inAppNotifications: InAppNotificationService,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -227,7 +242,10 @@ export class SlaService {
     const now = new Date();
     const activeTrackers = await this.prisma.complaintSla.findMany({
       where: { status: SlaStatus.ACTIVE },
-      include: { slaConfig: true },
+      include: {
+        slaConfig: true,
+        complaint: { select: { id: true, referenceNo: true, assignedToUserId: true } },
+      },
     });
 
     for (const tracker of activeTrackers) {
@@ -246,6 +264,23 @@ export class SlaService {
             targetAt: tracker.targetAt.toISOString(),
           },
         });
+        const assigneeId = tracker.complaint.assignedToUserId;
+        if (assigneeId) {
+          await this.inAppNotifications.notify({
+            userId: assigneeId,
+            type: UserNotificationType.sla_warning,
+            severity: UserNotificationSeverity.warning,
+            messageKey: INBOX_MESSAGE_KEY.slaWarning,
+            messageParams: {
+              reference: tracker.complaint.referenceNo,
+              thresholdPct: tracker.slaConfig.warningThresholdPct,
+            },
+            link: INBOX_LINK.complaint(tracker.complaintId),
+            entityType: 'complaint',
+            entityId: tracker.complaintId,
+            dedupKey: `sla_warning:${tracker.id}`,
+          });
+        }
         this.logger.log(
           `SLA warning emitted for complaint ${tracker.complaintId}`,
         );
@@ -266,9 +301,66 @@ export class SlaService {
             targetAt: tracker.targetAt.toISOString(),
           },
         });
+        const breachRecipients = new Set<string>();
+        if (tracker.complaint.assignedToUserId) {
+          breachRecipients.add(tracker.complaint.assignedToUserId);
+        }
+        if (tracker.slaConfig.escalationRoleId) {
+          const roleUsers = await this.prisma.userRole.findMany({
+            where: { roleId: tracker.slaConfig.escalationRoleId },
+            select: { userId: true },
+          });
+          for (const row of roleUsers) {
+            breachRecipients.add(row.userId);
+          }
+        }
+        await this.inAppNotifications.notifyMany(
+          [...breachRecipients].map((userId) => ({
+            userId,
+            type: UserNotificationType.sla_breached,
+            severity: UserNotificationSeverity.critical,
+            messageKey: INBOX_MESSAGE_KEY.slaBreached,
+            messageParams: { reference: tracker.complaint.referenceNo },
+            link: INBOX_LINK.complaint(tracker.complaintId),
+            entityType: 'complaint',
+            entityId: tracker.complaintId,
+            dedupKey: `sla_breached:${tracker.id}:${userId}`,
+          })),
+        );
         this.logger.warn(`SLA breached for complaint ${tracker.complaintId}`);
       }
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Dashboard metrics
+  // ---------------------------------------------------------------------------
+
+  async countAtRiskComplaints(user: JwtUser): Promise<number> {
+    const now = new Date();
+    const scopeFilter = this.complaintAccessService.buildListScopeFilter(user);
+    const complaintWhere = {
+      status: { not: ComplaintStatus.CLOSED },
+      ...scopeFilter,
+    };
+
+    return this.prisma.complaintSla.count({
+      where: {
+        completedAt: null,
+        complaint: complaintWhere,
+        OR: [
+          { status: SlaStatus.BREACHED },
+          { breachedAt: { not: null } },
+          { warnedAt: { not: null } },
+          {
+            status: SlaStatus.ACTIVE,
+            breachedAt: null,
+            warnedAt: null,
+            warningAt: { lte: now },
+          },
+        ],
+      },
+    });
   }
 
   // ---------------------------------------------------------------------------

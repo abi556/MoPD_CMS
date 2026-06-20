@@ -1,5 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { buildComplaintsQuery } from "./complaints-api";
+import { describe, expect, it, vi } from "vitest";
+import { buildComplaintsQuery, createAssistedComplaint } from "./complaints-api";
+
+vi.mock("@/lib/api-client", () => ({
+  apiGet: vi.fn(),
+  apiPatch: vi.fn(),
+  apiPost: vi.fn(),
+}));
+
+import { apiPost } from "@/lib/api-client";
+
+const mockPost = vi.mocked(apiPost);
 
 describe("buildComplaintsQuery", () => {
   it("builds query with filters", () => {
@@ -19,5 +29,26 @@ describe("buildComplaintsQuery", () => {
 
   it("returns empty string when no params", () => {
     expect(buildComplaintsQuery({})).toBe("");
+  });
+});
+
+describe("createAssistedComplaint", () => {
+  it("posts ASSISTED channel with staff auth", async () => {
+    mockPost.mockResolvedValue({ id: "cm-1", referenceNo: "REF-001" });
+    await createAssistedComplaint({
+      subject: "Walk-in complaint",
+      description: "Citizen reported delay at service desk today.",
+      locale: "en",
+      consentGiven: true,
+    });
+    expect(mockPost).toHaveBeenCalledWith(
+      "/complaints",
+      expect.objectContaining({
+        channel: "ASSISTED",
+        requestUploadSession: false,
+        consentGiven: true,
+      }),
+      { auth: true },
+    );
   });
 });

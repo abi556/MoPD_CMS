@@ -774,18 +774,28 @@ interface SlaConfig {
 
 ### 5.3.7 NotificationModule
 
-**Responsibility**: Multi-channel notification dispatch with templates.
+**Responsibility**: Outbound multi-channel dispatch (email/SMS templates) **and** per-user in-app inbox notifications.
 
 **Components**:
 
 | Component | Type | Purpose |
 |---|---|---|
-| `NotificationController` | Controller | Notification history, re-send, template management |
-| `NotificationService` | Service | Template rendering, channel routing |
-| `EmailDispatcher` | Service | SMTP email dispatch via Nodemailer |
-| `SmsDispatcher` | Service | Ethio Telecom SMS API adapter |
-| `NotificationProcessor` | BullMQ Worker | Async dispatch with retry logic |
-| `TemplateRepository` | Repository | Notification template storage |
+| `NotificationDeliveriesAdminController` | Controller | Outbound email delivery history, re-send |
+| `NotificationTemplatesAdminController` | Controller | Template CRUD |
+| `UserNotificationsController` | Controller | Authenticated user's in-app inbox |
+| `NotificationsService` | Service | Template rendering, outbound channel routing |
+| `InAppNotificationService` | Service | Persist/list/mark-read in-app notifications |
+| `NotificationMaintenanceService` | Service | Weekly MFA reminder batch |
+| `NotificationDispatchProcessor` | BullMQ Worker | Async outbound dispatch with retry |
+| `NotificationMaintenanceProcessor` | BullMQ Worker | Scheduled in-app maintenance jobs |
+
+**In-app notification types** (non-exhaustive): complaint assigned, case task assigned/reassigned, SLA warning/breach, password/email changed, MFA setup reminder, report export ready/failed.
+
+**In-app flow**:
+1. Domain services call `InAppNotificationService.notify()` after successful work (assignment, SLA monitor, auth, exports).
+2. Rows are stored in `UserNotification` with optional `dedupKey` for idempotency.
+3. Staff UI polls `GET /users/me/notifications/unread-count` for the header bell; inbox at `/dashboard/notifications`.
+4. Outbound email remains separate under admin **Email deliveries** (`/dashboard/admin/notifications`).
 
 **Template Model**:
 
@@ -1269,8 +1279,12 @@ All APIs follow the conventions defined in the API Design Patterns skill (REF: `
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| GET | `/api/v1/notifications` | List notification history | notification:read |
-| POST | `/api/v1/notifications/:id/resend` | Resend failed notification | notification:manage |
+| GET | `/api/v1/users/me/notifications` | List in-app inbox for current user | Authenticated |
+| GET | `/api/v1/users/me/notifications/unread-count` | Unread in-app count (header bell) | Authenticated |
+| PATCH | `/api/v1/users/me/notifications/:id/read` | Mark one in-app notification read | Authenticated |
+| POST | `/api/v1/users/me/notifications/read-all` | Mark all in-app notifications read | Authenticated |
+| GET | `/api/v1/notifications` | List outbound email delivery history | notification:manage |
+| POST | `/api/v1/notifications/:id/resend` | Resend failed outbound email | notification:manage |
 | GET | `/api/v1/notification-templates` | List templates | template:manage |
 | POST | `/api/v1/notification-templates` | Create template | template:manage |
 | PATCH | `/api/v1/notification-templates/:id` | Update template | template:manage |

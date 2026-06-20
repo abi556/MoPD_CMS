@@ -2,6 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
+import {
+  isStaffGuideSlug,
+  staffGuideMessageKey,
+} from "@/lib/staff/help/guide-catalog";
+
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "dashboard",
   complaints: "complaints",
@@ -20,6 +25,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   audit: "adminAudit",
   system: "adminSystem",
   profile: "profile",
+  help: "help",
   notifications: "notifications",
 };
 
@@ -39,6 +45,7 @@ function segmentLabelKey(segment: string, parentSegment?: string): string | unde
 export function StaffBreadcrumbs() {
   const pathname = usePathname();
   const tNav = useTranslations("nav-staff");
+  const tGuides = useTranslations("helpGuides");
 
   if (!pathname.startsWith("/dashboard")) {
     return null;
@@ -51,7 +58,19 @@ export function StaffBreadcrumbs() {
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
     const parentSegment = i > 0 ? segments[i - 1] : undefined;
+
     acc += `/${segment}`;
+
+    if (segment === "guides") {
+      continue;
+    }
+
+    if (parentSegment === "guides" && isStaffGuideSlug(segment)) {
+      const guideKey = staffGuideMessageKey(segment);
+      crumbs.push({ href: acc, label: tGuides(`${guideKey}.title`) });
+      continue;
+    }
+
     const key = segmentLabelKey(segment, parentSegment);
     const label = key ? tNav(key as "dashboard") : segment;
     crumbs.push({ href: acc, label });

@@ -75,8 +75,8 @@ describe("buildAppNav", () => {
     ).toBe(true);
   });
 
-  it("includes notifications when user has notification:manage", () => {
+  it("does not include top-level notifications nav for notification:manage", () => {
     const nav = buildAppNav(user(["notification:manage"]));
-    expect(nav.some((i) => i.href === staffRoutes.notifications)).toBe(true);
+    expect(nav.some((i) => i.href === staffRoutes.notifications)).toBe(false);
   });
 });

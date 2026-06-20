@@ -10,7 +10,7 @@ export function StaffEmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-staff-border bg-staff-shell/40 px-6 py-12 text-center">
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-staff-border/50 bg-staff-input-bg/25 px-6 py-12 text-center staff-dark:bg-staff-surface/40">
       <h3 className="text-base font-semibold text-staff-text">{title}</h3>
       {description ? (
         <p className="mt-2 max-w-md text-sm text-staff-text-muted">{description}</p>

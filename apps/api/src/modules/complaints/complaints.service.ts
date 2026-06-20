@@ -14,6 +14,7 @@ import type {
   ComplaintHistory as ComplaintHistoryEntity,
   ComplaintLocale as PrismaComplaintLocale,
 } from '@prisma/client';
+import { Prisma, UserNotificationSeverity, UserNotificationType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   ComplaintChannel,
@@ -27,6 +28,11 @@ import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { InAppNotificationService } from '../notifications/in-app-notification.service';
+import {
+  INBOX_LINK,
+  INBOX_MESSAGE_KEY,
+} from '../notifications/in-app-notification.paths';
 import { SlaService } from '../sla/sla.service';
 import { ComplaintAccessService } from './complaint-access.service';
 import { WorkflowPolicyService } from './workflow-policy.service';
@@ -177,6 +183,7 @@ export class ComplaintsService {
     @Inject(forwardRef(() => SlaService))
     private readonly slaService: SlaService,
     private readonly notificationsService: NotificationsService,
+    private readonly inAppNotifications: InAppNotificationService,
     private readonly complaintAccessService: ComplaintAccessService,
     private readonly workflowPolicyService: WorkflowPolicyService,
     private readonly documentsService: DocumentsService,
@@ -584,6 +591,20 @@ export class ComplaintsService {
         status: record.status,
       },
     });
+    await this.inAppNotifications.notify({
+      userId: assigneeUserId,
+      type: UserNotificationType.complaint_assigned,
+      severity: UserNotificationSeverity.info,
+      messageKey: INBOX_MESSAGE_KEY.complaintAssigned,
+      messageParams: {
+        reference: record.referenceNo,
+        subject: record.subject,
+      },
+      link: INBOX_LINK.complaint(id),
+      entityType: 'complaint',
+      entityId: id,
+      dedupKey: `complaint_assigned:${id}`,
+    });
     return record;
   }
 
@@ -734,8 +755,7 @@ export class ComplaintsService {
     const skip = (page - 1) * pageSize;
 
     const scopeFilter = this.complaintAccessService.buildListScopeFilter(user);
-    const where = {
-      ...scopeFilter,
+    const filters: Prisma.ComplaintWhereInput = {
       status: query.status,
       channel: query.channel,
       locale: query.locale,
@@ -749,6 +769,25 @@ export class ComplaintsService {
             }
           : undefined,
     };
+
+    const clauses: Prisma.ComplaintWhereInput[] = [];
+    if (Object.keys(scopeFilter).length > 0) {
+      clauses.push(scopeFilter);
+    }
+    clauses.push(filters);
+
+    const q = query.q?.trim();
+    if (q) {
+      clauses.push({
+        OR: [
+          { referenceNo: { contains: q, mode: 'insensitive' } },
+          { subject: { contains: q, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    const where: Prisma.ComplaintWhereInput =
+      clauses.length === 1 ? clauses[0]! : { AND: clauses };
 
     const [rows, total] = await Promise.all([
       this.prisma.complaint.findMany({

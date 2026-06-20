@@ -1,11 +1,10 @@
-import { redirect } from "@/i18n/navigation";
-import { staffRoutes } from "@/lib/staff/routes";
+import { RequirePermission } from "@/components/auth/require-permission";
+import { NotificationsPanel } from "@/components/staff/notifications/notifications-panel";
 
-export default async function AdminNotificationsRedirectPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  redirect({ href: staffRoutes.notifications, locale });
+export default function AdminNotificationsPage() {
+  return (
+    <RequirePermission permission="notification:manage">
+      <NotificationsPanel />
+    </RequirePermission>
+  );
 }

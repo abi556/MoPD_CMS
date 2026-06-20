@@ -73,6 +73,7 @@ export interface ListComplaintsParams {
   locale?: string;
   submittedFrom?: string;
   submittedTo?: string;
+  q?: string;
 }
 
 export function buildComplaintsQuery(params: ListComplaintsParams): string {
@@ -84,6 +85,7 @@ export function buildComplaintsQuery(params: ListComplaintsParams): string {
   if (params.locale) search.set("locale", params.locale);
   if (params.submittedFrom) search.set("submittedFrom", params.submittedFrom);
   if (params.submittedTo) search.set("submittedTo", params.submittedTo);
+  if (params.q) search.set("q", params.q);
   const qs = search.toString();
   return qs ? `?${qs}` : "";
 }
@@ -167,4 +169,31 @@ export async function fetchSlaBatch(
     Array.from({ length: Math.min(concurrency, ids.length) }, () => worker()),
   );
   return result;
+}
+
+export interface CreateAssistedComplaintPayload {
+  subject: string;
+  description: string;
+  locale: "en" | "am";
+  consentGiven: true;
+  complainantName?: string;
+  complainantEmail?: string;
+  complainantPhone?: string;
+  categoryId?: string;
+  orgUnitId?: string;
+}
+
+export interface CreateAssistedComplaintResult {
+  id: string;
+  referenceNo: string;
+}
+
+export async function createAssistedComplaint(
+  payload: CreateAssistedComplaintPayload,
+): Promise<CreateAssistedComplaintResult> {
+  return apiPost<CreateAssistedComplaintResult>(
+    "/complaints",
+    { ...payload, channel: "ASSISTED", requestUploadSession: false },
+    { auth: true },
+  );
 }

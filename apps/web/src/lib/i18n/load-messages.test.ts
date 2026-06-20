@@ -35,7 +35,10 @@ const EXPECTED_NAMESPACES = [
   "reports",
   "profile",
   "notifications",
+  "inbox",
   "complaints",
+  "help",
+  "helpGuides",
 ] as const;
 
 function leafPaths(
@@ -82,7 +85,7 @@ describe("loadMessages", () => {
     const publicKeys = Object.keys(messages["nav-public"] as object);
     const staffKeys = Object.keys(messages["nav-staff"] as object);
     const overlap = publicKeys.filter((key) => staffKeys.includes(key));
-    const allowedOverlap = new Set(["menu", "openMenu"]);
+    const allowedOverlap = new Set(["menu", "openMenu", "home", "login"]);
     const unexpected = overlap.filter((key) => !allowedOverlap.has(key));
     expect(unexpected).toEqual([]);
   });

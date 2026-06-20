@@ -3,14 +3,14 @@
 import { useTranslations } from "next-intl";
 import { StatusBadge, formatStatusLabel } from "@/components/ui/status-badge";
 import type { ComplaintHistoryItem } from "@/lib/staff/complaints-api";
-import { EmptyState } from "@/components/ui/empty-state";
+import { StaffEmptyState } from "@/components/staff/ui/staff-empty-state";
 
 export function HistoryTimeline({ items }: { items: ComplaintHistoryItem[] }) {
   const t = useTranslations("complaints.history");
 
   if (items.length === 0) {
     return (
-      <EmptyState
+      <StaffEmptyState
         title={t("emptyTitle")}
         description={t("emptyDescription")}
       />
@@ -22,7 +22,7 @@ export function HistoryTimeline({ items }: { items: ComplaintHistoryItem[] }) {
       {items.map((item) => (
         <li key={item.id} className="relative">
           <span className="absolute -left-[1.6rem] top-1 h-3 w-3 rounded-full bg-staff-nav-active-bg" />
-          <div className="rounded-xl border border-staff-border bg-staff-surface p-4">
+          <div className="rounded-xl border border-staff-border/40 bg-staff-surface p-4 shadow-staff-card">
             <p className="text-sm font-semibold text-staff-text">
               {item.action === "ASSIGNED" ? t("assigned") : t("transitioned")}
             </p>

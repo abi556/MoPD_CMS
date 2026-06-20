@@ -17,7 +17,15 @@ describe('SlaService', () => {
   const complaintSlaFindMany = jest.fn();
   const complaintSlaUpdate = jest.fn();
   const complaintSlaUpdateMany = jest.fn();
+  const complaintSlaCount = jest.fn();
   const logEvent = jest.fn();
+  const notify = jest.fn();
+  const notifyMany = jest.fn();
+  const userRoleFindMany = jest.fn();
+
+  const mockComplaintAccess = {
+    buildListScopeFilter: jest.fn().mockReturnValue({}),
+  };
 
   const mockPrisma = {
     slaConfig: {
@@ -34,15 +42,29 @@ describe('SlaService', () => {
       findMany: complaintSlaFindMany,
       update: complaintSlaUpdate,
       updateMany: complaintSlaUpdateMany,
+      count: complaintSlaCount,
+    },
+    userRole: {
+      findMany: userRoleFindMany,
     },
   };
 
   const mockAudit = { logEvent };
+  const mockInApp = { notify, notifyMany };
 
   beforeEach(() => {
     jest.clearAllMocks();
     logEvent.mockResolvedValue(undefined);
-    service = new SlaService(mockPrisma as never, mockAudit as never);
+    notify.mockResolvedValue(null);
+    notifyMany.mockResolvedValue(undefined);
+    userRoleFindMany.mockResolvedValue([]);
+    mockComplaintAccess.buildListScopeFilter.mockReturnValue({});
+    service = new SlaService(
+      mockPrisma as never,
+      mockAudit as never,
+      mockComplaintAccess as never,
+      mockInApp as never,
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -266,7 +288,16 @@ describe('SlaService', () => {
         targetAt: new Date(now.getTime() + 3_600_000), // not yet breached
         warnedAt: null, // not yet warned
         breachedAt: null,
-        slaConfig: { name: 'Test' },
+        slaConfig: {
+          name: 'Test',
+          warningThresholdPct: 80,
+          escalationRoleId: null,
+        },
+        complaint: {
+          id: 'cmp_8',
+          referenceNo: 'CMP-008',
+          assignedToUserId: 'user-officer-0001',
+        },
       };
       complaintSlaFindMany.mockResolvedValue([tracker]);
       complaintSlaUpdateMany.mockResolvedValue({ count: 1 });
@@ -296,7 +327,16 @@ describe('SlaService', () => {
         targetAt: past, // both warning and target passed
         warnedAt: now, // already warned
         breachedAt: null,
-        slaConfig: { name: 'Test' },
+        slaConfig: {
+          name: 'Test',
+          warningThresholdPct: 80,
+          escalationRoleId: 'role-admin',
+        },
+        complaint: {
+          id: 'cmp_9',
+          referenceNo: 'CMP-009',
+          assignedToUserId: 'user-officer-0001',
+        },
       };
       complaintSlaFindMany.mockResolvedValue([tracker]);
       complaintSlaUpdateMany.mockResolvedValue({ count: 1 });
@@ -304,7 +344,6 @@ describe('SlaService', () => {
       await service.evaluateActive();
 
       const calls = complaintSlaUpdateMany.mock.calls;
-      // warnedAt already set, so no warning update
       const warnCall = calls.find((c) => c[0].where.warnedAt === null);
       const breachCall = calls.find((c) => c[0].where.breachedAt === null);
       expect(warnCall).toBeUndefined();
@@ -319,6 +358,33 @@ describe('SlaService', () => {
       await service.evaluateActive();
       expect(complaintSlaUpdateMany).not.toHaveBeenCalled();
       expect(logEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // countAtRiskComplaints
+  // ---------------------------------------------------------------------------
+  describe('countAtRiskComplaints', () => {
+    it('counts open complaints with warned or breached SLA', async () => {
+      complaintSlaCount.mockResolvedValue(7);
+      const user = { id: 'user_1', permissions: ['complaint:read'] };
+
+      const count = await service.countAtRiskComplaints(user as never);
+
+      expect(count).toBe(7);
+      expect(mockComplaintAccess.buildListScopeFilter).toHaveBeenCalledWith(
+        user,
+      );
+      expect(complaintSlaCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            completedAt: null,
+            complaint: expect.objectContaining({
+              status: { not: 'CLOSED' },
+            }),
+          }),
+        }),
+      );
     });
   });
 

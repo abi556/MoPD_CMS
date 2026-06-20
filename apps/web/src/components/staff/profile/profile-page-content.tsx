@@ -1,42 +1,47 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
+import { staffRoutes } from "@/lib/staff/routes";
 import { useSession } from "@/components/providers/auth-provider";
 import { DashboardPageHeader } from "@/components/staff/dashboard/dashboard-page-header";
+import { ProfileAccountSection } from "@/components/staff/profile/profile-account-section";
 import { ProfileChangePasswordSection } from "@/components/staff/profile/profile-change-password-section";
+import { ProfilePreferencesSection } from "@/components/staff/profile/profile-preferences-section";
 import { ProfileSecuritySection } from "@/components/staff/profile/profile-security-section";
-import { StaffSurfaceCard } from "@/components/staff/ui/staff-surface-card";
 import { StaffTabs } from "@/components/staff/ui/staff-tabs";
 
-type ProfileTab = "account" | "password" | "security";
+export type ProfileSection = "account" | "password" | "security" | "preferences";
 
-function tabFromHash(hash: string): ProfileTab {
-  if (hash === "#security" || hash === "#password") {
-    return hash.replace("#", "") as ProfileTab;
-  }
-  return "account";
+const TAB_ROUTES: Record<ProfileSection, string> = {
+  account: staffRoutes.profile,
+  password: staffRoutes.profilePassword,
+  security: staffRoutes.profileMfa,
+  preferences: staffRoutes.profilePreferences,
+};
+
+interface ProfilePageContentProps {
+  section?: ProfileSection;
 }
 
-export function ProfilePageContent() {
+export function ProfilePageContent({ section = "account" }: ProfilePageContentProps) {
   const t = useTranslations("profile");
+  const router = useRouter();
   const { user } = useSession();
-  const [activeTab, setActiveTab] = useState<ProfileTab>("account");
 
   useEffect(() => {
-    const syncFromHash = () => {
-      setActiveTab(tabFromHash(window.location.hash));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-    return () => window.removeEventListener("hashchange", syncFromHash);
-  }, []);
+    const hash = window.location.hash;
+    if (hash === "#password") {
+      router.replace(TAB_ROUTES.password);
+    } else if (hash === "#security") {
+      router.replace(TAB_ROUTES.security);
+    }
+  }, [router]);
 
   const handleTabChange = (id: string) => {
-    const next = id as ProfileTab;
-    setActiveTab(next);
-    const hash = next === "account" ? "" : `#${next}`;
-    window.history.replaceState(null, "", `${window.location.pathname}${hash}`);
+    const next = id as ProfileSection;
+    router.push(TAB_ROUTES[next]);
   };
 
   if (!user) {
@@ -49,49 +54,20 @@ export function ProfilePageContent() {
 
       <StaffTabs
         ariaLabel={t("tabsLabel")}
-        activeId={activeTab}
+        activeId={section}
         onChange={handleTabChange}
         tabs={[
           { id: "account", label: t("tabAccount") },
           { id: "password", label: t("tabPassword") },
           { id: "security", label: t("tabSecurity") },
+          { id: "preferences", label: t("tabPreferences") },
         ]}
       />
 
-      {activeTab === "account" ? (
-        <StaffSurfaceCard title={t("accountTitle")} subtitle={t("accountSubtitle")}>
-          <dl className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-staff-text-muted">
-                {t("emailLabel")}
-              </dt>
-              <dd className="mt-1 text-sm font-medium text-staff-text">{user.email}</dd>
-            </div>
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-staff-text-muted">
-                {t("rolesLabel")}
-              </dt>
-              <dd className="mt-2 flex flex-wrap gap-2">
-                {user.roles.length > 0 ? (
-                  user.roles.map((role) => (
-                    <span
-                      key={role}
-                      className="rounded-full bg-staff-nav-active-bg/10 px-3 py-1 text-xs font-medium text-staff-nav-active"
-                    >
-                      {role}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-sm text-staff-text-muted">{t("noRoles")}</span>
-                )}
-              </dd>
-            </div>
-          </dl>
-        </StaffSurfaceCard>
-      ) : null}
-
-      {activeTab === "password" ? <ProfileChangePasswordSection /> : null}
-      {activeTab === "security" ? <ProfileSecuritySection /> : null}
+      {section === "account" ? <ProfileAccountSection /> : null}
+      {section === "password" ? <ProfileChangePasswordSection /> : null}
+      {section === "security" ? <ProfileSecuritySection /> : null}
+      {section === "preferences" ? <ProfilePreferencesSection /> : null}
     </div>
   );
 }

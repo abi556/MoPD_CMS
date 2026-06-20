@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnprocessableEntityException } from '@nestjs/common';
 import {
   generateSecret,
   generateURI,
@@ -225,6 +225,22 @@ export class MfaService {
   async disableMfa(userId: string): Promise<void> {
     await this.userService.clearMfaEnrollment(userId);
     this.backupCodeStore.delete(userId);
+  }
+
+  getBackupCodeRemainingCount(userId: string): number {
+    return this.backupCodeStore.get(userId)?.length ?? 0;
+  }
+
+  async regenerateBackupCodes(userId: string): Promise<string[]> {
+    const user = await this.userService.findActiveById(userId);
+    if (!user?.mfaEnabled) {
+      throw new UnprocessableEntityException('MFA is not enrolled');
+    }
+
+    const backupCodes = this.generateBackupCodePlaintexts();
+    const hashedCodes = await this.hashBackupCodes(backupCodes);
+    this.storeBackupCodes(userId, hashedCodes);
+    return backupCodes;
   }
 
   private generateBackupCodePlaintexts(): string[] {

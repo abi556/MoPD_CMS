@@ -159,6 +159,41 @@ export function channelMax(channels: ChannelShare[]): number {
   return Math.max(...channels.map((channel) => channel.value), 1);
 }
 
+export const VOLUME_CHART_WINDOW_DAYS = 7;
+
+export function volumeWindowCount(dataLength: number): number {
+  if (dataLength <= 0) {
+    return 1;
+  }
+  return Math.ceil(dataLength / VOLUME_CHART_WINDOW_DAYS);
+}
+
+/** windowIndex 0 = most recent 7 days, 1 = previous 7 days, etc. */
+export function volumeWindowSlice(
+  data: WeeklyVolume[],
+  windowIndex: number,
+): WeeklyVolume[] {
+  if (data.length === 0) {
+    return [];
+  }
+
+  const totalWindows = volumeWindowCount(data.length);
+  const clampedIndex = Math.min(Math.max(windowIndex, 0), totalWindows - 1);
+  const end = data.length - clampedIndex * VOLUME_CHART_WINDOW_DAYS;
+  const start = Math.max(0, end - VOLUME_CHART_WINDOW_DAYS);
+  return data.slice(start, end);
+}
+
+export function volumeWindowRangeLabel(data: WeeklyVolume[]): string {
+  if (data.length === 0) {
+    return "";
+  }
+  if (data.length === 1) {
+    return data[0].label;
+  }
+  return `${data[0].label} – ${data[data.length - 1].label}`;
+}
+
 export async function fetchDashboardAnalytics(): Promise<DashboardAnalyticsSnapshot> {
   const filters = {
     from: isoDate(-13),

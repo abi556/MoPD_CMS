@@ -10,7 +10,7 @@
  *
  * Bump CACHE_VERSION to invalidate all caches on the next activation.
  */
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const PRECACHE = `mopd-precache-${CACHE_VERSION}`;
 const RUNTIME_PAGES = `mopd-pages-${CACHE_VERSION}`;
 const RUNTIME_ASSETS = `mopd-assets-${CACHE_VERSION}`;

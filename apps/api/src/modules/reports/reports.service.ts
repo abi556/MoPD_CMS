@@ -27,6 +27,12 @@ import { complaintsToXlsxBuffer } from './report-export-xlsx.util';
 import { complaintsToPdfBuffer } from './report-export-pdf.util';
 import { ReportQueryService } from './report-query.service';
 import { ReportFilters, normalizeReportFilters } from './report-filters';
+import { InAppNotificationService } from '../notifications/in-app-notification.service';
+import {
+  INBOX_LINK,
+  INBOX_MESSAGE_KEY,
+} from '../notifications/in-app-notification.paths';
+import { UserNotificationSeverity, UserNotificationType } from '@prisma/client';
 
 export interface CreateExportInput {
   format: 'csv' | 'xlsx' | 'pdf';
@@ -73,6 +79,7 @@ export class ReportsService {
     private readonly storageFactory: DocumentStorageFactory,
     @InjectQueue(QUEUE_REPORT_EXPORT)
     private readonly reportExportQueue: Queue,
+    private readonly inAppNotifications: InAppNotificationService,
   ) {}
 
   async getVolume(filters: ReportFilters) {
@@ -280,6 +287,17 @@ export class ReportsService {
         correlationId,
         metadata: { rowCount: exportRows.length, format: record.format },
       });
+      await this.inAppNotifications.notify({
+        userId: record.requestedById,
+        type: UserNotificationType.report_export_ready,
+        severity: UserNotificationSeverity.success,
+        messageKey: INBOX_MESSAGE_KEY.reportExportReady,
+        messageParams: { format: record.format, rowCount: exportRows.length },
+        link: INBOX_LINK.reportExports,
+        entityType: 'report_export',
+        entityId: exportId,
+        dedupKey: `report_export:${exportId}:ready`,
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Report export failed';
@@ -298,6 +316,17 @@ export class ReportsService {
         entityId: exportId,
         correlationId,
         metadata: { error: message },
+      });
+      await this.inAppNotifications.notify({
+        userId: record.requestedById,
+        type: UserNotificationType.report_export_failed,
+        severity: UserNotificationSeverity.warning,
+        messageKey: INBOX_MESSAGE_KEY.reportExportFailed,
+        messageParams: { format: record.format },
+        link: INBOX_LINK.reportExports,
+        entityType: 'report_export',
+        entityId: exportId,
+        dedupKey: `report_export:${exportId}:failed`,
       });
       throw error;
     }

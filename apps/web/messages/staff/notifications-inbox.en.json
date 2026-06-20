@@ -1,0 +1,31 @@
+{
+  "title": "Notifications",
+  "subtitle": "Your assignments, SLA alerts, and account updates",
+  "filterAll": "All",
+  "filterUnread": "Unread",
+  "markAllRead": "Mark all as read",
+  "emptyTitle": "No notifications",
+  "emptyUnreadTitle": "You're all caught up",
+  "emptyDescription": "Assignment, SLA, and account alerts will appear here.",
+  "emptyUnreadDescription": "You have no unread notifications.",
+  "loadError": "Could not load notifications.",
+  "retry": "Try again",
+  "groupToday": "Today",
+  "groupYesterday": "Yesterday",
+  "groupEarlier": "Earlier",
+  "unreadBadge": "{count, plural, =1 {1 unread notification} other {# unread notifications}}",
+  "bellLabel": "Notifications",
+  "bellLabelWithCount": "Notifications, {count} unread",
+  "types": {
+    "complaintAssigned": "Complaint {reference} assigned to you",
+    "caseTaskAssigned": "Task assigned: {title}",
+    "caseTaskReassigned": "Task reassigned to you: {title}",
+    "slaWarning": "SLA warning: {reference} is at {thresholdPct}% of target time",
+    "slaBreached": "SLA breached: {reference}",
+    "accountPasswordChanged": "Your password was changed successfully",
+    "accountEmailChanged": "Your email was updated to {email}",
+    "securityMfaReminder": "Set up multi-factor authentication to secure your account",
+    "reportExportReady": "Report export ready ({format}, {rowCount} rows)",
+    "reportExportFailed": "Report export failed ({format})"
+  }
+}

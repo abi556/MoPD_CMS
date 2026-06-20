@@ -19,6 +19,7 @@ interface AuthUserWithRoles {
   mfaMethod: string | null;
   totpSecret: string | null;
   totpVerifiedAt: Date | null;
+  preferredLocale?: 'en' | 'am' | null;
   userRoles: Array<{
     role: {
       name: string;

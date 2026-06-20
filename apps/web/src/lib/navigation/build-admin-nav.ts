@@ -50,6 +50,11 @@ const ADMIN_GROUPS: Array<{
         labelKey: "adminTemplates",
         permission: "template:manage",
       },
+      {
+        href: staffRoutes.admin.notifications,
+        labelKey: "adminEmailDeliveries",
+        permission: "notification:manage",
+      },
     ],
   },
   {

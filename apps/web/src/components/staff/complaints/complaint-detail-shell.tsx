@@ -37,7 +37,7 @@ import { SlaCountdown } from "@/components/staff/complaints/sla-countdown";
 import { ComplaintOverviewTab } from "@/components/staff/complaints/complaint-overview-tab";
 import { ComplaintNotesTab } from "@/components/staff/complaints/complaint-notes-tab";
 import { HistoryTimeline } from "@/components/staff/complaints/history-timeline";
-import { ComplaintPhase8Stub } from "@/components/staff/complaints/complaint-phase8-stub";
+import { ComplaintTasksTab } from "@/components/staff/complaints/complaint-tasks-tab";
 import { ComplaintResponseTab } from "@/components/staff/complaints/complaint-response-tab";
 import { ComplaintDocumentsTab } from "@/components/staff/complaints/complaint-documents-tab";
 import { AssignComplaintDialog } from "@/components/staff/complaints/assign-complaint-dialog";
@@ -177,13 +177,15 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
         subtitle={complaint.subject}
       />
 
-      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-staff-border bg-staff-surface p-4">
-        <StatusBadge status={complaint.status} />
-        <SlaCountdown sla={sla} />
-        <span className="text-sm text-staff-text-muted">
+      <div className="mb-6 flex flex-col gap-4 rounded-xl border border-staff-border/40 bg-staff-surface/90 p-4 shadow-staff-card sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge status={complaint.status} size="md" />
+          <SlaCountdown sla={sla} />
+        </div>
+        <span className="text-sm text-staff-text-muted sm:border-l sm:border-staff-border/40 sm:pl-4">
           {assigneeLabel}
         </span>
-        <div className="ml-auto flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 sm:ml-auto">
           {showAssign ? (
             <Button
               className="min-h-11 cursor-pointer"
@@ -289,7 +291,9 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
       {tab === "notes" ? (
         <ComplaintNotesTab complaintId={complaint.id} permissions={permissions} />
       ) : null}
-      {tab === "tasks" ? <ComplaintPhase8Stub /> : null}
+      {tab === "tasks" ? (
+        <ComplaintTasksTab complaintId={complaint.id} permissions={permissions} />
+      ) : null}
       {tab === "documents" ? (
         <ComplaintDocumentsTab
           complaintId={complaint.id}

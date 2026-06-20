@@ -24,12 +24,20 @@
   "adminOrgUnits": "ድርጅታዊ ክፍሎች",
   "adminSla": "SLA ደንቦች",
   "adminTemplates": "አብነቶች",
+  "adminEmailDeliveries": "የኢሜይል ማድረሻዎች",
   "adminNotifications": "ማሳወቂያዎች",
   "notifications": "ማሳወቂያዎች",
   "adminAudit": "የኦዲት ምዝግብ",
   "adminSystem": "የስርዓት ጤና",
   "profile": "መገለጫ",
+  "help": "እገዛ",
   "logout": "ውጣ",
+  "home": "መነሻ",
+  "login": "ግባ",
   "menu": "ሜኑ",
-  "openMenu": "የአሰሳ ሜኑ ክፈት"
+  "openMenu": "የአሰሳ ሜኑ ክፈት",
+  "collapseSidebar": "የጎን ሜኑ አጥፋ",
+  "expandSidebar": "የጎን ሜኑ አስፋ",
+  "offlineBanner": "ከመስመር ውጭ ነዎት። ግንኙነትዎ እስኪመለስ ድረስ አንዳንድ ተግባራት ላይሰሩ ይችላሉ።",
+  "more": "ተጨማሪ"
 }

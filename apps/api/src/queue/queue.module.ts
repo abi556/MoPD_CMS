@@ -4,6 +4,7 @@ import type { Redis } from 'ioredis';
 import {
   QUEUE_DOCUMENT_SCAN,
   QUEUE_NOTIFICATION_DISPATCH,
+  QUEUE_NOTIFICATION_MAINTENANCE,
   QUEUE_REPORT_EXPORT,
   QUEUE_SLA_MONITOR,
 } from './queue.constants';
@@ -32,6 +33,7 @@ type RedisCtor = new (...args: unknown[]) => Redis;
     }),
     BullModule.registerQueue({ name: QUEUE_SLA_MONITOR }),
     BullModule.registerQueue({ name: QUEUE_NOTIFICATION_DISPATCH }),
+    BullModule.registerQueue({ name: QUEUE_NOTIFICATION_MAINTENANCE }),
     BullModule.registerQueue({ name: QUEUE_DOCUMENT_SCAN }),
     BullModule.registerQueue({ name: QUEUE_REPORT_EXPORT }),
   ],

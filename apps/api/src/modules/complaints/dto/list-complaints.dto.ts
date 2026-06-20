@@ -5,7 +5,9 @@ import {
   IsInt,
   IsISO8601,
   IsOptional,
+  IsString,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { ComplaintChannel, ComplaintLocale } from './create-complaint.dto';
@@ -80,4 +82,13 @@ export class ListComplaintsQueryDto {
   @IsOptional()
   @IsISO8601()
   submittedTo?: string;
+
+  @ApiPropertyOptional({
+    example: 'CMS-2026',
+    description: 'Search by complaint reference or subject.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
 }

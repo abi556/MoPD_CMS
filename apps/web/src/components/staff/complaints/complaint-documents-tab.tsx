@@ -12,7 +12,8 @@ import {
 } from "@/lib/staff/documents-api";
 import { hasPermission, canUploadDocuments } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StaffEmptyState } from "@/components/staff/ui/staff-empty-state";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
 interface ComplaintDocumentsTabProps {
@@ -45,6 +46,8 @@ export function ComplaintDocumentsTab({
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [deleteTarget, setDeleteTarget] = useState<ComplaintDocument | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchDocuments = useCallback(async () => {
     if (!canRead) {
@@ -98,20 +101,24 @@ export function ComplaintDocumentsTab({
     }
   };
 
-  const handleDelete = async (doc: ComplaintDocument) => {
-    if (!canDelete) return;
+  const handleDelete = async () => {
+    if (!deleteTarget || !canDelete) return;
+    setDeleting(true);
     setError(undefined);
     try {
-      await deleteComplaintDocument(doc.id);
+      await deleteComplaintDocument(deleteTarget.id);
+      setDeleteTarget(null);
       await fetchDocuments();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t("deleteFailed"));
+    } finally {
+      setDeleting(false);
     }
   };
 
   if (!canRead) {
     return (
-      <EmptyState title={t("emptyTitle")} description={t("noAccessDescription")} />
+      <StaffEmptyState title={t("emptyTitle")} description={t("noAccessDescription")} />
     );
   }
 
@@ -163,7 +170,7 @@ export function ComplaintDocumentsTab({
       ) : null}
 
       {documents.length === 0 ? (
-        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
+        <StaffEmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
       ) : (
         <ul className="divide-y divide-staff-border rounded-lg border border-staff-border">
           {documents.map((doc) => (
@@ -195,7 +202,7 @@ export function ComplaintDocumentsTab({
                     type="button"
                     variant="secondary"
                     className="min-h-11 cursor-pointer"
-                    onClick={() => void handleDelete(doc)}
+                    onClick={() => setDeleteTarget(doc)}
                   >
                     {t("delete")}
                   </Button>
@@ -205,6 +212,22 @@ export function ComplaintDocumentsTab({
           ))}
         </ul>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => void handleDelete()}
+        title={t("deleteConfirmTitle")}
+        description={
+          deleteTarget
+            ? t("deleteConfirmDescription", { name: deleteTarget.originalName })
+            : undefined
+        }
+        confirmLabel={t("delete")}
+        cancelLabel={t("deleteCancel")}
+        destructive
+        loading={deleting}
+      />
     </div>
   );
 }

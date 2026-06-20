@@ -7,6 +7,7 @@ export interface ComplaintQueueFilters {
   submittedFrom?: string;
   submittedTo?: string;
   queue?: string;
+  q?: string;
 }
 
 export const COMPLAINTS_FILTER_STORAGE_KEY = "mopd:complaints-queue-filters";
@@ -42,6 +43,7 @@ export function parseComplaintFiltersFromSearch(
     submittedFrom: search.get("submittedFrom") ?? undefined,
     submittedTo: search.get("submittedTo") ?? undefined,
     queue: search.get("queue") ?? undefined,
+    q: search.get("q")?.trim() || undefined,
   };
 }
 
@@ -57,6 +59,7 @@ export function serializeComplaintFilters(
   if (resolved.locale) out.locale = resolved.locale;
   if (resolved.submittedFrom) out.submittedFrom = resolved.submittedFrom;
   if (resolved.submittedTo) out.submittedTo = resolved.submittedTo;
+  if (resolved.q) out.q = resolved.q;
   return out;
 }
 

@@ -64,7 +64,8 @@ export function DashboardKpiGrid() {
     kpis &&
     kpis.totalOpen === 0 &&
     kpis.triageQueue === 0 &&
-    kpis.qaReview === 0
+    kpis.qaReview === 0 &&
+    kpis.slaAtRisk === 0
   ) {
     return (
       <div className="mb-6">
@@ -93,7 +94,7 @@ export function DashboardKpiGrid() {
         />
         <KpiStatCard
           label={t("slaAtRisk")}
-          value={t("slaPlaceholder")}
+          value={kpis?.slaAtRisk ?? 0}
           hint={t("slaTooltip")}
           variant="warning"
         />

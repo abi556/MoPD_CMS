@@ -32,6 +32,7 @@ import type { RequestWithCorrelationId } from '../../common/middleware/correlati
 import { CreateSlaConfigDto } from './dto/create-sla-config.dto';
 import { UpdateSlaConfigDto } from './dto/update-sla-config.dto';
 import { EscalateComplaintDto } from './dto/escalate-complaint.dto';
+import { SlaAtRiskCountDto } from './dto/sla-at-risk-count.dto';
 import {
   SlaConfigResponseDto,
   SlaStatusResponseDto,
@@ -48,6 +49,24 @@ export class SlaController {
   // ---------------------------------------------------------------------------
   // Complaint-scoped endpoints
   // ---------------------------------------------------------------------------
+
+  @Get('complaints/sla-at-risk/count')
+  @Throttle({ default: { ttl: 60000, limit: 120 } })
+  @Permissions('complaint:read')
+  @ApiOperation({
+    summary: 'Count open complaints with SLA at risk',
+    description:
+      'Returns the number of non-closed complaints with warned or breached SLA, scoped to the caller.',
+  })
+  @ApiOkResponse({ type: SlaAtRiskCountDto })
+  @ApiUnauthorizedResponse({ type: ErrorResponseDto })
+  @ApiForbiddenResponse({ type: ErrorResponseDto })
+  async getAtRiskCount(
+    @CurrentUser() user: JwtUser,
+  ): Promise<SlaAtRiskCountDto> {
+    const count = await this.slaService.countAtRiskComplaints(user);
+    return { count };
+  }
 
   @Get('complaints/:id/sla')
   @Throttle({ default: { ttl: 60000, limit: 120 } })

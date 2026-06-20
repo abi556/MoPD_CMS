@@ -13,7 +13,7 @@ import {
 } from "@/lib/staff/complaint-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { EmptyState } from "@/components/ui/empty-state";
+import { StaffEmptyState } from "@/components/staff/ui/staff-empty-state";
 
 const MIN_DRAFT_LENGTH = 20;
 const MAX_DRAFT_LENGTH = 50000;
@@ -44,7 +44,7 @@ export function ComplaintResponseTab({
 
   if (!visible) {
     return (
-      <EmptyState
+      <StaffEmptyState
         title={t("unavailableTitle")}
         description={t("unavailableDescription")}
       />

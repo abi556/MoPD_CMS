@@ -4,12 +4,14 @@ import {
   IsArray,
   IsBooleanString,
   IsEmail,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
   Max,
   Min,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { IsStrongPassword } from '../../../common/validators/is-strong-password.decorator';
@@ -80,12 +82,18 @@ export class UpdateUserDto {
 }
 
 export class UpdateOwnProfileDto {
-  @ApiProperty({ example: 'my.updated.email@mopd.local' })
+  @ApiPropertyOptional({ example: 'my.updated.email@mopd.local' })
+  @ValidateIf((o: UpdateOwnProfileDto) => o.email !== undefined)
   @Transform(({ value }: { value: unknown }): unknown =>
     typeof value === 'string' ? value.trim().toLowerCase() : value,
   )
   @IsEmail()
-  email!: string;
+  email?: string;
+
+  @ApiPropertyOptional({ enum: ['en', 'am'], example: 'en' })
+  @ValidateIf((o: UpdateOwnProfileDto) => o.preferredLocale !== undefined)
+  @IsEnum(['en', 'am'] as const)
+  preferredLocale?: 'en' | 'am';
 }
 
 export class UserItemDto {
@@ -100,6 +108,9 @@ export class UserItemDto {
 
   @ApiProperty()
   isActive!: boolean;
+
+  @ApiPropertyOptional({ enum: ['en', 'am'], nullable: true })
+  preferredLocale?: 'en' | 'am' | null;
 }
 
 export class ListUsersResponseDto {

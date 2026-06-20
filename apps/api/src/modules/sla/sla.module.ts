@@ -2,6 +2,8 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Module, OnModuleInit, Provider } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { AuditModule } from '../audit/audit.module';
+import { ComplaintAccessModule } from '../complaints/complaint-access.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { QUEUE_SLA_MONITOR } from '../../queue/queue.constants';
 import {
   SlaMonitorProcessor,
@@ -15,7 +17,7 @@ const workerProviders: Provider[] =
   process.env.NODE_ENV === 'test' ? [] : [SlaMonitorProcessor];
 
 @Module({
-  imports: [AuditModule],
+  imports: [AuditModule, ComplaintAccessModule, NotificationsModule],
   providers: [SlaService, ...workerProviders],
   controllers: [SlaController],
   exports: [SlaService],

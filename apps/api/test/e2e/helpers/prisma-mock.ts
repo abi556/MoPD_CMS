@@ -66,6 +66,7 @@ interface StoredUser {
   mfaMethod: string | null;
   totpSecret: string | null;
   totpVerifiedAt: Date | null;
+  preferredLocale?: 'en' | 'am' | null;
   isActive: boolean;
 }
 
@@ -1835,21 +1836,14 @@ export function createPrismaMock(): PrismaService {
       findUnique: reportExportFindUnique,
       update: reportExportUpdate,
     },
-    $transaction: async <T>(
-      callback: (tx: {
-        complaint: {
-          create: typeof create;
-          update: typeof update;
-          findUnique: typeof findUnique;
-        };
-        complaintHistory: { create: typeof historyCreate };
-      }) => Promise<T>,
-    ): Promise<T> =>
-      callback({
-        complaint: { create, update, findUnique },
-        complaintHistory: { create: historyCreate },
-      }),
   };
 
-  return prismaLike as unknown as PrismaService;
+  const prismaWithTransaction = {
+    ...prismaLike,
+    $transaction: async <T>(
+      callback: (tx: typeof prismaLike) => Promise<T>,
+    ): Promise<T> => callback(prismaLike),
+  };
+
+  return prismaWithTransaction as unknown as PrismaService;
 }

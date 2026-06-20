@@ -20,6 +20,7 @@ export const AUDIT_EVENT = {
   AUTH_MFA_VERIFY_FAILED: 'auth.mfa.verify_failed',
   AUTH_MFA_DISABLED: 'auth.mfa.disabled',
   AUTH_MFA_METHOD_CHANGED: 'auth.mfa.method_changed',
+  AUTH_MFA_BACKUP_CODES_REGENERATED: 'auth.mfa.backup_codes_regenerated',
   COMPLAINT_CREATED: 'complaint.created',
   COMPLAINT_RECOVERY_REQUESTED: 'complaint.recovery.requested',
   COMPLAINT_RECOVERY_VERIFIED: 'complaint.recovery.verified',

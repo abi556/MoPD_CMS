@@ -1,10 +1,15 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { AppAuthGuard } from "@/components/auth/app-auth-guard";
 import { StaffOnboardingGuard } from "@/components/auth/staff-onboarding-guard";
 import { AppShell } from "@/components/layout/app/app-shell";
 import { StaffThemeProvider } from "@/components/staff/theme/staff-theme-provider";
 import { parseThemePreference, STAFF_THEME_COOKIE_KEY } from "@/lib/staff/staff-theme";
+
+export const metadata: Metadata = {
+  manifest: "/staff.webmanifest",
+};
 
 export default async function DashboardLayout({
   children,

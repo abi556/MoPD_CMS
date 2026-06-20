@@ -1,5 +1,7 @@
 {
-  "title": "Notifications",
+  "deliveriesTitle": "Email deliveries",
+  "deliveriesSubtitle": "Monitor email delivery status and resend failed messages.",
+  "title": "Email deliveries",
   "subtitle": "Monitor email delivery status and resend failed messages.",
   "templateKey": "Template",
   "to": "Recipient",

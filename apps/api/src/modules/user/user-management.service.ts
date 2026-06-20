@@ -1,11 +1,18 @@
 import {
   ConflictException,
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
+import { InAppNotificationService } from '../notifications/in-app-notification.service';
+import {
+  INBOX_LINK,
+  INBOX_MESSAGE_KEY,
+} from '../notifications/in-app-notification.paths';
+import { UserNotificationSeverity, UserNotificationType } from '@prisma/client';
 
 function getBcryptCostFactor(): number {
   const raw = process.env.AUTH_BCRYPT_COST;
@@ -21,7 +28,10 @@ function getBcryptCostFactor(): number {
 
 @Injectable()
 export class UserManagementService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly inAppNotifications: InAppNotificationService,
+  ) {}
 
   async listUsers(params: {
     page: number;
@@ -84,6 +94,7 @@ export class UserManagementService {
     email: string;
     roles: string[];
     isActive: boolean;
+    preferredLocale: 'en' | 'am' | null;
   }> {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -103,6 +114,7 @@ export class UserManagementService {
       email: user.email,
       roles: user.userRoles.map((userRole) => userRole.role.name),
       isActive: user.isActive,
+      preferredLocale: user.preferredLocale ?? null,
     };
   }
 
@@ -115,6 +127,7 @@ export class UserManagementService {
     email: string;
     roles: string[];
     isActive: boolean;
+    preferredLocale: 'en' | 'am' | null;
   }> {
     const existing = await this.prisma.user.findUnique({
       where: { email: input.email },
@@ -154,12 +167,13 @@ export class UserManagementService {
 
   async updateUser(
     id: string,
-    input: { email?: string; roleIds?: string[] },
+    input: { email?: string; roleIds?: string[]; preferredLocale?: 'en' | 'am' },
   ): Promise<{
     id: string;
     email: string;
     roles: string[];
     isActive: boolean;
+    preferredLocale: 'en' | 'am' | null;
   }> {
     const existing = await this.prisma.user.findUnique({
       where: { id },
@@ -177,11 +191,17 @@ export class UserManagementService {
       }
     }
 
+    const emailChanged =
+      input.email !== undefined && input.email !== existing.email;
+
     await this.prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id },
         data: {
           email: input.email ?? existing.email,
+          ...(input.preferredLocale !== undefined
+            ? { preferredLocale: input.preferredLocale }
+            : {}),
         },
       });
 
@@ -202,6 +222,19 @@ export class UserManagementService {
         });
       }
     });
+
+    if (emailChanged && input.email) {
+      await this.inAppNotifications.notify({
+        userId: id,
+        type: UserNotificationType.account_email_changed,
+        severity: UserNotificationSeverity.success,
+        messageKey: INBOX_MESSAGE_KEY.accountEmailChanged,
+        messageParams: { email: input.email },
+        link: INBOX_LINK.profile,
+        entityType: 'user',
+        entityId: id,
+      });
+    }
 
     return this.getUserById(id);
   }
@@ -228,20 +261,28 @@ export class UserManagementService {
     email: string;
     roles: string[];
     isActive: boolean;
+    preferredLocale: 'en' | 'am' | null;
   }> {
     return this.getUserById(userId);
   }
 
   async updateCurrentUser(
     userId: string,
-    email: string,
+    input: { email?: string; preferredLocale?: 'en' | 'am' },
   ): Promise<{
     id: string;
     email: string;
     roles: string[];
     isActive: boolean;
+    preferredLocale: 'en' | 'am' | null;
   }> {
-    return this.updateUser(userId, { email });
+    if (input.email === undefined && input.preferredLocale === undefined) {
+      throw new BadRequestException('No profile fields to update');
+    }
+    return this.updateUser(userId, {
+      email: input.email,
+      preferredLocale: input.preferredLocale,
+    });
   }
 
   async listRoles(): Promise<

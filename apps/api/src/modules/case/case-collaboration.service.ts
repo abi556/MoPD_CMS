@@ -10,6 +10,12 @@ import type {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
+import { InAppNotificationService } from '../notifications/in-app-notification.service';
+import {
+  INBOX_LINK,
+  INBOX_MESSAGE_KEY,
+} from '../notifications/in-app-notification.paths';
+import { UserNotificationSeverity, UserNotificationType } from '@prisma/client';
 import { CaseNoteVisibilityValue } from './dto/case-note-visibility.enum';
 import { CaseTaskStatusValue } from './dto/case-task-status.enum';
 import { CreateCaseNoteDto } from './dto/create-case-note.dto';
@@ -42,6 +48,7 @@ export class CaseCollaborationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly inAppNotifications: InAppNotificationService,
   ) {}
 
   async listNotes(complaintId: string): Promise<CaseNoteRecord[]> {
@@ -124,6 +131,17 @@ export class CaseCollaborationService {
         title: record.title,
       },
     });
+    await this.inAppNotifications.notify({
+      userId: record.assigneeUserId,
+      type: UserNotificationType.case_task_assigned,
+      severity: UserNotificationSeverity.info,
+      messageKey: INBOX_MESSAGE_KEY.caseTaskAssigned,
+      messageParams: { title: record.title, complaintId },
+      link: INBOX_LINK.complaint(complaintId),
+      entityType: 'case_task',
+      entityId: record.id,
+      dedupKey: `case_task_assigned:${record.id}`,
+    });
     return record;
   }
 
@@ -184,6 +202,22 @@ export class CaseCollaborationService {
         title: record.title,
       },
     });
+    if (
+      dto.assigneeUserId !== undefined &&
+      dto.assigneeUserId !== existing.assigneeId
+    ) {
+      await this.inAppNotifications.notify({
+        userId: record.assigneeUserId,
+        type: UserNotificationType.case_task_reassigned,
+        severity: UserNotificationSeverity.info,
+        messageKey: INBOX_MESSAGE_KEY.caseTaskReassigned,
+        messageParams: { title: record.title, complaintId },
+        link: INBOX_LINK.complaint(complaintId),
+        entityType: 'case_task',
+        entityId: record.id,
+        dedupKey: `case_task_assigned:${record.id}:${record.assigneeUserId}`,
+      });
+    }
     return record;
   }
 

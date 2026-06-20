@@ -41,16 +41,16 @@ export function StaffDataTable<T>({
   const to = Math.min(page * pageSize, total);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-staff-border bg-staff-surface">
+    <div className="overflow-hidden rounded-xl border border-staff-border/40 bg-staff-surface shadow-staff-card">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-staff-border bg-staff-shell/60">
+            <tr className="border-b border-staff-border/40 bg-staff-shell/50">
               {columns.map((col) => (
                 <th
                   key={col.id}
                   scope="col"
-                  className={`px-4 py-3 font-semibold text-staff-text ${col.className ?? ""}`}
+                  className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-staff-text-muted ${col.className ?? ""}`}
                 >
                   {col.header}
                 </th>
@@ -60,9 +60,9 @@ export function StaffDataTable<T>({
           <tbody>
             {loading
               ? Array.from({ length: Math.min(pageSize, 5) }).map((_, i) => (
-                  <tr key={`skel-${i}`} className="border-b border-staff-border">
+                  <tr key={`skel-${i}`} className="border-b border-staff-border/30">
                     {columns.map((col) => (
-                      <td key={col.id} className="px-4 py-3">
+                      <td key={col.id} className="px-4 py-3.5">
                         <LoadingSkeleton className="h-4 w-full max-w-[12rem]" />
                       </td>
                     ))}
@@ -71,7 +71,7 @@ export function StaffDataTable<T>({
               : null}
             {!loading && rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="p-6">
+                <td colSpan={columns.length} className="p-8">
                   <StaffEmptyState title={emptyTitle} description={emptyDescription} />
                 </td>
               </tr>
@@ -80,12 +80,12 @@ export function StaffDataTable<T>({
               ? rows.map((row) => (
                   <tr
                     key={rowKey(row)}
-                    className="border-b border-staff-border transition-colors hover:bg-staff-nav-hover/40"
+                    className="border-b border-staff-border/25 transition-colors last:border-b-0 hover:bg-staff-nav-hover/35"
                   >
                     {columns.map((col) => (
                       <td
                         key={col.id}
-                        className={`px-4 py-3 text-staff-text ${col.className ?? ""}`}
+                        className={`px-4 py-3.5 align-middle text-staff-text ${col.className ?? ""}`}
                       >
                         {col.cell(row)}
                       </td>
@@ -97,7 +97,7 @@ export function StaffDataTable<T>({
         </table>
       </div>
       {!hidePagination ? (
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-staff-border px-4 py-3 text-sm text-staff-text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-staff-border/30 bg-staff-shell/30 px-4 py-3 text-sm text-staff-text-muted">
         <span>{total === 0 ? "0 results" : `${from}–${to} of ${total}`}</span>
         <div className="flex items-center gap-2">
           <Button

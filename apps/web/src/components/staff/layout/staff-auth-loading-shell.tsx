@@ -11,6 +11,8 @@ export function StaffAuthLoadingShell() {
       className="staff-shell flex min-h-screen bg-staff-shell font-body text-staff-text antialiased"
       data-theme={resolvedTheme}
       suppressHydrationWarning
+      role="status"
+      aria-live="polite"
       aria-busy="true"
       aria-label="Loading staff console"
     >

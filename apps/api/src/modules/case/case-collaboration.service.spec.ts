@@ -7,6 +7,7 @@ import { AUDIT_EVENT } from '../audit/audit-event.types';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CaseCollaborationService } from './case-collaboration.service';
+import { InAppNotificationService } from '../notifications/in-app-notification.service';
 import { CaseNoteVisibilityValue } from './dto/case-note-visibility.enum';
 import { CaseTaskStatusValue } from './dto/case-task-status.enum';
 
@@ -94,6 +95,10 @@ describe('CaseCollaborationService', () => {
         {
           provide: AuditService,
           useValue: { logEvent },
+        },
+        {
+          provide: InAppNotificationService,
+          useValue: { notify: jest.fn().mockResolvedValue(null) },
         },
       ],
     }).compile();

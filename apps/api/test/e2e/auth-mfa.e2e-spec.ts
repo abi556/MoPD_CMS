@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { Server } from 'http';
+import { generate, NobleCryptoPlugin, ScureBase32Plugin } from 'otplib';
 import type { LoginResponse } from './helpers/types';
 import { loginAsRole } from './helpers/login-as-role';
 import { asSupertestApp, createTestApp, getBody } from './helpers/test-context';
@@ -134,5 +135,43 @@ describe('Auth MFA Enrollment (e2e)', () => {
       .post('/api/v1/auth/mfa/skip')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
+  });
+
+  it('regenerates backup codes after password confirmation', async () => {
+    const crypto = new NobleCryptoPlugin();
+    const base32 = new ScureBase32Plugin();
+
+    const token = await loginAsRole(asSupertestApp(app), 'CaseOfficer');
+
+    const enrollRes = await request(asSupertestApp(app))
+      .post('/api/v1/auth/mfa/enroll')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    const enrollBody = enrollRes.body as {
+      data: { secret: string; backupCodes: string[] };
+    };
+    const oldBackup = enrollBody.data.backupCodes[0]!;
+
+    const totpCode = await generate({
+      secret: enrollBody.data.secret,
+      crypto,
+      base32,
+    });
+
+    await request(asSupertestApp(app))
+      .post('/api/v1/auth/mfa/confirm')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ code: totpCode })
+      .expect(200);
+
+    const regenRes = await request(asSupertestApp(app))
+      .post('/api/v1/auth/mfa/backup-codes/regenerate')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ password: 'OfficerPass123!' })
+      .expect(200);
+    const newCodes = (regenRes.body as { data: { backupCodes: string[] } }).data
+      .backupCodes;
+    expect(newCodes).toHaveLength(10);
+    expect(newCodes).not.toContain(oldBackup);
   });
 });

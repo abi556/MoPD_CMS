@@ -93,8 +93,10 @@ describe('AuthService', () => {
       }
       return { required: false, totpOnly: false };
     }),
+    getBackupCodeRemainingCount: jest.fn().mockResolvedValue(0),
   };
   const queuePasswordResetEmail = jest.fn().mockResolvedValue(undefined);
+  const notify = jest.fn().mockResolvedValue(null);
   let service: AuthService;
 
   beforeEach(async () => {
@@ -128,6 +130,7 @@ describe('AuthService', () => {
       {
         queuePasswordResetEmail,
       } as never,
+      { notify } as never,
     );
     await service.onModuleInit();
   });

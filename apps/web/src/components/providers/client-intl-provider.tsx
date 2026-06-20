@@ -12,11 +12,12 @@ import {
   NextIntlClientProvider,
   type AbstractIntlMessages,
 } from "next-intl";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { appTimeZone } from "@/i18n/config";
 import type { AppLocale } from "@/i18n/routing";
 import {
   getLocaleFromPathname,
+  isClientOnlyLocaleSwitchPath,
   replaceLocaleInPathname,
 } from "@/lib/i18n/locale-path";
 import { loadMessages } from "@/lib/i18n/load-messages";
@@ -52,6 +53,7 @@ export function ClientIntlProvider({
   const [locale, setLocale] = useState<AppLocale>(initialLocale);
   const [messages, setMessages] = useState<AbstractIntlMessages>(initialMessages);
   const pathname = usePathname();
+  const router = useRouter();
 
   // Keep bundles in sync when the server layout passes updated messages (deploy, new strings).
   // Skip while the URL locale was switched client-side without a full navigation.
@@ -100,14 +102,22 @@ export function ClientIntlProvider({
       document.cookie = `${LOCALE_COOKIE}=${nextLocale};path=/;max-age=31536000;samesite=lax`;
       applyDocumentLocale(nextLocale);
 
-      const nextPath = replaceLocaleInPathname(pathname, nextLocale);
       const search = window.location.search;
-      const url = search ? `${nextPath}${search}` : nextPath;
 
-      // Client-only URL update — avoids RSC refetch, auth remount, and skeleton flash.
-      window.history.replaceState(window.history.state, "", url);
+      if (isClientOnlyLocaleSwitchPath(pathname)) {
+        const nextPath = replaceLocaleInPathname(pathname, nextLocale);
+        const url = search ? `${nextPath}${search}` : nextPath;
+
+        // Staff/auth shell — client-only URL update avoids RSC refetch and skeleton flash.
+        window.history.replaceState(window.history.state, "", url);
+        return;
+      }
+
+      const nextPath = replaceLocaleInPathname(pathname, nextLocale);
+      const url = search ? `${nextPath}${search}` : nextPath;
+      router.replace(url);
     },
-    [locale, pathname],
+    [locale, pathname, router],
   );
 
   return (

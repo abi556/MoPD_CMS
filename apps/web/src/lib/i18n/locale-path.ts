@@ -9,6 +9,16 @@ export function getLocaleFromPathname(pathname: string): AppLocale | null {
   return null;
 }
 
+/** Staff shell routes where locale can switch without an RSC refetch. */
+export function isClientOnlyLocaleSwitchPath(pathname: string): boolean {
+  const locale = getLocaleFromPathname(pathname);
+  const rest = locale
+    ? pathname.slice(`/${locale}`.length) || "/"
+    : pathname;
+
+  return /^\/(dashboard|auth)(\/|$)/.test(rest);
+}
+
 export function replaceLocaleInPathname(
   pathname: string,
   nextLocale: AppLocale,

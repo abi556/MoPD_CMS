@@ -88,10 +88,10 @@ export class UserManagementController {
     @Body() body: UpdateOwnProfileDto,
   ): Promise<UserDetailResponseDto> {
     return {
-      data: await this.userManagementService.updateCurrentUser(
-        user.id,
-        body.email,
-      ),
+      data: await this.userManagementService.updateCurrentUser(user.id, {
+        email: body.email,
+        preferredLocale: body.preferredLocale,
+      }),
     };
   }
 

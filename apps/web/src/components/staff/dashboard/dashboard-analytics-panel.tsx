@@ -1,13 +1,19 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import {
+  DashboardSidePager,
+} from "@/components/staff/dashboard/dashboard-pager";
 import {
   channelMax,
   fetchDashboardAnalytics,
   statusMixTotal,
+  volumeWindowCount,
+  volumeWindowRangeLabel,
+  volumeWindowSlice,
   type DashboardAnalyticsSnapshot,
 } from "@/lib/staff/dashboard-analytics";
 import { staffRoutes } from "@/lib/staff/routes";
@@ -98,78 +104,144 @@ function SlaDonut({ percent }: { percent: number }) {
   );
 }
 
+function WeeklyVolumeChart({
+  weeks,
+  max,
+  submittedLabel,
+  closedLabel,
+}: {
+  weeks: DashboardAnalyticsSnapshot["weeklyVolume"];
+  max: number;
+  submittedLabel: string;
+  closedLabel: string;
+}) {
+  return (
+    <div className="flex h-40 items-end justify-between gap-2">
+      {weeks.map((week) => (
+        <div
+          key={week.label}
+          className="flex min-w-0 flex-1 flex-col items-center gap-1.5"
+        >
+          <div className="flex h-32 w-full items-end justify-center gap-1.5">
+            <div className="group relative flex h-full w-4 max-w-[18px] flex-1 items-end">
+              <div
+                className="w-full rounded-t bg-(--staff-chart-submitted-bar)"
+                style={{
+                  height:
+                    week.submitted > 0
+                      ? `${Math.max((week.submitted / max) * 100, 6)}%`
+                      : "0%",
+                }}
+                title={`${submittedLabel}: ${week.submitted}`}
+              />
+              {week.submitted > 0 ? (
+                <span className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-staff-surface px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-staff-text opacity-0 shadow-sm ring-1 ring-staff-border transition-opacity group-hover:opacity-100">
+                  {week.submitted}
+                </span>
+              ) : null}
+            </div>
+            <div className="group relative flex h-full w-4 max-w-[18px] flex-1 items-end">
+              <div
+                className="w-full rounded-t bg-(--staff-chart-closed-bar)"
+                style={{
+                  height:
+                    week.closed > 0
+                      ? `${Math.max((week.closed / max) * 100, 6)}%`
+                      : "0%",
+                }}
+                title={`${closedLabel}: ${week.closed}`}
+              />
+              {week.closed > 0 ? (
+                <span className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-staff-surface px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-staff-text opacity-0 shadow-sm ring-1 ring-staff-border transition-opacity group-hover:opacity-100">
+                  {week.closed}
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <span className="text-[10px] text-staff-text-muted">{week.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function WeeklyBars({
   data,
   submittedLabel,
   closedLabel,
+  previousWeekLabel,
+  nextWeekLabel,
 }: {
   data: DashboardAnalyticsSnapshot["weeklyVolume"];
   submittedLabel: string;
   closedLabel: string;
+  previousWeekLabel: string;
+  nextWeekLabel: string;
 }) {
+  const [windowIndex, setWindowIndex] = useState(0);
+  const totalWindows = volumeWindowCount(data.length);
+  const visibleData = useMemo(
+    () => volumeWindowSlice(data, windowIndex),
+    [data, windowIndex],
+  );
+  const rangeLabel = volumeWindowRangeLabel(visibleData);
+
+  useEffect(() => {
+    setWindowIndex(0);
+  }, [data]);
+
   const max = Math.max(
-    ...data.flatMap((week) => [week.submitted, week.closed]),
+    ...visibleData.flatMap((week) => [week.submitted, week.closed]),
     1,
+  );
+
+  const chart = (
+    <WeeklyVolumeChart
+      weeks={visibleData}
+      max={max}
+      submittedLabel={submittedLabel}
+      closedLabel={closedLabel}
+    />
   );
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-4 text-xs text-staff-text-muted">
-        <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-(--staff-chart-submitted-bar)" />
-          {submittedLabel}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-(--staff-chart-closed-bar)" />
-          {closedLabel}
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <div className="flex gap-4 text-xs text-staff-text-muted">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-sm bg-(--staff-chart-submitted-bar)" />
+            {submittedLabel}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-sm bg-(--staff-chart-closed-bar)" />
+            {closedLabel}
+          </span>
+        </div>
+        {totalWindows > 1 ? (
+          <span className="text-xs tabular-nums text-staff-text-muted">
+            {rangeLabel}
+          </span>
+        ) : null}
       </div>
-      <div className="flex h-40 items-end justify-between gap-2">
-        {data.map((week) => (
-          <div
-            key={week.label}
-            className="flex min-w-0 flex-1 flex-col items-center gap-1.5"
-          >
-            <div className="flex h-32 w-full items-end justify-center gap-1.5">
-              <div className="group relative flex h-full w-4 max-w-[18px] flex-1 items-end">
-                <div
-                  className="w-full rounded-t bg-(--staff-chart-submitted-bar)"
-                  style={{
-                    height:
-                      week.submitted > 0
-                        ? `${Math.max((week.submitted / max) * 100, 6)}%`
-                        : "0%",
-                  }}
-                  title={`${submittedLabel}: ${week.submitted}`}
-                />
-                {week.submitted > 0 ? (
-                  <span className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-staff-surface px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-staff-text opacity-0 shadow-sm ring-1 ring-staff-border transition-opacity group-hover:opacity-100">
-                    {week.submitted}
-                  </span>
-                ) : null}
-              </div>
-              <div className="group relative flex h-full w-4 max-w-[18px] flex-1 items-end">
-                <div
-                  className="w-full rounded-t bg-(--staff-chart-closed-bar)"
-                  style={{
-                    height:
-                      week.closed > 0
-                        ? `${Math.max((week.closed / max) * 100, 6)}%`
-                        : "0%",
-                  }}
-                  title={`${closedLabel}: ${week.closed}`}
-                />
-                {week.closed > 0 ? (
-                  <span className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-staff-surface px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-staff-text opacity-0 shadow-sm ring-1 ring-staff-border transition-opacity group-hover:opacity-100">
-                    {week.closed}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-            <span className="text-[10px] text-staff-text-muted">{week.label}</span>
-          </div>
-        ))}
-      </div>
+
+      {totalWindows > 1 ? (
+        <DashboardSidePager
+          previousLabel={previousWeekLabel}
+          nextLabel={nextWeekLabel}
+          previousDisabled={windowIndex >= totalWindows - 1}
+          nextDisabled={windowIndex === 0}
+          onPrevious={() =>
+            setWindowIndex((current) =>
+              Math.min(totalWindows - 1, current + 1),
+            )
+          }
+          onNext={() => setWindowIndex((current) => Math.max(0, current - 1))}
+        >
+          {chart}
+        </DashboardSidePager>
+      ) : (
+        chart
+      )}
     </div>
   );
 }
@@ -342,6 +414,8 @@ export function DashboardAnalyticsPanel() {
             data={data.weeklyVolume}
             submittedLabel={t("analytics.submitted")}
             closedLabel={t("analytics.closed")}
+            previousWeekLabel={t("analytics.volumePreviousWeek")}
+            nextWeekLabel={t("analytics.volumeNextWeek")}
           />
         </AnalyticsCard>
 

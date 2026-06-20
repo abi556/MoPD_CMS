@@ -53,6 +53,10 @@ import {
   ComplaintTrackingDataDto,
   ComplaintTrackingEnvelopeDto,
 } from './dto/complaint-response.dto';
+import {
+  QueueActivityEnvelopeDto,
+  TopCategoriesEnvelopeDto,
+} from './dto/complaint-dashboard.dto';
 import { AppealComplaintDto } from './dto/appeal-complaint.dto';
 import { AssignComplaintDto } from './dto/assign-complaint.dto';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
@@ -62,6 +66,7 @@ import { UpdateComplaintDto } from './dto/update-complaint.dto';
 import { ListComplaintsQueryDto } from './dto/list-complaints.dto';
 import { ComplaintRecoveryInquiryService } from './complaint-recovery-inquiry.service';
 import { ComplaintRecoveryService } from './complaint-recovery.service';
+import { ComplaintDashboardService } from './complaint-dashboard.service';
 import { ComplaintsService, type ComplaintRecord } from './complaints.service';
 import {
   CreateRecoveryInquiryDto,
@@ -148,6 +153,7 @@ function toComplaintDetailData(
 export class ComplaintsController {
   constructor(
     private readonly complaintsService: ComplaintsService,
+    private readonly complaintDashboardService: ComplaintDashboardService,
     private readonly referenceDataService: ReferenceDataService,
     private readonly complaintRecoveryService: ComplaintRecoveryService,
     private readonly complaintRecoveryInquiryService: ComplaintRecoveryInquiryService,
@@ -202,6 +208,56 @@ export class ComplaintsController {
         assignedToUserId: item.assignedToUserId ?? null,
       })),
       meta: result.meta,
+    };
+  }
+
+  @Get('dashboard/top-categories')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:read')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Top complaint categories by volume' })
+  @ApiQuery({ name: 'days', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiOkResponse({ type: TopCategoriesEnvelopeDto })
+  @ApiUnauthorizedResponse({ type: ErrorResponseDto })
+  @ApiForbiddenResponse({ type: ErrorResponseDto })
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
+  async topCategories(
+    @CurrentUser() user: JwtUser,
+    @Query('days') days?: string,
+    @Query('limit') limit?: string,
+  ): Promise<TopCategoriesEnvelopeDto> {
+    const parsedDays = days ? Number.parseInt(days, 10) : 30;
+    const parsedLimit = limit ? Number.parseInt(limit, 10) : 5;
+    return {
+      data: await this.complaintDashboardService.getTopCategories(
+        user,
+        Number.isNaN(parsedDays) ? 30 : parsedDays,
+        Number.isNaN(parsedLimit) ? 5 : parsedLimit,
+      ),
+    };
+  }
+
+  @Get('dashboard/queue-activity')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('complaint:read')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Recent triage and assignment queue events' })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiOkResponse({ type: QueueActivityEnvelopeDto })
+  @ApiUnauthorizedResponse({ type: ErrorResponseDto })
+  @ApiForbiddenResponse({ type: ErrorResponseDto })
+  @Throttle({ default: { limit: 120, ttl: 60000 } })
+  async queueActivity(
+    @CurrentUser() user: JwtUser,
+    @Query('limit') limit?: string,
+  ): Promise<QueueActivityEnvelopeDto> {
+    const parsedLimit = limit ? Number.parseInt(limit, 10) : 10;
+    return {
+      data: await this.complaintDashboardService.getRecentQueueActivity(
+        user,
+        Number.isNaN(parsedLimit) ? 10 : parsedLimit,
+      ),
     };
   }
 

@@ -79,14 +79,6 @@ export function buildAppNav(user: SessionUser): AppNavItem[] {
     }
   }
 
-  if (hasExactPermission(user.permissions, "notification:manage")) {
-    items.push({
-      href: staffRoutes.notifications,
-      labelKey: "notifications",
-      icon: "bell",
-    });
-  }
-
   items.push({
     href: staffRoutes.profile,
     labelKey: "profile",

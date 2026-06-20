@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { fetchDashboardKpis } from "./complaint-kpis";
 import * as complaintsApi from "./complaints-api";
+import * as slaApi from "./sla-api";
 
 describe("fetchDashboardKpis", () => {
   beforeEach(() => {
@@ -26,10 +27,12 @@ describe("fetchDashboardKpis", () => {
         },
       };
     });
+    vi.spyOn(slaApi, "fetchSlaAtRiskCount").mockResolvedValue(4);
 
     const kpis = await fetchDashboardKpis();
     expect(kpis.totalOpen).toBe(70);
     expect(kpis.triageQueue).toBe(12);
     expect(kpis.qaReview).toBe(5);
+    expect(kpis.slaAtRisk).toBe(4);
   });
 });

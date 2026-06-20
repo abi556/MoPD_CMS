@@ -8,6 +8,7 @@ import { ComplaintAccessModule } from './complaint-access.module';
 import { ComplaintsController } from './complaints.controller';
 import { ComplaintRecoveryInquiryService } from './complaint-recovery-inquiry.service';
 import { ComplaintRecoveryService } from './complaint-recovery.service';
+import { ComplaintDashboardService } from './complaint-dashboard.service';
 import { ComplaintsService } from './complaints.service';
 import { WorkflowPolicyService } from './workflow-policy.service';
 
@@ -23,6 +24,7 @@ import { WorkflowPolicyService } from './workflow-policy.service';
   controllers: [ComplaintsController],
   providers: [
     ComplaintsService,
+    ComplaintDashboardService,
     ComplaintRecoveryService,
     ComplaintRecoveryInquiryService,
     WorkflowPolicyService,

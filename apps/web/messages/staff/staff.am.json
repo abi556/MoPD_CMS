@@ -11,9 +11,12 @@
     "body": "ይህን ገጽ ለማየት ፈቃድ የለዎትም። ችግሩ ከሆነ የስርዓት አስተዳዳሪዎን ያነጋግሩ።"
   },
   "shell": {
-    "searchPlaceholder": "ዳሽቦርድ ፈልግ…",
+    "searchPlaceholder": "በማጣቀሻ ወይም በርዕስ ቅሬታዎችን ፈልግ…",
     "notifications": "ማሳወቂያዎች",
-    "help": "እገዛ"
+    "help": "እገዛ",
+    "footerPrivacy": "የግላዊነት ፖሊሲ",
+    "footerTerms": "የአገልግሎት ውሎች",
+    "footerContact": "ድጋፍ ያግኙ"
   },
   "dashboard": {
     "title": "ዳሽቦርድ",
@@ -22,8 +25,7 @@
     "triageQueue": "የትሪያዥ ወረፋ",
     "qaReview": "የQA / ህጋዊ ግምገማ",
     "slaAtRisk": "አደጋ ላይ ያለ SLA",
-    "slaPlaceholder": "—",
-    "slaTooltip": "የSLA መለኪያዎች በሁለኛው ደረጃ ይመጣሉ",
+    "slaTooltip": "ማስጠንቀቂያ ወይም የተጣሰ SLA ያላቸው ክፍት ጉዳዮች",
     "loading": "መለኪያዎች በመጫን ላይ…",
     "error": "የዳሽቦርድ መለኪያዎችን ማግኘት አልተቻለም።",
     "retry": "እንደገና ይሞክሩ",
@@ -36,6 +38,17 @@
     "topCategoriesHint": "ባለፉ 30 ቀናት ውስጥ በቅሬታ መጠን",
     "recentQueue": "የቅርብ ጊዜ ወረፋ እንቅስቃሴ",
     "recentQueueHint": "የቅርብ ጊዜ ትሪያዥ እና መመደብ ክሰተቶች",
+    "insights": {
+      "noCategories": "የተመደበ ምድብ ያላቸው ቅሬታዎች የሉም",
+      "noCategoriesHint": "ባለፉ 30 ቀናት ውስጥ ቅሬታዎች ከተላኩ በኋላ ምድቦች እዚህ ይታያሉ።",
+      "noQueueActivity": "የቅርብ ጊዜ ወረፋ እንቅስቃሴ የለም",
+      "noQueueActivityHint": "ጉዳዮች በወረፋው ሲንቀሳቀሱ ትሪያዥ እና መመደብ ክሰተቶች እዚህ ይታያሉ።",
+      "eventAssigned": "ለመምሪያ ተመድቧል",
+      "eventTriage": "ወደ ትሪያዥ ተላልፏል",
+      "queuePrevious": "ቀዳሚ",
+      "queueNext": "ቀጣይ",
+      "queuePage": "ገጽ {page} ከ {total}"
+    },
     "tabs": {
       "overview": "አጠቃላይ",
       "byStatus": "በሁኔታ",
@@ -54,13 +67,15 @@
       "slaTitle": "SLA ተገዢነት",
       "slaSubtitle": "በጊዜ መፍትሄ መጠን። ከተዋቀሩ የSLA ደንቦች።",
       "volumeTitle": "ዕለታዊ ግብዣ እና መዝጋት",
-      "volumeSubtitle": "ባለፉት 14 ቀናት የተላኩ እና የተዘጉ ቅሬታዎች",
+      "volumeSubtitle": "ባለፉት 14 ቀናት የተላኩ እና የተዘጉ ቅሬታዎች (7 ብቻ ይታያሉ)",
       "channelsTitle": "በቻናል ግብዣ",
       "channelsSubtitle": "ቅሬታዎች በግብዣ ቻናል ድርሻ",
       "viewReport": "ሙሉ ሪፖርት ይመልከቱ",
       "drillOpen": "ክፍት ቅሬታዎች ይመልከቱ",
       "submitted": "የተላኩ",
       "closed": "የተዘጉ",
+      "volumePreviousWeek": "ቀዳሚውን ሳምንት አሳይ",
+      "volumeNextWeek": "የቅርብ ሳምንት አሳይ",
       "status": {
         "submitted": "የተላኩ",
         "open": "ክፍት / ትሪያዥ",

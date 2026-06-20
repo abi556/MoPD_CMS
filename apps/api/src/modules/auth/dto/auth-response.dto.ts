@@ -155,6 +155,13 @@ export class MeProfileDto extends AuthUserDto {
       'Whether MFA enrollment can be deferred (optional policy only).',
   })
   canSkipMfaEnroll!: boolean;
+
+  @ApiPropertyOptional({
+    enum: ['en', 'am'],
+    nullable: true,
+    description: 'User preferred UI locale.',
+  })
+  preferredLocale?: 'en' | 'am' | null;
 }
 
 export class MeResponseDto {

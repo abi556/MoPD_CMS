@@ -15,12 +15,12 @@
   --staff-border: #e2e8f0;
   --staff-text: #1c1b1b;
   --staff-text-muted: #475569;
-  --staff-nav-active: #58874b;
+  --staff-nav-active: #527f47;
   --staff-nav-active-text: #ffffff;
-  --staff-nav-active-bg: #58874b;
+  --staff-nav-active-bg: #527f47;
   --staff-nav-hover: #f6f3f2;
   --staff-input-bg: #f6f3f2;
-  --staff-kpi-primary-from: #58874b;
+  --staff-kpi-primary-from: #527f47;
   --staff-kpi-primary-to: #22521f;
   --staff-kpi-secondary-from: #bdf1a8;
   --staff-kpi-secondary-to: #3d6930;
@@ -29,14 +29,17 @@
   --staff-kpi-warning-from: #ca8a04;
   --staff-kpi-warning-to: #a16207;
   --staff-card-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
-  --staff-chart-submitted: #58874b;
+  --staff-shell-divider: rgb(15 23 42 / 0.06);
+  --staff-header-bg: rgb(255 255 255 / 0.82);
+  --staff-nav-indicator: #527f47;
+  --staff-chart-submitted: #527f47;
   --staff-chart-open: #2563eb;
   --staff-chart-review: #d97706;
   --staff-chart-resolved: #059669;
   --staff-chart-closed: #475569;
-  --staff-chart-submitted-bar: #58874b;
+  --staff-chart-submitted-bar: #527f47;
   --staff-chart-closed-bar: #64748b;
-  --staff-chart-channel-web: #58874b;
+  --staff-chart-channel-web: #527f47;
   --staff-chart-channel-email: #2563eb;
   --staff-chart-channel-sms: #d97706;
   --staff-chart-channel-walkin: #7c3aed;
@@ -61,10 +64,10 @@
   --staff-text-muted: #94a89a;
   --staff-nav-active: #6fa362;
   --staff-nav-active-text: #ffffff;
-  --staff-nav-active-bg: #58874b;
+  --staff-nav-active-bg: #527f47;
   --staff-nav-hover: rgba(255, 255, 255, 0.06);
   --staff-input-bg: #141a16;
-  --staff-kpi-primary-from: #58874b;
+  --staff-kpi-primary-from: #527f47;
   --staff-kpi-primary-to: #1a3d18;
   --staff-kpi-secondary-from: #3d6930;
   --staff-kpi-secondary-to: #22521f;
@@ -73,6 +76,9 @@
   --staff-kpi-warning-from: #ca8a04;
   --staff-kpi-warning-to: #713f12;
   --staff-card-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  --staff-shell-divider: rgb(255 255 255 / 0.06);
+  --staff-header-bg: rgb(26 34 28 / 0.88);
+  --staff-nav-indicator: #6fa362;
   --staff-chart-submitted: #6fa362;
   --staff-chart-open: #60a5fa;
   --staff-chart-review: #fbbf24;
@@ -84,6 +90,86 @@
   --staff-chart-channel-email: #60a5fa;
   --staff-chart-channel-sms: #fbbf24;
   --staff-chart-channel-walkin: #a78bfa;
+}
+
+/* Native controls + public design tokens → staff palette inside the console */
+.staff-shell {
+  color-scheme: light;
+}
+
+.staff-shell[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+.staff-shell .text-on-surface {
+  color: var(--staff-text);
+}
+
+.staff-shell .text-text-secondary {
+  color: var(--staff-text-muted);
+}
+
+.staff-shell label.text-sm.font-medium.text-on-surface {
+  color: var(--staff-text-muted);
+}
+
+.staff-shell .bg-surface-container-lowest {
+  background-color: var(--staff-input-bg);
+}
+
+.staff-shell .bg-surface-container-low {
+  background-color: var(--staff-nav-hover);
+}
+
+.staff-shell .border-border-standard {
+  border-color: var(--staff-border);
+}
+
+.staff-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.staff-shell select,
+.staff-shell textarea {
+  background-color: var(--staff-input-bg);
+  color: var(--staff-text);
+  border-color: var(--staff-border);
+}
+
+.staff-shell input::placeholder,
+.staff-shell textarea::placeholder {
+  color: var(--staff-text-muted);
+  opacity: 0.85;
+}
+
+.staff-shell input:focus-visible,
+.staff-shell select:focus-visible,
+.staff-shell textarea:focus-visible {
+  border-color: color-mix(in srgb, var(--staff-nav-active) 50%, var(--staff-border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--staff-nav-active) 28%, transparent);
+}
+
+.staff-shell .focus-visible\:ring-focus-ring:focus-visible {
+  --tw-ring-color: color-mix(in srgb, var(--staff-nav-active) 45%, transparent);
+}
+
+.staff-shell .focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-offset-color: var(--staff-shell-bg);
+}
+
+.staff-shell button.border-border-standard.bg-surface-container-lowest {
+  background-color: var(--staff-surface);
+  color: var(--staff-text);
+  border-color: var(--staff-border);
+}
+
+.staff-shell button.border-border-standard.bg-surface-container-lowest:hover {
+  background-color: var(--staff-nav-hover);
+}
+
+.staff-shell .border-dashed.bg-surface-container-lowest {
+  background-color: color-mix(in srgb, var(--staff-surface) 88%, var(--staff-shell-bg));
+}
+
+.staff-shell[data-theme="dark"] .border-dashed.bg-surface-container-lowest {
+  background-color: color-mix(in srgb, var(--staff-surface) 70%, var(--staff-shell-bg));
 }
 
 /* Staff utilities reference scoped CSS vars on .staff-shell (not @theme — vars are undefined at :root). */
@@ -131,6 +217,12 @@
 }
 @utility shadow-staff-card {
   box-shadow: var(--staff-card-shadow);
+}
+@utility bg-staff-header {
+  background-color: var(--staff-header-bg);
+}
+@utility border-staff-shell-divider {
+  border-color: var(--staff-shell-divider);
 }
 
 @theme inline {
@@ -187,14 +279,14 @@
   --color-success: #15803D;
   --color-text-secondary: #475569;
   --color-on-secondary-fixed-variant: #25501a;
-  --color-primary: #58874b;
+  --color-primary: #527f47;
   --color-inverse-primary: #9ed493;
   --color-secondary-fixed: #bdf1a8;
   --color-on-tertiary-fixed: #002202;
   --color-on-surface: #1c1b1b;
   --color-brand-deep: #22521f;
   --color-on-tertiary-container: #b2eaa5;
-  --color-surface-tint: #58874b;
+  --color-surface-tint: #527f47;
   --color-on-secondary: #ffffff;
   --color-primary-fixed-dim: #9ed493;
 

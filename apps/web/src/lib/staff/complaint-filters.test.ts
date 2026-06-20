@@ -23,16 +23,20 @@ describe("complaint-filters", () => {
 
   it("parses search params", () => {
     const params = parseComplaintFiltersFromSearch(
-      new URLSearchParams("status=TRIAGE&page=2&channel=WEB"),
+      new URLSearchParams("status=TRIAGE&page=2&channel=WEB&q=water"),
     );
     expect(params.status).toBe("TRIAGE");
     expect(params.page).toBe(2);
     expect(params.channel).toBe("WEB");
+    expect(params.q).toBe("water");
   });
 
   it("serializes filters omitting defaults", () => {
     expect(
       serializeComplaintFilters({ page: 1, pageSize: 20, status: "TRIAGE" }),
     ).toEqual({ status: "TRIAGE" });
+    expect(
+      serializeComplaintFilters({ page: 1, pageSize: 20, q: "CMS-2026" }),
+    ).toEqual({ q: "CMS-2026" });
   });
 });

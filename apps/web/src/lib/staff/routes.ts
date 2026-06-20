@@ -3,9 +3,11 @@
 export const staffRoutes = {
   home: "/dashboard",
   complaints: "/dashboard/complaints",
+  complaintsNew: "/dashboard/complaints/new",
   complaintDetail: (id: string) => `/dashboard/complaints/${id}`,
   recoveryInquiries: "/dashboard/recovery-inquiries",
   notifications: "/dashboard/notifications",
+  help: "/dashboard/help",
   reports: {
     root: "/dashboard/reports",
     volume: "/dashboard/reports/volume",
@@ -39,6 +41,9 @@ export const staffRoutes = {
   },
   forbidden: "/forbidden",
   profile: "/dashboard/profile",
+  profilePassword: "/dashboard/profile/password",
+  profileMfa: "/dashboard/profile/mfa",
+  profilePreferences: "/dashboard/profile/preferences",
 } as const;
 
 const STAFF_BASE_PATH =

@@ -40,6 +40,7 @@ describe('ComplaintsService', () => {
   const queueComplaintTransitionIfApplicable = jest
     .fn()
     .mockResolvedValue(undefined);
+  const notify = jest.fn().mockResolvedValue(null);
 
   beforeEach(() => {
     complaintCreate.mockReset();
@@ -58,6 +59,8 @@ describe('ComplaintsService', () => {
     queueComplaintSubmittedAck.mockResolvedValue(undefined);
     queueComplaintTransitionIfApplicable.mockReset();
     queueComplaintTransitionIfApplicable.mockResolvedValue(undefined);
+    notify.mockReset();
+    notify.mockResolvedValue(null);
 
     transaction.mockImplementation(
       async <T>(callback: (tx: unknown) => Promise<T>) => {
@@ -114,8 +117,10 @@ describe('ComplaintsService', () => {
         queueComplaintSubmittedAck,
         queueComplaintTransitionIfApplicable,
       } as never,
+      { notify } as never,
       complaintAccessService,
       workflowPolicyService,
+      {} as never,
     );
   });
 
@@ -316,6 +321,28 @@ describe('ComplaintsService', () => {
     });
     expect(complaintFindMany).toHaveBeenCalledTimes(1);
     expect(complaintCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies text search across reference and subject', async () => {
+    complaintFindMany.mockResolvedValue([]);
+    complaintCount.mockResolvedValue(0);
+
+    await service.listForStaff({ page: 1, pageSize: 10, q: 'water' }, staffUser);
+
+    expect(complaintFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          AND: expect.arrayContaining([
+            expect.objectContaining({
+              OR: [
+                { referenceNo: { contains: 'water', mode: 'insensitive' } },
+                { subject: { contains: 'water', mode: 'insensitive' } },
+              ],
+            }),
+          ]),
+        }),
+      }),
+    );
   });
 
   it('assigns complaint and updates status to ASSIGNED', async () => {

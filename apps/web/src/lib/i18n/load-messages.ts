@@ -25,7 +25,10 @@ const EN_BUNDLES = {
   reports: () => import("../../../messages/staff/reports.en.json"),
   profile: () => import("../../../messages/staff/profile.en.json"),
   notifications: () => import("../../../messages/staff/notifications.en.json"),
+  inbox: () => import("../../../messages/staff/notifications-inbox.en.json"),
   complaints: () => import("../../../messages/staff/complaints.en.json"),
+  help: () => import("../../../messages/staff/help.en.json"),
+  helpGuides: () => import("../../../messages/staff/help-guides.en.json"),
 } as const;
 
 const AM_BUNDLES = {
@@ -50,7 +53,10 @@ const AM_BUNDLES = {
   reports: () => import("../../../messages/staff/reports.am.json"),
   profile: () => import("../../../messages/staff/profile.am.json"),
   notifications: () => import("../../../messages/staff/notifications.am.json"),
+  inbox: () => import("../../../messages/staff/notifications-inbox.am.json"),
   complaints: () => import("../../../messages/staff/complaints.am.json"),
+  help: () => import("../../../messages/staff/help.am.json"),
+  helpGuides: () => import("../../../messages/staff/help-guides.am.json"),
 } as const;
 
 type BundleKey = keyof typeof EN_BUNDLES;
@@ -67,7 +73,7 @@ async function loadBundle<K extends BundleKey>(
 export async function loadStaffMessages(
   locale: AppLocale,
 ): Promise<AbstractIntlMessages> {
-  const [auth, navStaff, staff, recoveryInquiries, admin, reports, profile, notifications, complaints] =
+  const [auth, navStaff, staff, recoveryInquiries, admin, reports, profile, notifications, inbox, complaints, help, helpGuides] =
     await Promise.all([
       loadBundle(locale, "auth"),
       loadBundle(locale, "navStaff"),
@@ -77,7 +83,10 @@ export async function loadStaffMessages(
       loadBundle(locale, "reports"),
       loadBundle(locale, "profile"),
       loadBundle(locale, "notifications"),
+      loadBundle(locale, "inbox"),
       loadBundle(locale, "complaints"),
+      loadBundle(locale, "help"),
+      loadBundle(locale, "helpGuides"),
     ]);
 
   return {
@@ -89,7 +98,10 @@ export async function loadStaffMessages(
     reports,
     profile,
     notifications,
+    inbox,
     complaints,
+    help,
+    helpGuides,
   } as AbstractIntlMessages;
 }
 
@@ -116,7 +128,10 @@ export async function loadMessages(
     reports,
     profile,
     notifications,
+    inbox,
     complaints,
+    help,
+    helpGuides,
   ] = await Promise.all([
     loadBundle(locale, "common"),
     loadBundle(locale, "errors"),
@@ -137,7 +152,10 @@ export async function loadMessages(
     loadBundle(locale, "reports"),
     loadBundle(locale, "profile"),
     loadBundle(locale, "notifications"),
+    loadBundle(locale, "inbox"),
     loadBundle(locale, "complaints"),
+    loadBundle(locale, "help"),
+    loadBundle(locale, "helpGuides"),
   ]);
 
   return {
@@ -160,7 +178,10 @@ export async function loadMessages(
     reports,
     profile,
     notifications,
+    inbox,
     complaints,
+    help,
+    helpGuides,
   } as AbstractIntlMessages;
 }
 

@@ -78,7 +78,7 @@ export function ComplaintOverviewTab({
   };
 
   return (
-    <div className="space-y-6 rounded-xl border border-staff-border bg-staff-surface p-6">
+    <div className="space-y-6 rounded-xl border border-staff-border/40 bg-staff-surface p-6 shadow-staff-card">
       <dl className="grid gap-4 sm:grid-cols-2">
         <Field label={t("reference")} value={complaint.referenceNo} />
         <Field

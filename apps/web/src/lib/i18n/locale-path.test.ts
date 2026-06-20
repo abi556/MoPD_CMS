@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getLocaleFromPathname,
+  isClientOnlyLocaleSwitchPath,
   replaceLocaleInPathname,
 } from "./locale-path";
 
@@ -12,6 +13,21 @@ describe("getLocaleFromPathname", () => {
 
   it("returns null when no locale prefix is present", () => {
     expect(getLocaleFromPathname("/dashboard")).toBeNull();
+  });
+});
+
+describe("isClientOnlyLocaleSwitchPath", () => {
+  it("returns true for dashboard and auth routes", () => {
+    expect(isClientOnlyLocaleSwitchPath("/en/dashboard")).toBe(true);
+    expect(isClientOnlyLocaleSwitchPath("/am/dashboard/complaints")).toBe(true);
+    expect(isClientOnlyLocaleSwitchPath("/en/auth/login")).toBe(true);
+  });
+
+  it("returns false for public portal routes", () => {
+    expect(isClientOnlyLocaleSwitchPath("/en")).toBe(false);
+    expect(isClientOnlyLocaleSwitchPath("/am/complaints/track")).toBe(false);
+    expect(isClientOnlyLocaleSwitchPath("/en/faq")).toBe(false);
+    expect(isClientOnlyLocaleSwitchPath("/am/contact")).toBe(false);
   });
 });
 
