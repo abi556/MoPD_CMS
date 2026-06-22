@@ -72,9 +72,10 @@ describe('ComplaintDashboardService', () => {
     it('returns empty list when no categorized complaints exist', async () => {
       complaintGroupBy.mockResolvedValue([]);
 
-      const result = await service.getTopCategories(
-        { id: 'user-1', permissions: ['complaint:read'] } as never,
-      );
+      const result = await service.getTopCategories({
+        id: 'user-1',
+        permissions: ['complaint:read'],
+      } as never);
 
       expect(result.categories).toEqual([]);
       expect(categoryFindMany).not.toHaveBeenCalled();

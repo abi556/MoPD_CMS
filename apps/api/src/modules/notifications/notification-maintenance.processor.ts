@@ -4,7 +4,8 @@ import { Job } from 'bullmq';
 import { QUEUE_NOTIFICATION_MAINTENANCE } from '../../queue/queue.constants';
 import { NotificationMaintenanceService } from './notification-maintenance.service';
 
-export const NOTIFICATION_MAINTENANCE_JOB_ID = 'notification-maintenance-weekly';
+export const NOTIFICATION_MAINTENANCE_JOB_ID =
+  'notification-maintenance-weekly';
 
 @Processor(QUEUE_NOTIFICATION_MAINTENANCE)
 export class NotificationMaintenanceProcessor extends WorkerHost {

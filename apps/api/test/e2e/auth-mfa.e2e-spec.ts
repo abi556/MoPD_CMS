@@ -150,7 +150,7 @@ describe('Auth MFA Enrollment (e2e)', () => {
     const enrollBody = enrollRes.body as {
       data: { secret: string; backupCodes: string[] };
     };
-    const oldBackup = enrollBody.data.backupCodes[0]!;
+    const oldBackup = enrollBody.data.backupCodes[0];
 
     const totpCode = await generate({
       secret: enrollBody.data.secret,

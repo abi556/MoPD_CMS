@@ -20,10 +20,20 @@ describe('InAppNotificationService', () => {
     jest.clearAllMocks();
     userFindUnique.mockResolvedValue({ id: 'user-1', isActive: true });
     userNotificationCreate.mockImplementation(({ data }) =>
-      Promise.resolve({ id: 'notif-1', ...data, readAt: null, createdAt: new Date() }),
+      Promise.resolve({
+        id: 'notif-1',
+        ...data,
+        readAt: null,
+        createdAt: new Date(),
+      }),
     );
     userNotificationUpsert.mockImplementation(({ create }) =>
-      Promise.resolve({ id: 'notif-1', ...create, readAt: null, createdAt: new Date() }),
+      Promise.resolve({
+        id: 'notif-1',
+        ...create,
+        readAt: null,
+        createdAt: new Date(),
+      }),
     );
     userNotificationFindMany.mockResolvedValue([]);
     userNotificationCount.mockResolvedValue(0);

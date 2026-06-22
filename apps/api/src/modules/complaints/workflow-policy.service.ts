@@ -16,7 +16,9 @@ export interface WorkflowForbiddenPayload {
   details: WorkflowDenialDetails;
 }
 
-function workflowForbidden(decision: Extract<WorkflowDecision, { allowed: false }>): never {
+function workflowForbidden(
+  decision: Extract<WorkflowDecision, { allowed: false }>,
+): never {
   const payload: WorkflowForbiddenPayload = {
     code: 'workflow_forbidden',
     message: decision.message,

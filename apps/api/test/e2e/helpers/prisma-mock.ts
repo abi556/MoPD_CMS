@@ -1752,13 +1752,14 @@ export function createPrismaMock(): PrismaService {
   // ---------------------------------------------------------------------------
   const prismaLike = {
     complaint: {
+      create,
       count,
       findMany,
       findUnique,
       update,
       groupBy: complaintGroupBy,
     },
-    complaintHistory: { findMany: historyFindMany },
+    complaintHistory: { create: historyCreate, findMany: historyFindMany },
     role: { upsert: roleUpsert },
     permission: { upsert: permissionUpsert },
     rolePermission: { upsert: rolePermissionUpsert },

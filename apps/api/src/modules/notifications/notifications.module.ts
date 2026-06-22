@@ -42,7 +42,11 @@ const workerProviders: Provider[] =
     EmailProviderFactory,
     ...workerProviders,
   ],
-  exports: [NotificationsService, EmailProviderFactory, InAppNotificationService],
+  exports: [
+    NotificationsService,
+    EmailProviderFactory,
+    InAppNotificationService,
+  ],
 })
 export class NotificationsModule implements OnModuleInit {
   constructor(

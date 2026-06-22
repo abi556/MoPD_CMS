@@ -14,7 +14,11 @@ import type {
   ComplaintHistory as ComplaintHistoryEntity,
   ComplaintLocale as PrismaComplaintLocale,
 } from '@prisma/client';
-import { Prisma, UserNotificationSeverity, UserNotificationType } from '@prisma/client';
+import {
+  Prisma,
+  UserNotificationSeverity,
+  UserNotificationType,
+} from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   ComplaintChannel,
@@ -792,7 +796,7 @@ export class ComplaintsService {
     }
 
     const where: Prisma.ComplaintWhereInput =
-      clauses.length === 1 ? clauses[0]! : { AND: clauses };
+      clauses.length === 1 ? clauses[0] : { AND: clauses };
 
     const [rows, total] = await Promise.all([
       this.prisma.complaint.findMany({

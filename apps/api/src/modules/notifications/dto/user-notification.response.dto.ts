@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { UserNotificationSeverity, UserNotificationType } from '@prisma/client';
+import type {
+  UserNotificationSeverity,
+  UserNotificationType,
+} from '@prisma/client';
 
 export class UserNotificationItemDto {
   @ApiProperty()

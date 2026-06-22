@@ -87,8 +87,9 @@ async function loadFaq(locale: ComplaintLocale): Promise<void> {
   for (const [key, item] of Object.entries(faq.items)) {
     const slug = `faq-${slugify(key)}`;
     const topic =
-      Object.entries(FAQ_CATEGORY_TOPIC).find(([cat]) => key.includes(cat))?.[1] ??
-      'general';
+      Object.entries(FAQ_CATEGORY_TOPIC).find(([cat]) =>
+        key.includes(cat),
+      )?.[1] ?? 'general';
 
     const bodyMarkdown = `## ${item.question}\n\n${item.answer}`;
     await prisma.knowledgeArticle.upsert({
@@ -131,7 +132,9 @@ function htmlToMarkdown(html: string): string {
     .trim();
 }
 
-async function fetchUrlDraft(entry: (typeof APPROVED_URLS)[number]): Promise<void> {
+async function fetchUrlDraft(
+  entry: (typeof APPROVED_URLS)[number],
+): Promise<void> {
   const response = await fetch(entry.url, {
     headers: { 'User-Agent': 'MoPD-CMS-Knowledge-Import/1.0' },
   });

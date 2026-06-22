@@ -327,7 +327,10 @@ describe('ComplaintsService', () => {
     complaintFindMany.mockResolvedValue([]);
     complaintCount.mockResolvedValue(0);
 
-    await service.listForStaff({ page: 1, pageSize: 10, q: 'water' }, staffUser);
+    await service.listForStaff(
+      { page: 1, pageSize: 10, q: 'water' },
+      staffUser,
+    );
 
     expect(complaintFindMany).toHaveBeenCalledWith(
       expect.objectContaining({

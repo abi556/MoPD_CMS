@@ -511,7 +511,8 @@ export class AuthController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Regenerate MFA backup codes (requires password; invalidates old codes)',
+    summary:
+      'Regenerate MFA backup codes (requires password; invalidates old codes)',
   })
   @ApiOkResponse({ type: MfaEnrollmentResponseDto })
   async mfaRegenerateBackupCodes(

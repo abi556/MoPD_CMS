@@ -167,7 +167,11 @@ export class UserManagementService {
 
   async updateUser(
     id: string,
-    input: { email?: string; roleIds?: string[]; preferredLocale?: 'en' | 'am' },
+    input: {
+      email?: string;
+      roleIds?: string[];
+      preferredLocale?: 'en' | 'am';
+    },
   ): Promise<{
     id: string;
     email: string;

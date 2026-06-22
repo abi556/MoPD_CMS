@@ -244,7 +244,9 @@ export class SlaService {
       where: { status: SlaStatus.ACTIVE },
       include: {
         slaConfig: true,
-        complaint: { select: { id: true, referenceNo: true, assignedToUserId: true } },
+        complaint: {
+          select: { id: true, referenceNo: true, assignedToUserId: true },
+        },
       },
     });
 

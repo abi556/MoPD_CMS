@@ -1,8 +1,5 @@
 import type { Prisma, UserNotification } from '@prisma/client';
-import {
-  UserNotificationSeverity,
-  UserNotificationType,
-} from '@prisma/client';
+import { UserNotificationSeverity, UserNotificationType } from '@prisma/client';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -128,7 +125,10 @@ export class InAppNotificationService {
     });
   }
 
-  async markRead(userId: string, notificationId: string): Promise<UserNotification> {
+  async markRead(
+    userId: string,
+    notificationId: string,
+  ): Promise<UserNotification> {
     const existing = await this.prisma.userNotification.findFirst({
       where: { id: notificationId, userId },
     });
