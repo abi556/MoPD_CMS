@@ -3,6 +3,7 @@
 import {
   BarChart3,
   Bell,
+  BookOpen,
   ChevronDown,
   Inbox,
   LayoutDashboard,
@@ -19,6 +20,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { BrandWordmark } from "@/components/layout/brand-wordmark";
 import { buildAppNav } from "@/lib/navigation/build-app-nav";
+import { getStaffSubNavIcon } from "@/lib/navigation/staff-nav-icons";
 import { staffRoutes } from "@/lib/staff/routes";
 import { useSession } from "@/components/providers/auth-provider";
 import { useSidebar } from "@/components/staff/layout/sidebar-context";
@@ -29,6 +31,7 @@ const iconMap = {
   inbox: Inbox,
   "mail-question": MailQuestion,
   "bar-chart-3": BarChart3,
+  "book-open": BookOpen,
   settings: Settings,
   user: User,
   bell: Bell,
@@ -44,7 +47,7 @@ function navLinkClass(isActive: boolean, depth = 0, collapsed = false) {
   const base = collapsed
     ? "flex items-center justify-center rounded-lg p-2.5 transition-colors duration-200"
     : depth > 0
-      ? "relative flex items-center rounded-lg py-2 pl-8 pr-3 text-[13px] transition-colors duration-200"
+      ? "relative flex items-center gap-2.5 rounded-lg py-2 pl-5 pr-3 text-[13px] transition-colors duration-200"
       : "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-200";
 
   if (!isActive) {
@@ -69,6 +72,7 @@ function SubNavLink({
 }) {
   const t = useTranslations("nav-staff");
   const isActive = isLinkActive(pathname, item.href);
+  const Icon = getStaffSubNavIcon(item.labelKey);
 
   return (
     <Link
@@ -76,7 +80,10 @@ function SubNavLink({
       onClick={onNavigate}
       className={navLinkClass(isActive, 1)}
     >
-      {t(item.labelKey as "dashboard")}
+      {Icon ? (
+        <Icon size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+      ) : null}
+      <span>{t(item.labelKey as "dashboard")}</span>
     </Link>
   );
 }

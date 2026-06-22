@@ -12,6 +12,7 @@ export type AppNavIcon =
   | "inbox"
   | "mail-question"
   | "bar-chart-3"
+  | "book-open"
   | "settings"
   | "user"
   | "bell";
@@ -64,6 +65,14 @@ export function buildAppNav(user: SessionUser): AppNavItem[] {
       labelKey: "reports",
       icon: "bar-chart-3",
       groups: reportGroups,
+    });
+  }
+
+  if (hasExactPermission(user.permissions, "knowledge:manage")) {
+    items.push({
+      href: staffRoutes.admin.knowledge,
+      labelKey: "knowledgeBase",
+      icon: "book-open",
     });
   }
 

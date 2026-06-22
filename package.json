@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "postinstall": "pnpm --filter @mopd-cms/api prisma:generate",
+    "postinstall": "pnpm --filter @mopd-cms/api prisma:generate && pnpm --filter @mopd-cms/shared build",
     "docker:infra": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker up -d --wait",
     "docker:infra:down": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker down",
     "docker:app": "docker compose -f infra/docker/docker-compose.yml --env-file .env.docker --profile app up -d --build",
@@ -13,7 +13,8 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "format": "turbo run format"
+    "format": "turbo run format",
+    "import:knowledge": "pnpm --filter @mopd-cms/api import:knowledge"
   },
   "packageManager": "pnpm@10.18.0",
   "engines": {

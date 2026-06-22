@@ -25,6 +25,7 @@ export const staffRoutes = {
     orgUnits: "/dashboard/admin/org-units",
     sla: "/dashboard/admin/sla",
     templates: "/dashboard/admin/templates",
+    knowledge: "/dashboard/admin/knowledge",
     notifications: "/dashboard/admin/notifications",
     audit: "/dashboard/admin/audit",
     system: "/dashboard/admin/system",

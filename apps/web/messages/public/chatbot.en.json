@@ -18,5 +18,10 @@
   "quickRecover": "Recover reference",
   "quickFaq": "Read FAQ",
   "quickHours": "Office hours",
-  "promptHours": "What are MoPD office hours?"
+  "promptHours": "What are MoPD office hours?",
+  "confidenceVerified": "Answer based on verified MoPD knowledge",
+  "confidenceGuidance": "General guidance — not an official MoPD decision",
+  "confidenceRefused": "Outside Melhiq scope — I can't answer that",
+  "errorGeneric": "Something went wrong. Please try again or use the links below.",
+  "sourceLabel": "Source"
 }

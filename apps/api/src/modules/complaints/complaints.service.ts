@@ -528,13 +528,17 @@ export class ComplaintsService {
     actor?: JwtUser,
   ): Promise<ComplaintRecord> {
     if (actor) {
-      this.workflowPolicyService.assertCanAssign(actor);
       const existing = await this.prisma.complaint.findUnique({
         where: { id },
       });
       if (!existing) {
         throw new NotFoundException('Complaint not found');
       }
+      this.workflowPolicyService.assertCanAssign(
+        actor,
+        existing,
+        assigneeUserId,
+      );
       this.complaintAccessService.assertCanAccessComplaint(actor, existing);
     }
     const updated = await this.prisma.$transaction(async (tx) => {
@@ -632,6 +636,7 @@ export class ComplaintsService {
           actor,
           fromStatus,
           toStatus,
+          existing,
         );
       }
 

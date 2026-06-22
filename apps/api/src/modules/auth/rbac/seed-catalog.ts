@@ -53,6 +53,36 @@ export const SEED_PERMISSIONS: SeedPermission[] = [
     description: 'Submit complaints to QA/legal review.',
   },
   {
+    id: 'perm-complaint-triage',
+    code: 'complaint:triage',
+    description: 'Move submitted complaints into triage.',
+  },
+  {
+    id: 'perm-complaint-assign-canonical',
+    code: 'complaint:assign',
+    description: 'Assign or reassign complaints to any officer.',
+  },
+  {
+    id: 'perm-complaint-assign-self',
+    code: 'complaint:assign:self',
+    description: 'Self-assign unassigned triage complaints.',
+  },
+  {
+    id: 'perm-complaint-investigate',
+    code: 'complaint:investigate',
+    description: 'Perform investigation and draft work on assigned complaints.',
+  },
+  {
+    id: 'perm-complaint-publish',
+    code: 'complaint:publish',
+    description: 'Publish issued responses to await complainant feedback.',
+  },
+  {
+    id: 'perm-complaint-close',
+    code: 'complaint:close',
+    description: 'Close complaints after feedback period.',
+  },
+  {
     id: 'perm-complaint-approve',
     code: 'complaint:approve',
     description: 'Approve draft responses for issuance.',
@@ -152,6 +182,16 @@ export const SEED_PERMISSIONS: SeedPermission[] = [
     code: 'report:export',
     description: 'Generate and download report exports.',
   },
+  {
+    id: 'perm-knowledge-manage',
+    code: 'knowledge:manage',
+    description: 'Manage Melhiq chatbot knowledge base articles.',
+  },
+  {
+    id: 'perm-chatbot-analytics-read',
+    code: 'chatbot:analytics:read',
+    description: 'View Melhiq chatbot analytics reports.',
+  },
 ];
 
 const P = Object.fromEntries(
@@ -169,12 +209,16 @@ export const ROLE_PERMISSION_IDS: Record<string, string[]> = {
     P['sla:configure'],
     P['template:manage'],
     P['notification:manage'],
+    P['knowledge:manage'],
+    P['chatbot:analytics:read'],
   ],
   'role-complaints-admin': [
     P['complaint:read'],
+    P['complaint:triage'],
+    P['complaint:assign'],
+    P['complaint:close'],
+    P['complaint:publish'],
     P['workflow:transition'],
-    P['complaints:assign'],
-    P['complaints:transition'],
     P['complaint:escalate'],
     P['complaints:list'],
     P['complaints:detail'],
@@ -187,9 +231,8 @@ export const ROLE_PERMISSION_IDS: Record<string, string[]> = {
     P['complaints:list'],
     P['complaints:detail'],
     P['complaints:history'],
-    P['complaints:assign'],
-    P['complaints:transition'],
-    P['workflow:transition'],
+    P['complaint:assign:self'],
+    P['complaint:investigate'],
     P['complaint:escalate'],
     P['case:read'],
     P['case:write'],
@@ -202,8 +245,6 @@ export const ROLE_PERMISSION_IDS: Record<string, string[]> = {
     P['complaint:read'],
     P['complaint:review'],
     P['complaint:approve'],
-    P['workflow:transition'],
-    P['complaints:transition'],
     P['complaints:list'],
     P['complaints:detail'],
     P['complaints:history'],
@@ -213,6 +254,8 @@ export const ROLE_PERMISSION_IDS: Record<string, string[]> = {
     P['notification:manage'],
     P['notification:read'],
     P['template:manage'],
+    P['knowledge:manage'],
+    P['chatbot:analytics:read'],
   ],
   'role-auditor': [P['audit:read'], P['report:view'], P['report:export']],
   'role-ombudsperson': [

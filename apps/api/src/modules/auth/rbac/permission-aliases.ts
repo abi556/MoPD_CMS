@@ -11,6 +11,7 @@ export const PERMISSION_ALIASES: Readonly<Record<string, readonly string[]>> = {
     'complaint:read:own',
   ],
   'complaint:read:own': ['complaint:read:own'],
+  'complaint:assign': ['complaints:assign'],
   'workflow:transition': ['complaints:transition', 'complaints:assign'],
   'complaint:escalate': ['complaint:escalate'],
   'template:manage': ['config:manage'],

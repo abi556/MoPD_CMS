@@ -18,11 +18,21 @@ import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { ChatLocaleToggle } from "@/components/chatbot/chat-locale-toggle";
 import { loadChatbotMessages } from "@/lib/chat-locale";
+import {
+  sendChatbotMessage,
+  type ChatConfidence,
+  type ChatSource,
+} from "@/lib/public/chatbot-api";
+import { getOrCreateChatSessionId } from "@/lib/public/chat-session";
+import { ApiError } from "@/lib/api-client";
 
 interface ChatMessage {
   id: string;
   role: "bot" | "user";
   text: string;
+  confidence?: ChatConfidence;
+  sources?: ChatSource[];
+  disclaimer?: string;
 }
 
 interface QuickReply {
@@ -66,6 +76,7 @@ function ChatPanelInner({
   ]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
+  const [sessionId] = useState(() => getOrCreateChatSessionId());
 
   const scrollToBottom = useCallback(() => {
     const el = scrollRef.current;
@@ -74,13 +85,25 @@ function ChatPanelInner({
   }, []);
 
   const pushBotReply = useCallback(
-    (text: string, delayMs = 600) => {
-      setTyping(true);
-      window.setTimeout(() => {
-        setMessages((prev) => [...prev, { id: newId(), role: "bot", text }]);
-        setTyping(false);
-        scrollToBottom();
-      }, delayMs);
+    (payload: {
+      text: string;
+      confidence?: ChatConfidence;
+      sources?: ChatSource[];
+      disclaimer?: string;
+    }) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: newId(),
+          role: "bot",
+          text: payload.text,
+          confidence: payload.confidence,
+          sources: payload.sources,
+          disclaimer: payload.disclaimer,
+        },
+      ]);
+      setTyping(false);
+      scrollToBottom();
     },
     [scrollToBottom],
   );
@@ -112,32 +135,50 @@ function ChatPanelInner({
   }, [messages, typing, scrollToBottom]);
 
   const handleUserText = useCallback(
-    (text: string) => {
+    async (text: string) => {
       const trimmed = text.trim();
-      if (!trimmed) return;
+      if (!trimmed || typing) return;
 
       setMessages((prev) => [...prev, { id: newId(), role: "user", text: trimmed }]);
       setInput("");
       scrollToBottom();
-      pushBotReply(t("stubReply"));
+      setTyping(true);
+
+      try {
+        const data = await sendChatbotMessage({
+          sessionId,
+          message: trimmed,
+          locale: chatLocale,
+        });
+        pushBotReply({
+          text: data.reply,
+          confidence: data.confidence,
+          sources: data.sources,
+          disclaimer: data.disclaimer,
+        });
+      } catch (err) {
+        const message =
+          err instanceof ApiError ? err.message : t("errorGeneric");
+        pushBotReply({ text: message, confidence: "guidance_only" });
+      }
     },
-    [pushBotReply, scrollToBottom, t],
+    [chatLocale, pushBotReply, scrollToBottom, sessionId, t, typing],
   );
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    handleUserText(input);
+    void handleUserText(input);
   };
 
   const onInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleUserText(input);
+      void handleUserText(input);
     }
   };
 
   const onQuickPrompt = (promptKey: string) => {
-    handleUserText(t(promptKey as "promptHours"));
+    void handleUserText(t(promptKey as "promptHours"));
   };
 
   return (
@@ -211,14 +252,57 @@ function ChatPanelInner({
             key={msg.id}
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
-            <div
-              className={`max-w-[85%] rounded-none px-3.5 py-2.5 text-body-sm leading-relaxed shadow-sm ${
-                msg.role === "user"
-                  ? "bg-primary text-on-primary"
-                  : "border border-border-standard bg-surface text-on-surface"
-              }`}
-            >
-              {msg.text}
+            <div className="max-w-[85%] space-y-2">
+              {msg.role === "bot" && msg.confidence === "guidance_only" ? (
+                <p
+                  className="rounded-none border border-amber-300/60 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-amber-900"
+                  role="note"
+                >
+                  {t("confidenceGuidance")}
+                </p>
+              ) : null}
+              {msg.role === "bot" && msg.confidence === "verified" ? (
+                <p className="text-[11px] font-medium text-emerald-700">
+                  {t("confidenceVerified")}
+                </p>
+              ) : null}
+              {msg.role === "bot" && msg.confidence === "refused" ? (
+                <p className="text-[11px] text-text-secondary">{t("confidenceRefused")}</p>
+              ) : null}
+              <div
+                className={`rounded-none px-3.5 py-2.5 text-body-sm leading-relaxed shadow-sm ${
+                  msg.role === "user"
+                    ? "bg-primary text-on-primary"
+                    : "border border-border-standard bg-surface text-on-surface"
+                }`}
+              >
+                {msg.text}
+              </div>
+              {msg.role === "bot" && msg.sources && msg.sources.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {msg.sources.map((source) => (
+                    <span
+                      key={`${source.slug}-${source.title}`}
+                      className="rounded-full border border-emerald-300/50 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800"
+                    >
+                      {source.url ? (
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline-offset-2 hover:underline"
+                        >
+                          {source.title}
+                        </a>
+                      ) : (
+                        <Link href="/faq" className="underline-offset-2 hover:underline">
+                          {source.title}
+                        </Link>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
         ))}

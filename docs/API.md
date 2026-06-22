@@ -313,13 +313,33 @@ Source of truth: implemented NestJS controllers and DTOs in `apps/api/src`.
 - **Permission:** `workflow:transition`
 - **Body:** `{ assigneeUserId, reason? }`
 - **Response:** `{ data: ComplaintDetailDataDto }`
-- **Errors:** `404`, `422`
+- **Errors:** `404`, `422` (includes `workflow_forbidden` with `details.reasonCode`, `requiredRoles`, `requiredPermissions`)
 
 ### POST `/complaints/:id/transition`
 - **Permission:** `workflow:transition`
 - **Body:** `{ toStatus, reason }`
 - **Response:** `{ data: ComplaintDetailDataDto }`
 - **Errors:** `404`, `422` (includes workflow policy violations)
+
+When workflow policy rejects an assign or transition, the API returns **`422`** with:
+
+```json
+{
+  "error": {
+    "code": "workflow_forbidden",
+    "message": "You cannot perform this workflow step.",
+    "details": {
+      "fromStatus": "ASSIGNED",
+      "toStatus": "IN_INVESTIGATION",
+      "requiredPermissions": ["complaint:investigate"],
+      "requiredRoles": ["CaseOfficer"],
+      "reasonCode": "not_assignee"
+    }
+  }
+}
+```
+
+See [RBAC.md](./RBAC.md) §7 for the full transition matrix.
 
 ### POST `/complaints/:id/appeal`
 - **Permission:** `complaint:escalate`
@@ -620,7 +640,45 @@ Duplicate domain events are suppressed when a `dedupKey` is set (e.g. one SLA wa
 
 ---
 
-## 15) Notes on implementation scope
+## 15) Melhiq chatbot (public + admin)
+
+### POST `/chatbot/message`
+- **Auth:** Public (no JWT)
+- **Throttle:** 30 req/min per IP
+- **Body:** `{ sessionId: uuid, message: string (1–500), locale: "en" | "am" }`
+- **Response:** `{ data: { reply, confidence: "verified" | "guidance_only" | "refused", sources: [{ title, slug, url? }], sessionId, turnCount, disclaimer? } }`
+- **Errors:** `400 chatbot_invalid_message`, `403 chatbot_session_limit`, `503 chatbot_disabled`, `429 rate_limited`
+
+### POST `/chatbot/handoff`
+- **Auth:** Public
+- **Body:** `{ sessionId, locale, reason }`
+- **Response:** `{ data: { handoffUrl } }` — e.g. `/en/contact?reason=chatbot&session=...`
+
+### GET `/admin/knowledge/articles`
+- **Permission:** `knowledge:manage`
+- **Query:** `status`, `locale`, `topic`
+- **Response:** `KnowledgeArticle[]`
+
+### POST `/admin/knowledge/articles`
+- **Permission:** `knowledge:manage`
+- **Body:** create draft article (`slug`, `locale`, `title`, `bodyMarkdown`, `topic`, optional `sourceUrl`, `sourceType`)
+
+### PATCH `/admin/knowledge/articles/:id`
+- **Permission:** `knowledge:manage`
+
+### POST `/admin/knowledge/articles/:id/publish`
+- **Permission:** `knowledge:manage` — sets `published`, enqueues pgvector re-index job
+
+### POST `/admin/knowledge/articles/:id/reindex`
+- **Permission:** `knowledge:manage` — manual embedding rebuild
+
+### GET `/admin/knowledge/analytics`
+- **Permission:** `chatbot:analytics:read`
+- **Response:** daily aggregates (no PII)
+
+---
+
+## 16) Notes on implementation scope
 
 This file intentionally documents only currently implemented endpoints discovered from:
 - `@Controller(...)` route handlers in `apps/api/src`

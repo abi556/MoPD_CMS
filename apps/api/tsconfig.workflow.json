@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/modules/complaints/workflow-policy.service.ts",
+    "src/modules/complaints/dto/complaint-status.enum.ts",
+    "src/modules/complaints/complaints.service.ts"
+  ]
+}

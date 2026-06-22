@@ -45,6 +45,7 @@ import { TransitionComplaintDialog } from "@/components/staff/complaints/transit
 import { EscalateComplaintDialog } from "@/components/staff/complaints/escalate-complaint-dialog";
 import { AppealComplaintDialog } from "@/components/staff/complaints/appeal-complaint-dialog";
 import { Link } from "@/i18n/navigation";
+import { WorkflowBlockedCallout } from "@/components/staff/complaints/workflow-blocked-callout";
 
 type DetailTab = "overview" | "response" | "notes" | "tasks" | "documents" | "history";
 
@@ -162,11 +163,26 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
     );
   }
 
+  const workflowCtx = {
+    userId: user.id,
+    roles: user.roles,
+    assignedToUserId: complaint.assignedToUserId,
+  };
+
   const showAssign =
-    canAssign(permissions) && canAssignFromStatus(complaint.status);
+    canAssign(permissions, { ...workflowCtx, status: complaint.status }) &&
+    canAssignFromStatus(complaint.status);
+  const showAssignBlockedHint =
+    !showAssign &&
+    canAssignFromStatus(complaint.status) &&
+    !complaint.assignedToUserId;
   const showApprove = canApproveQa(complaint.status, permissions);
   const showReturn = canReturnForRevision(complaint.status, permissions);
-  const showTransition = showGenericTransition(complaint.status, permissions);
+  const showTransition = showGenericTransition(
+    complaint.status,
+    permissions,
+    workflowCtx,
+  );
   const showAppeal = canAppeal(complaint.status, permissions);
   const showEscalate = canEscalate(permissions);
 
@@ -241,6 +257,19 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
         </div>
       </div>
 
+      {showAssignBlockedHint ? (
+        <div className="mb-6">
+          <WorkflowBlockedCallout
+            complaintId={complaint.id}
+            info={{
+              message: t("assignBlockedHint"),
+              requiredRoles: ["ComplaintsAdmin"],
+              reasonCode: "missing_permission",
+            }}
+          />
+        </div>
+      ) : null}
+
       {complaint.status === "QA_LEGAL_REVIEW" ? (
         <div className="mb-6 rounded-xl border border-warning/30 bg-warning/10 p-4">
           <p className="text-sm font-medium text-staff-text">{t("qaReviewBanner")}</p>
@@ -306,6 +335,7 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
         open={assignOpen}
         complaintId={complaint.id}
         sessionUserId={user.id}
+        sessionRoles={user.roles}
         permissions={permissions}
         onClose={() => setAssignOpen(false)}
         onSuccess={() => void load()}
@@ -314,6 +344,9 @@ export function ComplaintDetailShell({ complaintId }: { complaintId: string }) {
         open={transitionVariant !== null}
         complaintId={complaint.id}
         currentStatus={complaint.status}
+        sessionUserId={user.id}
+        sessionRoles={user.roles}
+        assignedToUserId={complaint.assignedToUserId}
         permissions={permissions}
         variant={transitionVariant ?? "default"}
         onClose={() => setTransitionVariant(null)}

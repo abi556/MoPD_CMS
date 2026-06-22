@@ -1,77 +1,92 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  evaluateAssign,
+  evaluateTransition,
+  type ComplaintStatus,
+  type ComplaintWorkflowContext,
+  type WorkflowDecision,
+  type WorkflowDenialDetails,
+} from '@mopd-cms/shared';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
-import { hasPermission } from '../auth/rbac/permission-check';
-import { ComplaintStatusValue } from './dto/complaint-status.enum';
+import type { ComplaintStatusValue } from './dto/complaint-status.enum';
 
-function workflowForbidden(message: string): never {
-  throw new UnprocessableEntityException({
+export interface WorkflowForbiddenPayload {
+  code: 'workflow_forbidden';
+  message: string;
+  details: WorkflowDenialDetails;
+}
+
+function workflowForbidden(decision: Extract<WorkflowDecision, { allowed: false }>): never {
+  const payload: WorkflowForbiddenPayload = {
     code: 'workflow_forbidden',
-    message,
-  });
+    message: decision.message,
+    details: {
+      fromStatus: decision.fromStatus,
+      toStatus: decision.toStatus,
+      requiredPermissions: decision.requiredPermissions,
+      requiredRoles: decision.requiredRoles,
+      reasonCode: decision.reasonCode,
+    },
+  };
+  throw new UnprocessableEntityException(payload);
+}
+
+function toUserContext(user: JwtUser) {
+  return {
+    userId: user.id,
+    roles: user.roles,
+    permissions: user.permissions,
+  };
+}
+
+function toComplaintContext(complaint: {
+  status: string;
+  assignedToUserId?: string | null;
+}): ComplaintWorkflowContext {
+  return {
+    status: complaint.status as ComplaintStatus,
+    assignedToUserId: complaint.assignedToUserId ?? null,
+  };
 }
 
 @Injectable()
 export class WorkflowPolicyService {
-  assertCanAssign(user: JwtUser): void {
-    if (user.roles.includes('SuperAdmin')) {
-      return;
+  assertCanAssign(
+    user: JwtUser,
+    complaint: { status: string; assignedToUserId?: string | null },
+    assigneeUserId: string,
+  ): void {
+    const decision = evaluateAssign(
+      toUserContext(user),
+      toComplaintContext(complaint),
+      assigneeUserId,
+    );
+    if (!decision.allowed) {
+      workflowForbidden(decision);
     }
-    if (
-      hasPermission(user, 'workflow:transition') ||
-      hasPermission(user, 'complaints:assign')
-    ) {
-      return;
-    }
-    workflowForbidden('You are not allowed to assign complaints.');
   }
 
   assertCanTransition(
     user: JwtUser,
     fromStatus: ComplaintStatusValue,
     toStatus: ComplaintStatusValue,
+    complaint?: { status: string; assignedToUserId?: string | null },
   ): void {
-    if (user.roles.includes('SuperAdmin')) {
-      return;
-    }
+    const complaintContext: ComplaintWorkflowContext = complaint
+      ? toComplaintContext(complaint)
+      : {
+          status: fromStatus,
+          assignedToUserId: null,
+        };
 
-    if (toStatus === ComplaintStatusValue.QA_LEGAL_REVIEW) {
-      if (!hasPermission(user, 'complaint:review')) {
-        workflowForbidden(
-          'Transition to QA/legal review requires complaint:review permission.',
-        );
-      }
-    }
-
-    if (
-      fromStatus === ComplaintStatusValue.QA_LEGAL_REVIEW &&
-      toStatus === ComplaintStatusValue.RESPONSE_ISSUED
-    ) {
-      if (!hasPermission(user, 'complaint:approve')) {
-        workflowForbidden(
-          'Issuing a response from QA review requires complaint:approve permission.',
-        );
-      }
-    }
-
-    if (toStatus === ComplaintStatusValue.APPEAL) {
-      if (!hasPermission(user, 'complaint:escalate')) {
-        workflowForbidden(
-          'Opening an appeal requires complaint:escalate permission.',
-        );
-      }
-    }
-
-    if (
-      toStatus === ComplaintStatusValue.ASSIGNED ||
-      fromStatus === ComplaintStatusValue.TRIAGE
-    ) {
-      if (
-        !hasPermission(user, 'workflow:transition') &&
-        !hasPermission(user, 'complaints:transition') &&
-        !hasPermission(user, 'complaints:assign')
-      ) {
-        workflowForbidden('You are not allowed to perform this transition.');
-      }
+    const decision = evaluateTransition(
+      toUserContext(user),
+      complaintContext,
+      fromStatus,
+      toStatus,
+    );
+    if (!decision.allowed) {
+      workflowForbidden(decision);
     }
   }
 }

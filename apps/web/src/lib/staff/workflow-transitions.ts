@@ -1,77 +1,102 @@
-import { hasPermission } from "@/lib/permissions";
-import type { ComplaintStatus } from "@/components/ui/status-badge";
+import {
+  canAdminPickAssignee,
+  canAssignComplaint,
+  canSelfAssignOnly,
+  ComplaintStatus,
+  listAllowedTransitionTargets,
+  type ComplaintWorkflowContext,
+  type WorkflowUserContext,
+} from '@mopd-cms/shared';
+import type { ComplaintStatus as UiComplaintStatus } from '@/components/ui/status-badge';
 
-const ALLOWED_TRANSITIONS: Record<ComplaintStatus, ComplaintStatus[]> = {
-  SUBMITTED: ["TRIAGE"],
-  TRIAGE: ["ASSIGNED"],
-  ASSIGNED: ["IN_INVESTIGATION"],
-  IN_INVESTIGATION: ["DRAFT_RESPONSE"],
-  DRAFT_RESPONSE: ["QA_LEGAL_REVIEW"],
-  QA_LEGAL_REVIEW: ["DRAFT_RESPONSE", "RESPONSE_ISSUED"],
-  RESPONSE_ISSUED: ["AWAITING_FEEDBACK"],
-  AWAITING_FEEDBACK: ["CLOSED", "APPEAL"],
-  APPEAL: ["ASSIGNED"],
-  CLOSED: [],
-};
+export type { ComplaintStatus as WorkflowComplaintStatus } from '@mopd-cms/shared';
+
+function toWorkflowStatus(status: UiComplaintStatus): ComplaintStatus {
+  return status as ComplaintStatus;
+}
+
+function buildUserContext(
+  userId: string,
+  permissions: readonly string[],
+  roles: readonly string[] = [],
+): WorkflowUserContext {
+  return { userId, permissions, roles };
+}
+
+function buildComplaintContext(
+  status: UiComplaintStatus,
+  assignedToUserId?: string | null,
+): ComplaintWorkflowContext {
+  return {
+    status: toWorkflowStatus(status),
+    assignedToUserId: assignedToUserId ?? null,
+  };
+}
 
 export function getAllowedTransitions(
-  fromStatus: ComplaintStatus,
+  fromStatus: UiComplaintStatus,
   permissions: readonly string[],
-): ComplaintStatus[] {
-  const candidates = ALLOWED_TRANSITIONS[fromStatus] ?? [];
-  return candidates.filter((toStatus) => {
-    // ASSIGNED is reached via POST /assign (sets assignee); transition-only would lock out scoped officers.
-    if (
-      toStatus === "ASSIGNED" &&
-      (fromStatus === "TRIAGE" || fromStatus === "APPEAL")
-    ) {
-      return false;
-    }
-    if (toStatus === "APPEAL" && fromStatus === "AWAITING_FEEDBACK") {
-      return false;
-    }
-    return canTransition(fromStatus, toStatus, permissions);
-  });
+  options?: {
+    userId?: string;
+    roles?: readonly string[];
+    assignedToUserId?: string | null;
+  },
+): UiComplaintStatus[] {
+  const user = buildUserContext(
+    options?.userId ?? '',
+    permissions,
+    options?.roles ?? [],
+  );
+  const complaint = buildComplaintContext(
+    fromStatus,
+    options?.assignedToUserId,
+  );
+  return listAllowedTransitionTargets(user, complaint) as UiComplaintStatus[];
 }
 
-export function canTransition(
-  fromStatus: ComplaintStatus,
-  toStatus: ComplaintStatus,
+export function canAssign(
   permissions: readonly string[],
+  options?: {
+    userId?: string;
+    roles?: readonly string[];
+    status?: UiComplaintStatus;
+    assignedToUserId?: string | null;
+  },
 ): boolean {
-  const allowed = ALLOWED_TRANSITIONS[fromStatus] ?? [];
-  if (!allowed.includes(toStatus)) return false;
-
-  if (toStatus === "QA_LEGAL_REVIEW") {
-    return hasPermission(permissions, "complaint:review");
-  }
-  if (fromStatus === "QA_LEGAL_REVIEW" && toStatus === "RESPONSE_ISSUED") {
-    return hasPermission(permissions, "complaint:approve");
-  }
-  if (toStatus === "APPEAL") {
-    return hasPermission(permissions, "complaint:escalate");
-  }
-  if (
-    toStatus === "ASSIGNED" ||
-    fromStatus === "TRIAGE"
-  ) {
+  if (!options?.status) {
     return (
-      hasPermission(permissions, "workflow:transition") ||
-      hasPermission(permissions, "complaints:transition") ||
-      hasPermission(permissions, "complaints:assign")
+      canAdminPickAssignee(
+        buildUserContext(options?.userId ?? '', permissions, options?.roles),
+      ) ||
+      canSelfAssignOnly(
+        buildUserContext(options?.userId ?? '', permissions, options?.roles),
+      )
     );
   }
-
-  return hasPermission(permissions, "workflow:transition");
-}
-
-export function canAssign(permissions: readonly string[]): boolean {
-  return (
-    hasPermission(permissions, "workflow:transition") ||
-    hasPermission(permissions, "complaints:assign")
+  return canAssignComplaint(
+    buildUserContext(options.userId ?? '', permissions, options.roles),
+    buildComplaintContext(options.status, options.assignedToUserId),
   );
 }
 
-export function canAssignFromStatus(status: ComplaintStatus): boolean {
-  return status === "TRIAGE" || status === "APPEAL";
+export function canAssignFromStatus(status: UiComplaintStatus): boolean {
+  return status === 'TRIAGE' || status === 'APPEAL';
+}
+
+export function canPickAssigneeUser(
+  permissions: readonly string[],
+  options?: { userId?: string; roles?: readonly string[] },
+): boolean {
+  return canAdminPickAssignee(
+    buildUserContext(options?.userId ?? '', permissions, options?.roles),
+  );
+}
+
+export function isSelfAssignOnly(
+  permissions: readonly string[],
+  options?: { userId?: string; roles?: readonly string[] },
+): boolean {
+  return canSelfAssignOnly(
+    buildUserContext(options?.userId ?? '', permissions, options?.roles),
+  );
 }

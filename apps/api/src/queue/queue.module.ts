@@ -5,6 +5,8 @@ import {
   QUEUE_DOCUMENT_SCAN,
   QUEUE_NOTIFICATION_DISPATCH,
   QUEUE_NOTIFICATION_MAINTENANCE,
+  QUEUE_CHATBOT_ANALYTICS,
+  QUEUE_KNOWLEDGE_INDEX,
   QUEUE_REPORT_EXPORT,
   QUEUE_SLA_MONITOR,
 } from './queue.constants';
@@ -36,6 +38,8 @@ type RedisCtor = new (...args: unknown[]) => Redis;
     BullModule.registerQueue({ name: QUEUE_NOTIFICATION_MAINTENANCE }),
     BullModule.registerQueue({ name: QUEUE_DOCUMENT_SCAN }),
     BullModule.registerQueue({ name: QUEUE_REPORT_EXPORT }),
+    BullModule.registerQueue({ name: QUEUE_KNOWLEDGE_INDEX }),
+    BullModule.registerQueue({ name: QUEUE_CHATBOT_ANALYTICS }),
   ],
   providers: [RedisHealthService],
   exports: [BullModule, RedisHealthService],

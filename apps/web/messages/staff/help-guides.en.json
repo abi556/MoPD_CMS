@@ -69,7 +69,11 @@
       },
       {
         "title": "422 workflow_forbidden",
-        "body": "Your role cannot perform this transition from the current status. Check allowed next steps in the case detail panel. Reviewers and Complaints Admins may have different options than Case Officers."
+        "body": "Your role cannot perform this transition from the current status. Complaints Admin handles triage, assignment, publish, and close. Case Officers work only on cases assigned to them. Reviewers handle QA return and approve only. The UI shows which role typically handles a blocked step."
+      },
+      {
+        "title": "Who does what (workflow stages)",
+        "body": "Complaints Admin: SUBMITTED→TRIAGE, assign officers, publish responses, close cases, appeal reassignment. Case Officer: self-assign from unassigned triage, then investigate/draft/submit assigned cases only. Reviewer/Approver: QA_LEGAL_REVIEW return or approve. Ombudsperson: may open appeals with complaint:escalate."
       },
       {
         "title": "New intake in triage",

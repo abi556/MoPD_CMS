@@ -1,12 +1,1 @@
-export enum ComplaintStatusValue {
-  SUBMITTED = 'SUBMITTED',
-  TRIAGE = 'TRIAGE',
-  ASSIGNED = 'ASSIGNED',
-  IN_INVESTIGATION = 'IN_INVESTIGATION',
-  DRAFT_RESPONSE = 'DRAFT_RESPONSE',
-  QA_LEGAL_REVIEW = 'QA_LEGAL_REVIEW',
-  RESPONSE_ISSUED = 'RESPONSE_ISSUED',
-  AWAITING_FEEDBACK = 'AWAITING_FEEDBACK',
-  APPEAL = 'APPEAL',
-  CLOSED = 'CLOSED',
-}
+export { ComplaintStatus as ComplaintStatusValue } from '@mopd-cms/shared';

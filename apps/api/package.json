@@ -6,9 +6,10 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "predev": "node ./scripts/free-api-port.mjs && pnpm prisma:generate",
+    "predev": "node ./scripts/free-api-port.mjs && pnpm prisma:generate && pnpm --filter @mopd-cms/shared build",
     "dev": "nest start --watch",
-    "prebuild": "pnpm prisma:generate",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prebuild": "pnpm prisma:generate && pnpm --filter @mopd-cms/shared build",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -17,7 +18,10 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "lint:ci": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest && jest --config ./test/jest-e2e.json --forceExit",
+    "pretest": "pnpm --filter @mopd-cms/shared build",
+    "test": "pnpm typecheck && pnpm typecheck:workflow && jest && jest --config ./test/jest-e2e.json --forceExit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:workflow": "tsc -p tsconfig.workflow.json --noEmit",
     "test:unit": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -28,6 +32,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "seed:auth": "ts-node -r tsconfig-paths/register src/scripts/seed-auth-users.ts",
+    "import:knowledge": "ts-node -r tsconfig-paths/register src/scripts/import-knowledge-seed.ts",
     "security:check": "ts-node src/scripts/security-check.ts"
   },
   "dependencies": {
@@ -42,6 +47,8 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.4.2",
     "@nestjs/throttler": "^6.5.0",
+    "@google/generative-ai": "^0.24.0",
+    "@mopd-cms/shared": "workspace:*",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",
@@ -105,10 +112,29 @@
       "json",
       "ts"
     ],
+    "moduleNameMapper": {
+      "^@mopd-cms/shared$": "<rootDir>/../../../packages/shared/dist/index.js",
+      "^@mopd-cms/shared/(.*)$": "<rootDir>/../../../packages/shared/dist/$1"
+    },
+    "roots": [
+      "<rootDir>"
+    ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "module": "commonjs",
+            "moduleResolution": "node",
+            "esModuleInterop": true,
+            "isolatedModules": true,
+            "verbatimModuleSyntax": false,
+            "resolvePackageJsonExports": false
+          }
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

@@ -3,15 +3,20 @@ import { buildAppNav } from "./build-app-nav";
 import { staffRoutes } from "@/lib/staff/routes";
 import type { SessionUser } from "@/lib/auth/session-types";
 const ROLE_PERMISSIONS: Record<string, string[]> = {
-  SuperAdmin: ["complaint:read", "complaint:recovery:manage", "report:view", "report:export", "audit:read", "user:manage", "role:manage", "config:manage", "sla:configure", "template:manage", "notification:manage", "admin:ping"],
-  SystemAdmin: ["user:manage", "role:manage", "config:manage", "sla:configure", "template:manage", "notification:manage", "admin:ping"],
+  SuperAdmin: ["complaint:read", "complaint:recovery:manage", "report:view", "report:export", "audit:read", "user:manage", "role:manage", "config:manage", "sla:configure", "template:manage", "notification:manage", "admin:ping", "knowledge:manage"],
+  SystemAdmin: ["user:manage", "role:manage", "config:manage", "sla:configure", "template:manage", "notification:manage", "admin:ping", "knowledge:manage"],
   ComplaintsAdmin: ["complaint:read", "complaint:recovery:manage", "workflow:transition"],
   CaseOfficer: ["complaint:read:own", "workflow:transition"],
   ReviewerApprover: ["complaint:read", "complaint:review", "complaint:approve", "workflow:transition"],
   Ombudsperson: ["complaint:read", "complaint:escalate", "audit:read", "report:view"],
   ReadOnlyObserver: ["complaint:read", "report:view"],
   Auditor: ["audit:read", "report:view", "report:export"],
-  CommunicationsOfficer: ["template:manage", "notification:manage"],
+  CommunicationsOfficer: [
+    "template:manage",
+    "notification:manage",
+    "knowledge:manage",
+    "chatbot:analytics:read",
+  ],
 };
 
 function sessionUser(role: string): SessionUser {
@@ -46,17 +51,19 @@ describe("nav permission matrix", () => {
     expect(hrefs).not.toContain(staffRoutes.admin.root);
   });
 
-  it("CommunicationsOfficer sees admin without top-level inbox nav", () => {
+  it("CommunicationsOfficer sees knowledge base and admin in main nav", () => {
     const hrefs = navHrefs("CommunicationsOfficer");
     expect(hrefs).toEqual([
       staffRoutes.home,
+      staffRoutes.admin.knowledge,
       staffRoutes.admin.root,
       staffRoutes.profile,
     ]);
   });
 
-  it("SystemAdmin sees dashboard and admin", () => {
+  it("SystemAdmin sees dashboard, knowledge base, and admin", () => {
     const hrefs = navHrefs("SystemAdmin");
+    expect(hrefs).toContain(staffRoutes.admin.knowledge);
     expect(hrefs).toContain(staffRoutes.admin.root);
     expect(hrefs).not.toContain(staffRoutes.complaints);
   });

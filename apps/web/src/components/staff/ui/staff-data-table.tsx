@@ -20,6 +20,8 @@ export interface StaffDataTableProps<T> {
   emptyTitle?: string;
   emptyDescription?: string;
   hidePagination?: boolean;
+  /** Highlights the row whose key matches (e.g. article being edited). */
+  activeRowKey?: string;
 }
 
 export function StaffDataTable<T>({
@@ -34,6 +36,7 @@ export function StaffDataTable<T>({
   emptyTitle = "No records",
   emptyDescription = "There is nothing to display yet.",
   hidePagination = false,
+  activeRowKey,
 }: StaffDataTableProps<T>) {
   const totalPages = getTotalPages(total, pageSize);
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -76,10 +79,18 @@ export function StaffDataTable<T>({
               </tr>
             ) : null}
             {!loading
-              ? rows.map((row) => (
+              ? rows.map((row) => {
+                  const key = rowKey(row);
+                  const isActive = activeRowKey !== undefined && key === activeRowKey;
+                  return (
                   <tr
-                    key={rowKey(row)}
-                    className="border-b border-staff-border/25 transition-colors last:border-b-0 hover:bg-staff-nav-hover/35"
+                    key={key}
+                    className={`border-b border-staff-border/25 transition-colors last:border-b-0 hover:bg-staff-nav-hover/35 ${
+                      isActive
+                        ? "bg-staff-nav-active/10 ring-1 ring-inset ring-staff-nav-active/40"
+                        : ""
+                    }`}
+                    aria-selected={isActive || undefined}
                   >
                     {columns.map((col) => (
                       <td
@@ -90,7 +101,8 @@ export function StaffDataTable<T>({
                       </td>
                     ))}
                   </tr>
-                ))
+                  );
+                })
               : null}
           </tbody>
         </table>

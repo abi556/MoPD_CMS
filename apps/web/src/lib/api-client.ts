@@ -11,12 +11,20 @@ export interface ApiErrorBody {
   code?: string;
   message: string;
   correlationId?: string;
+  details?: {
+    fromStatus?: string;
+    toStatus?: string;
+    requiredPermissions?: string[];
+    requiredRoles?: string[];
+    reasonCode?: string;
+  };
 }
 
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
   readonly correlationId?: string;
+  readonly details?: ApiErrorBody["details"];
 
   constructor(status: number, body: ApiErrorBody) {
     super(body.message);
@@ -24,6 +32,7 @@ export class ApiError extends Error {
     this.status = status;
     this.code = body.code;
     this.correlationId = body.correlationId;
+    this.details = body.details;
   }
 }
 

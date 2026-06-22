@@ -3,6 +3,7 @@
 const PERMISSION_ALIASES: Record<string, readonly string[]> = {
   "complaint:read": ["complaints:list", "complaints:detail", "complaints:history", "complaint:read:own"],
   "workflow:transition": ["complaints:transition", "complaints:assign"],
+  "complaint:assign": ["complaints:assign"],
   "template:manage": ["config:manage"],
   "notification:manage": ["config:manage"],
   "sla:configure": ["config:manage"],

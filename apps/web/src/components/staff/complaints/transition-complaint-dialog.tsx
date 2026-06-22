@@ -11,6 +11,11 @@ import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  WorkflowBlockedCallout,
+  workflowBlockedFromApiError,
+  type WorkflowBlockedInfo,
+} from "@/components/staff/complaints/workflow-blocked-callout";
 
 type TransitionDialogVariant = "default" | "approve" | "return";
 
@@ -18,6 +23,9 @@ interface TransitionComplaintDialogProps {
   open: boolean;
   complaintId: string;
   currentStatus: ComplaintStatus;
+  sessionUserId: string;
+  sessionRoles: string[];
+  assignedToUserId: string | null;
   permissions: string[];
   variant?: TransitionDialogVariant;
   onClose: () => void;
@@ -36,6 +44,9 @@ export function TransitionComplaintDialog({
   open,
   complaintId,
   currentStatus,
+  sessionUserId,
+  sessionRoles,
+  assignedToUserId,
   permissions,
   variant = "default",
   onClose,
@@ -43,8 +54,13 @@ export function TransitionComplaintDialog({
 }: TransitionComplaintDialogProps) {
   const t = useTranslations("complaints.actions");
   const options = useMemo(
-    () => getAllowedTransitions(currentStatus, permissions),
-    [currentStatus, permissions],
+    () =>
+      getAllowedTransitions(currentStatus, permissions, {
+        userId: sessionUserId,
+        roles: sessionRoles,
+        assignedToUserId,
+      }),
+    [currentStatus, permissions, sessionUserId, sessionRoles, assignedToUserId],
   );
   const lockedStatus = variantTargetStatus(variant);
   const [toStatus, setToStatus] = useState<ComplaintStatus>(
@@ -54,6 +70,7 @@ export function TransitionComplaintDialog({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [reasonError, setReasonError] = useState<string | undefined>();
+  const [blocked, setBlocked] = useState<WorkflowBlockedInfo | undefined>();
 
   const trimmedReason = reason.trim();
   const reasonValid = trimmedReason.length >= 5;
@@ -84,6 +101,7 @@ export function TransitionComplaintDialog({
     setReason("");
     setError(undefined);
     setReasonError(undefined);
+    setBlocked(undefined);
   }, [open, currentStatus, options, lockedStatus]);
 
   const handleSubmit = async () => {
@@ -94,6 +112,7 @@ export function TransitionComplaintDialog({
     setSubmitting(true);
     setError(undefined);
     setReasonError(undefined);
+    setBlocked(undefined);
     try {
       await transitionComplaint(complaintId, {
         toStatus,
@@ -103,13 +122,18 @@ export function TransitionComplaintDialog({
       onClose();
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(
-          err.code === "workflow_forbidden"
-            ? t("workflowForbidden")
-            : err.code === "VALIDATION_ERROR" || err.status === 422
-              ? err.message || t("validationError")
-              : err.message,
-        );
+        if (err.code === "workflow_forbidden") {
+          setBlocked(
+            workflowBlockedFromApiError({
+              message: err.message,
+              details: err.details,
+            }),
+          );
+        } else if (err.code === "VALIDATION_ERROR" || err.status === 422) {
+          setError(err.message || t("validationError"));
+        } else {
+          setError(err.message);
+        }
       } else {
         setError(t("validationError"));
       }
@@ -141,6 +165,13 @@ export function TransitionComplaintDialog({
       }
     >
       <div className="space-y-4">
+        {blocked ? (
+          <WorkflowBlockedCallout
+            complaintId={complaintId}
+            info={blocked}
+            showCreateTaskLink={false}
+          />
+        ) : null}
         {error ? (
           <p className="text-sm text-red-400" role="alert">
             {error}

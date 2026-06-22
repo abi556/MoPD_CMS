@@ -472,3 +472,112 @@ model ReportExport {
   @@index([requestedById, createdAt])
   @@index([status])
 }
+
+// ---------------------------------------------------------------------------
+// Melhiq chatbot — knowledge base + sessions (SDS §5.3.8)
+// ---------------------------------------------------------------------------
+
+enum KnowledgeArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum KnowledgeSourceType {
+  FAQ
+  OFFICIAL
+  REFERENCE
+  MANUAL
+}
+
+enum ChatMessageRole {
+  USER
+  BOT
+}
+
+enum ChatConfidence {
+  VERIFIED
+  GUIDANCE_ONLY
+  REFUSED
+}
+
+model KnowledgeArticle {
+  id              String                 @id @default(uuid())
+  slug            String
+  locale          ComplaintLocale
+  title           String
+  bodyMarkdown    String                 @db.Text
+  topic           String
+  status          KnowledgeArticleStatus @default(DRAFT)
+  sourceUrl       String?
+  sourceType      KnowledgeSourceType    @default(MANUAL)
+  lastReviewedAt  DateTime?
+  publishedAt     DateTime?
+  createdByUserId String?
+  updatedByUserId String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  chunks          KnowledgeChunk[]
+
+  @@unique([slug, locale])
+  @@index([status, locale])
+  @@index([topic])
+}
+
+model KnowledgeChunk {
+  id         String           @id @default(uuid())
+  articleId  String
+  chunkIndex Int
+  content    String           @db.Text
+  tokenCount Int
+  locale     ComplaintLocale
+  topic      String
+  embedding  Unsupported("vector(768)")?
+  article    KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
+
+  @@index([articleId])
+  @@index([locale])
+}
+
+model ChatSession {
+  id        String          @id @default(uuid())
+  sessionId String          @unique
+  ipHash    String?
+  locale    ComplaintLocale
+  turnCount Int             @default(0)
+  expiresAt DateTime
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  messages  ChatMessage[]
+
+  @@index([expiresAt])
+}
+
+model ChatMessage {
+  id              String           @id @default(uuid())
+  sessionId       String
+  role            ChatMessageRole
+  contentRedacted String           @db.Text
+  confidence      ChatConfidence?
+  sourcesJson     Json?
+  createdAt       DateTime         @default(now())
+  session         ChatSession      @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
+model ChatAnalyticsDaily {
+  id                  String          @id @default(uuid())
+  date                DateTime        @db.Date
+  locale              ComplaintLocale
+  questionsAnswered   Int             @default(0)
+  questionsUnanswered Int             @default(0)
+  handoffs            Int             @default(0)
+  deflectionRate      Float?
+  topUnansweredHashes Json?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@unique([date, locale])
+}

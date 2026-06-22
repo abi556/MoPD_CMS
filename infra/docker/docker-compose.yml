@@ -73,7 +73,7 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api/v1}
 
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: mopd-cms-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}

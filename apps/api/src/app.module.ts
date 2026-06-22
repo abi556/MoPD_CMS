@@ -16,6 +16,7 @@ import { ReferenceDataModule } from './modules/reference-data/reference-data.mod
 import { DocumentsModule } from './modules/documents/documents.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { BullBoardAdminModule } from './queue/bull-board.module';
 import { QueueModule } from './queue/queue.module';
@@ -34,6 +35,7 @@ import { QueueModule } from './queue/queue.module';
     NotificationsModule,
     DocumentsModule,
     ReportsModule,
+    ChatbotModule,
     UserModule,
     PrismaModule,
     ThrottlerModule.forRoot({

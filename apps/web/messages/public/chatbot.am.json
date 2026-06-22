@@ -18,5 +18,10 @@
   "quickRecover": "ማጣቀሻ መልስ",
   "quickFaq": "ተደጋጋሚ ጥያቄዎች",
   "quickHours": "የሥራ ሰዓት",
-  "promptHours": "የMoPD የሥራ ሰዓት ምንድን ነው?"
+  "promptHours": "የMoPD የሥራ ሰዓት ምንድን ነው?",
+  "confidenceVerified": "ከኦፊሴላዊ የእውቀት መሠረት የተረጋገጠ",
+  "confidenceGuidance": "አጠቃላይ መመሪያ — ኦፊሴላዊ ውሳኔ አይደለም",
+  "confidenceRefused": "ከመልህቅ ወሰን ውጭ — ስለዚያ መልስ መስጠት አልችልም",
+  "errorGeneric": "ስህተት ተከስቷል። እንደገና ይሞክሩ ወይም ከታች ያሉትን አገናኞች ይጠቀሙ።",
+  "sourceLabel": "ምንጭ"
 }

@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@formspree/react": "^3.0.0",
+    "@mopd-cms/shared": "workspace:*",
     "ethiopian-calendar-date-converter": "^2.1.6",
     "lucide-react": "^0.511.0",
     "next": "16.2.4",

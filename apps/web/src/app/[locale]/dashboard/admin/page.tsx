@@ -1,32 +1,16 @@
 "use client";
 
-import {
-  Activity,
-  Building2,
-  Clock,
-  FileText,
-  FolderTree,
-  ScrollText,
-  Shield,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { Activity } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { buildAdminNav } from "@/lib/navigation/build-admin-nav";
+import { ADMIN_NAV_ICONS } from "@/lib/navigation/staff-nav-icons";
+import { hasExactPermission } from "@/lib/permissions";
+import { staffRoutes } from "@/lib/staff/routes";
 import { useSession } from "@/components/providers/auth-provider";
 import { StaffHubCard } from "@/components/staff/ui/staff-hub-card";
 import { StaffPageShell } from "@/components/staff/ui/staff-page-shell";
 
-const ADMIN_ICONS: Record<string, LucideIcon> = {
-  adminUsers: Users,
-  adminRoles: Shield,
-  adminCategories: FolderTree,
-  adminOrgUnits: Building2,
-  adminSla: Clock,
-  adminTemplates: FileText,
-  adminSystem: Activity,
-  adminAudit: ScrollText,
-};
+const ADMIN_ICONS = ADMIN_NAV_ICONS;
 
 const ADMIN_DESCRIPTION_KEYS: Record<string, string> = {
   adminUsers: "users.subtitle",
@@ -35,6 +19,7 @@ const ADMIN_DESCRIPTION_KEYS: Record<string, string> = {
   adminOrgUnits: "orgUnits.subtitle",
   adminSla: "sla.subtitle",
   adminTemplates: "templates.subtitle",
+  adminKnowledge: "knowledge.subtitle",
   adminSystem: "system.subtitle",
   adminAudit: "audit.subtitle",
 };
@@ -44,11 +29,23 @@ export default function DashboardAdminPage() {
   const tAdmin = useTranslations("admin");
   const { user } = useSession();
   const adminLinks = user ? buildAdminNav(user) : [];
+  const hubLinks =
+    user &&
+    hasExactPermission(user.permissions, "knowledge:manage") &&
+    !adminLinks.some((item) => item.href === staffRoutes.admin.knowledge)
+      ? [
+          ...adminLinks,
+          {
+            href: staffRoutes.admin.knowledge,
+            labelKey: "adminKnowledge",
+          },
+        ]
+      : adminLinks;
 
   return (
     <StaffPageShell title={tNav("admin")} subtitle={tAdmin("hub.subtitle")}>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {adminLinks.map((item) => {
+        {hubLinks.map((item) => {
           const labelKey = item.labelKey as keyof typeof ADMIN_ICONS;
           const Icon = ADMIN_ICONS[labelKey] ?? Activity;
           const descriptionKey = ADMIN_DESCRIPTION_KEYS[labelKey];

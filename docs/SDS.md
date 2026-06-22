@@ -439,7 +439,7 @@ Each NestJS module follows a strict layered architecture:
 | **Virus Scanning** | ClamAV | Latest | Attachment malware scanning |
 | **Email** | Nodemailer | Latest | SMTP email dispatch |
 | **SMS** | Ethio Telecom API (custom adapter) | - | Transactional SMS and OTP |
-| **Chatbot NLP** | Rasa Open Source / custom intent matcher | Latest | Bilingual FAQ chatbot engine |
+| **Chatbot NLP** | Google Gemini + pgvector RAG (Melhiq) | 2026 | Bilingual FAQ chatbot; Rasa optional future |
 | **Search** | PostgreSQL FTS (`tsvector`) | Built-in | Full-text search across complaints |
 | **Monitoring** | Prometheus + Grafana | Latest | Metrics collection and dashboarding |
 | **Logging** | Pino (structured JSON) + Loki | Latest | Centralized log aggregation |
@@ -839,8 +839,8 @@ Citizen ──► Next.js Chat Widget ──► POST /api/v1/chatbot/message
                                            │
                                     ┌──────▼──────┐
                                     │Intent Engine│
-                                    │ (Rasa /     │
-                                    │    custom)  │
+                                    │ (Gemini +   │
+                                    │  pgvector)  │
                                     └──────┬──────┘
                                            │
                               ┌────────────┼────────────┐

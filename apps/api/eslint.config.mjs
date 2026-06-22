@@ -33,6 +33,18 @@ export default tseslint.config(
     },
   },
   {
+    // Prisma delegate types are not always resolved by the IDE project service.
+    files: ['src/modules/chatbot/**/*.ts'],
+    ignores: ['src/modules/chatbot/**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-redundant-type-constituents': 'off',
+    },
+  },
+  {
     // Test specs commonly use loose `as never` mocks; relax type-safety noise there.
     files: ['**/*.spec.ts', 'test/**/*.ts'],
     rules: {

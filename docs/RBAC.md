@@ -88,6 +88,12 @@ All codes below are defined in `apps/api/src/modules/auth/rbac/seed-catalog.ts` 
 | `complaint:recovery:manage` | Staff recovery inquiry queue (`GET/PATCH /complaints/recovery/inquiries`) |
 | `complaint:review` | Move complaint into QA/legal review |
 | `complaint:approve` | Approve response issuance from QA |
+| `complaint:triage` | Move `SUBMITTED` complaints into triage |
+| `complaint:assign` | Assign or reassign complaints to any officer |
+| `complaint:assign:self` | Self-assign unassigned triage complaints |
+| `complaint:investigate` | Investigation, draft, and submit-to-QA on assigned cases |
+| `complaint:publish` | Publish issued responses (`RESPONSE_ISSUED` → `AWAITING_FEEDBACK`) |
+| `complaint:close` | Close complaints after feedback period |
 | `complaint:update` | Update non-status complaint fields |
 | `workflow:transition` | Workflow transitions and assignments (SDS) |
 | `user:manage` | User lifecycle and profiles |
@@ -98,6 +104,8 @@ All codes below are defined in `apps/api/src/modules/auth/rbac/seed-catalog.ts` 
 | `notification:manage` | Outbound email delivery admin (resend, delivery log) |
 | `notification:read` | Read outbound email delivery log (**seed only; `GET /notifications` uses `notification:manage` today**) |
 | `template:manage` | Notification template admin |
+| `knowledge:manage` | Melhiq chatbot knowledge base CRUD/publish/reindex |
+| `chatbot:analytics:read` | View Melhiq daily analytics aggregates |
 | `case:read` | List case notes/tasks on a complaint |
 | `case:write` | Create/update case notes and tasks |
 | `document:upload` | Upload documents to complaints |
@@ -118,6 +126,7 @@ Defined in `apps/api/src/modules/auth/rbac/permission-aliases.ts`. Aliases are *
 | `complaint:read` | `complaints:list`, `complaints:detail`, `complaints:history` |
 | `complaint:read:own` | _(self only)_ |
 | `workflow:transition` | `complaints:transition`, `complaints:assign` |
+| `complaint:assign` | `complaints:assign` |
 | `complaint:escalate` | `complaint:escalate` |
 | `template:manage` | `config:manage` |
 | `notification:manage` | `config:manage` |
@@ -156,7 +165,7 @@ Roles are defined in `apps/api/src/modules/auth/rbac/role-catalog.ts`. Permissio
 | **Seed ID** | `role-system-admin` |
 | **Name** | `SystemAdmin` |
 
-**Permissions:** `admin:ping`, `user:manage`, `role:manage`, `config:manage`, `sla:configure`, `template:manage`, `notification:manage`
+**Permissions:** `admin:ping`, `user:manage`, `role:manage`, `config:manage`, `sla:configure`, `template:manage`, `notification:manage`, `knowledge:manage`, `chatbot:analytics:read`
 
 **Typical use:** user/role administration, reference data, SLA and notification configuration. No complaint workflow permissions unless granted manually in DB.
 
@@ -167,9 +176,9 @@ Roles are defined in `apps/api/src/modules/auth/rbac/role-catalog.ts`. Permissio
 | **Seed ID** | `role-complaints-admin` |
 | **Name** | `ComplaintsAdmin` |
 
-**Permissions:** `complaint:read`, `workflow:transition`, `complaints:assign`, `complaints:transition`, `complaint:escalate`, `complaints:list`, `complaints:detail`, `complaints:history`, `complaint:update`
+**Permissions:** `complaint:read`, `complaint:triage`, `complaint:assign`, `complaint:close`, `complaint:publish`, `workflow:transition`, `complaint:escalate`, `complaints:list`, `complaints:detail`, `complaints:history`, `complaint:update`, `complaint:recovery:manage`
 
-**Typical use:** full complaint visibility, assignment, transitions, metadata updates, appeals/escalation. No case notes, documents, reports, or audit.
+**Typical use:** full complaint visibility, triage, assignment, publish/close, appeals. No case notes, documents, reports, or audit unless granted manually.
 
 ### CaseOfficer
 
@@ -178,9 +187,9 @@ Roles are defined in `apps/api/src/modules/auth/rbac/role-catalog.ts`. Permissio
 | **Seed ID** | `role-case-officer` |
 | **Name** | `CaseOfficer` |
 
-**Permissions:** `complaint:read:own`, `complaints:list`, `complaints:detail`, `complaints:history`, `complaints:assign`, `complaints:transition`, `workflow:transition`, `complaint:escalate`, `case:read`, `case:write`, `document:upload`, `document:read`, `document:delete`, `complaint:update`
+**Permissions:** `complaint:read:own`, `complaints:list`, `complaints:detail`, `complaints:history`, `complaint:assign:self`, `complaint:investigate`, `complaint:escalate`, `case:read`, `case:write`, `document:upload`, `document:read`, `document:delete`, `complaint:update`
 
-**Typical use:** assignee-scoped complaint work, case collaboration, documents. List/detail routes accept legacy list codes via alias; data layer scopes rows (§6).
+**Typical use:** assignee-scoped complaint work (self-assign from unassigned triage only), case collaboration, documents. List/detail routes accept legacy list codes via alias; data layer scopes rows (§6).
 
 ### ReviewerApprover
 
@@ -189,9 +198,9 @@ Roles are defined in `apps/api/src/modules/auth/rbac/role-catalog.ts`. Permissio
 | **Seed ID** | `role-reviewer-approver` |
 | **Name** | `ReviewerApprover` |
 
-**Permissions:** `complaint:read`, `complaint:review`, `complaint:approve`, `workflow:transition`, `complaints:transition`, `complaints:list`, `complaints:detail`, `complaints:history`
+**Permissions:** `complaint:read`, `complaint:review`, `complaint:approve`, `complaints:list`, `complaints:detail`, `complaints:history`, `document:read`
 
-**Typical use:** QA/legal review and approving issuance from QA (workflow policy §7).
+**Typical use:** QA/legal review and approving issuance from QA only (workflow policy §7). Cannot triage, assign, investigate, or close.
 
 ### CommunicationsOfficer
 
@@ -200,9 +209,9 @@ Roles are defined in `apps/api/src/modules/auth/rbac/role-catalog.ts`. Permissio
 | **Seed ID** | `role-communications-officer` |
 | **Name** | `CommunicationsOfficer` |
 
-**Permissions:** `notification:manage`, `notification:read`, `template:manage`
+**Permissions:** `notification:manage`, `notification:read`, `template:manage`, `knowledge:manage`, `chatbot:analytics:read`
 
-**Typical use:** outbound email templates and delivery admin. In-app staff inbox (`/users/me/notifications`) is available to any authenticated user without a separate permission.
+**Typical use:** outbound email templates, Melhiq knowledge base publishing, delivery admin. In-app staff inbox (`/users/me/notifications`) is available to any authenticated user without a separate permission.
 
 ### Auditor
 
@@ -272,18 +281,48 @@ Case collaboration (`/complaints/:id/notes|tasks`), documents (`/documents/*`), 
 
 ## 7) Workflow policy (beyond RBAC)
 
-`WorkflowPolicyService` runs **after** authentication and `@Permissions` checks. Denials return **`422`** with `workflow_forbidden`.
+`WorkflowPolicyService` runs **after** authentication and `@Permissions` checks. Rules are defined in `@mopd-cms/shared` (`packages/shared/src/workflow/complaint-workflow.ts`) so API and web UI stay aligned. Denials return **`422`** with `workflow_forbidden`.
 
-| Rule | Requirement |
-|------|-------------|
-| **SuperAdmin** | All workflow checks skipped |
-| **Assign** (`assertCanAssign`) | `workflow:transition` **or** `complaints:assign` |
-| **Transition to `QA_LEGAL_REVIEW`** | `complaint:review` |
-| **`QA_LEGAL_REVIEW` → `RESPONSE_ISSUED`** | `complaint:approve` |
-| **Transition to `APPEAL`** | `complaint:escalate` |
-| **Transition to `ASSIGNED`, or from `TRIAGE`** | `workflow:transition` **or** `complaints:transition` **or** `complaints:assign` |
+### Structured denial payload
 
-**Important:** `@Permissions('workflow:transition')` on assign/transition routes is necessary but not sufficient — workflow policy may still reject the operation.
+```json
+{
+  "error": {
+    "code": "workflow_forbidden",
+    "message": "Human-readable summary",
+    "details": {
+      "fromStatus": "SUBMITTED",
+      "toStatus": "TRIAGE",
+      "requiredPermissions": ["complaint:triage"],
+      "requiredRoles": ["ComplaintsAdmin"],
+      "reasonCode": "missing_permission"
+    }
+  }
+}
+```
+
+`reasonCode` values: `missing_permission`, `not_assignee`, `self_assign_not_allowed`, `already_assigned`, `invalid_status`.
+
+### Transition matrix
+
+| Transition | Who | Permission | Extra rule |
+|------------|-----|------------|------------|
+| `SUBMITTED` → `TRIAGE` | ComplaintsAdmin | `complaint:triage` | — |
+| Assign (`TRIAGE`/`APPEAL` → `ASSIGNED`) | ComplaintsAdmin | `complaint:assign` | Admin picks officer |
+| Self-assign from triage | CaseOfficer | `complaint:assign:self` | Unassigned `TRIAGE` only; assignee must be self |
+| `APPEAL` → `ASSIGNED` | ComplaintsAdmin | `complaint:assign` | No officer self-assign on appeal |
+| `ASSIGNED` → `IN_INVESTIGATION` | CaseOfficer (assignee) | `complaint:investigate` | `assignedToUserId === actor` |
+| `IN_INVESTIGATION` → `DRAFT_RESPONSE` | CaseOfficer (assignee) | `complaint:investigate` | assignee only |
+| `DRAFT_RESPONSE` → `QA_LEGAL_REVIEW` | CaseOfficer (assignee) | `complaint:investigate` | assignee only + draft length guard |
+| `QA_LEGAL_REVIEW` → `DRAFT_RESPONSE` | ReviewerApprover | `complaint:review` | — |
+| `QA_LEGAL_REVIEW` → `RESPONSE_ISSUED` | ReviewerApprover | `complaint:approve` | — |
+| `RESPONSE_ISSUED` → `AWAITING_FEEDBACK` | ComplaintsAdmin or assignee officer | `complaint:publish` | assignee-only unless admin |
+| `AWAITING_FEEDBACK` → `CLOSED` | ComplaintsAdmin | `complaint:close` | — |
+| `AWAITING_FEEDBACK` → `APPEAL` | ComplaintsAdmin, Ombudsperson | `complaint:escalate` | — |
+
+**SuperAdmin** bypasses all workflow checks.
+
+**Important:** `@Permissions('workflow:transition')` on assign/transition routes is necessary but not sufficient — workflow policy may still reject the operation. Granular permissions (`complaint:triage`, `complaint:investigate`, etc.) are authoritative; `workflow:transition` is retained on ComplaintsAdmin for backward compatibility.
 
 There are two escalation surfaces with the same permission:
 

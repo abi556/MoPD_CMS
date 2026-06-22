@@ -24,6 +24,8 @@
   "adminOrgUnits": "Org units",
   "adminSla": "SLA rules",
   "adminTemplates": "Templates",
+  "adminKnowledge": "Knowledge base",
+  "knowledgeBase": "Knowledge base",
   "adminEmailDeliveries": "Email deliveries",
   "adminNotifications": "Notifications",
   "notifications": "Notifications",

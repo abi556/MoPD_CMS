@@ -63,6 +63,7 @@
     "phase8Title": "Coming in Phase 8",
     "phase8Description": "This tab will be available in a future release.",
     "assign": "Assign",
+    "assignBlockedHint": "Assignment is handled by Complaints Admin. Case Officers may self-assign only from unassigned triage as a fallback.",
     "transition": "Transition",
     "approve": "Approve response",
     "returnForRevision": "Return for revision",
@@ -167,7 +168,28 @@
     "appealReasonTooShort": "Enter a reason with at least 10 characters.",
     "appealSubmit": "Submit appeal",
     "workflowForbidden": "You are not allowed to perform this action.",
-    "validationError": "This transition is not allowed for the current status."
+    "validationError": "This transition is not allowed for the current status.",
+    "assignSelfDescription": "Pick up this unassigned case for yourself.",
+    "assignSelfHint": "You will be assigned as the investigating officer.",
+    "workflowBlocked": {
+      "title": "Action not available for your role",
+      "handledBy": "This step is typically handled by: {roles}",
+      "createTask": "Create a follow-up task on this case",
+      "roles": {
+        "ComplaintsAdmin": "Complaints Admin",
+        "CaseOfficer": "Case Officer",
+        "ReviewerApprover": "Reviewer / Approver",
+        "Ombudsperson": "Ombudsperson",
+        "SuperAdmin": "Super Admin"
+      },
+      "reasons": {
+        "missing_permission": "Your account does not have the required workflow permission.",
+        "not_assignee": "Only the assigned officer can perform this step.",
+        "self_assign_not_allowed": "Self-assign is only allowed from unassigned triage.",
+        "already_assigned": "This case is already assigned to another officer.",
+        "invalid_status": "This action is not valid for the current case status."
+      }
+    }
   },
   "history": {
     "title": "History",

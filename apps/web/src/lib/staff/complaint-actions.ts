@@ -3,10 +3,11 @@ import type { ComplaintStatus } from "@/components/ui/status-badge";
 import {
   canAssign,
   canAssignFromStatus,
+  canPickAssigneeUser,
   getAllowedTransitions,
 } from "@/lib/staff/workflow-transitions";
 
-export { canAssign, canAssignFromStatus, getAllowedTransitions };
+export { canAssign, canAssignFromStatus, getAllowedTransitions, canPickAssigneeUser };
 
 export function canEscalate(permissions: readonly string[]): boolean {
   return hasPermission(permissions, "complaint:escalate");
@@ -40,15 +41,21 @@ export function canReturnForRevision(
   );
 }
 
-/** Generic transition button — QA review uses dedicated approve/return actions. */
 export function showGenericTransition(
   status: ComplaintStatus,
   permissions: readonly string[],
+  options?: {
+    userId?: string;
+    roles?: readonly string[];
+    assignedToUserId?: string | null;
+  },
 ): boolean {
   if (status === "QA_LEGAL_REVIEW") {
     return false;
   }
-  return getAllowedTransitions(status, permissions).length > 0;
+  return (
+    getAllowedTransitions(status, permissions, options).length > 0
+  );
 }
 
 const RESPONSE_DRAFT_EDIT_STATUSES: ComplaintStatus[] = [
@@ -84,6 +91,11 @@ export function isComplaintReadOnlyUser(permissions: readonly string[]): boolean
   const actionPermissions = [
     "workflow:transition",
     "complaints:assign",
+    "complaint:assign",
+    "complaint:assign:self",
+    "complaint:investigate",
+    "complaint:triage",
+    "complaint:close",
     "complaint:escalate",
     "complaint:update",
     "case:write",

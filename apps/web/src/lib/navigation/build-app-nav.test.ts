@@ -79,4 +79,16 @@ describe("buildAppNav", () => {
     const nav = buildAppNav(user(["notification:manage"]));
     expect(nav.some((i) => i.href === staffRoutes.notifications)).toBe(false);
   });
+
+  it("includes knowledge base at top level for knowledge:manage", () => {
+    const nav = buildAppNav(user(["knowledge:manage"]));
+    expect(nav.map((i) => i.href)).toEqual([
+      staffRoutes.home,
+      staffRoutes.admin.knowledge,
+      staffRoutes.profile,
+    ]);
+    expect(nav.find((i) => i.href === staffRoutes.admin.knowledge)?.icon).toBe(
+      "book-open",
+    );
+  });
 });
