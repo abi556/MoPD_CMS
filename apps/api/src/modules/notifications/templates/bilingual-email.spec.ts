@@ -40,8 +40,11 @@ describe('composeBilingualEmail', () => {
     expect(amIndex).toBeGreaterThan(enIndex);
     expect(html).toContain('Hello EN');
     expect(html).toContain('ሰላም AM');
-    expect(html).toContain('word-break:break-all');
-    expect(text).toBe('Hello EN\n\nሰላም AM');
+    expect(html).toContain('mopd_logo.png');
+    expect(html).toContain('#527f47');
+    expect(text).toContain('Hello EN');
+    expect(text).toContain('ሰላም AM');
+    expect(text).toContain('mopd.gov.et');
   });
 
   it('omits Amharic section when amHtml is empty', () => {
@@ -50,7 +53,6 @@ describe('composeBilingualEmail', () => {
       amHtml: '',
     });
     expect(html).not.toContain('lang="am"');
-    expect(html).not.toContain('<hr');
   });
 
   it('strips HTML for text fallback when bodyText missing', () => {
@@ -84,6 +86,7 @@ describe('seed templates integration', () => {
     );
     expect(html).toContain('Track complaint status');
     expect(html).toContain('ቅሬታዎን ይከታተሉ');
+    expect(html).toContain('mopd_logo.png');
     expect(html.indexOf('lang="en"')).toBeLessThan(html.indexOf('lang="am"'));
     expect(text).toContain(trackUrl);
     expect(text).toContain('We received your complaint');

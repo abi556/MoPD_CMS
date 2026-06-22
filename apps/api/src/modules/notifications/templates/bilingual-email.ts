@@ -1,4 +1,8 @@
 import type { ComplaintLocale, NotificationChannel } from '@prisma/client';
+import {
+  appendGovernmentEmailTextFooter,
+  wrapGovernmentEmailDocument,
+} from './government-email-layout';
 
 export interface LocaleTemplateContent {
   subject: string;
@@ -10,10 +14,20 @@ export type LocaleTemplateLoader = (
   locale: ComplaintLocale,
 ) => Promise<LocaleTemplateContent | null>;
 
-const LINK_STYLE = 'word-break:break-all;overflow-wrap:anywhere;color:#0563c1;';
+const LINK_STYLE =
+  'color:#3a6b35;font-weight:600;text-decoration:underline;word-break:break-all;overflow-wrap:anywhere;';
 
-const EMAIL_WRAPPER_STYLE =
-  'font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#222222;';
+/** @internal exported for template seeds that need link styling in rare inline cases */
+export const EMAIL_LINK_STYLE = LINK_STYLE;
+
+function stripHtmlTags(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
 
 /**
  * Combines English and Amharic subjects for outbound email.
@@ -30,37 +44,27 @@ export function composeBilingualSubject(
   return en || am;
 }
 
-function stripHtmlTags(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
-
 /**
- * Wraps rendered locale bodies: English first, Amharic second, with link-friendly styles.
+ * Wraps rendered locale bodies in the MoPD government email shell (logo, fern green, footer links).
  */
 export function composeBilingualEmail(params: {
   enHtml: string;
   amHtml: string;
   enText?: string;
   amText?: string;
+  preheader?: string;
 }): { html: string; text: string } {
   const enHtml = params.enHtml.trim();
   const amHtml = params.amHtml.trim();
 
-  const amSection = amHtml
-    ? `<hr style="border:none;border-top:1px solid #cccccc;margin:24px 0;" />
-<div lang="am" style="${EMAIL_WRAPPER_STYLE}">${amHtml}</div>`
-    : '';
-
-  const html = `<div style="${EMAIL_WRAPPER_STYLE}">
-<style type="text/css">a { ${LINK_STYLE} }</style>
-<div lang="en">${enHtml}</div>
-${amSection}
-</div>`;
+  const html = wrapGovernmentEmailDocument({
+    enHtml,
+    amHtml,
+    preheader:
+      params.preheader ??
+      (stripHtmlTags(enHtml).slice(0, 140) ||
+        'Official message from the Ministry of Planning and Development'),
+  });
 
   const textParts: string[] = [];
   const enText = params.enText?.trim() || stripHtmlTags(enHtml);
@@ -72,7 +76,10 @@ ${amSection}
     textParts.push(amText);
   }
 
-  return { html, text: textParts.join('\n\n') };
+  return {
+    html,
+    text: appendGovernmentEmailTextFooter(textParts.join('\n\n')),
+  };
 }
 
 /**
