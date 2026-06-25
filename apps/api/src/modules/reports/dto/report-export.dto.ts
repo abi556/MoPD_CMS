@@ -7,9 +7,9 @@ export class CreateReportExportDto extends DashboardReportQueryDto {
   @IsIn(['csv', 'xlsx', 'pdf'])
   format!: 'csv' | 'xlsx' | 'pdf';
 
-  @ApiProperty({ enum: ['complaints'], default: 'complaints' })
-  @IsIn(['complaints'])
-  reportType!: 'complaints';
+  @ApiProperty({ enum: ['complaints', 'executive'], default: 'complaints' })
+  @IsIn(['complaints', 'executive'])
+  reportType!: 'complaints' | 'executive';
 }
 
 export class ReportExportCreatedDto {

@@ -65,7 +65,7 @@ export interface ChannelsDashboardResponse {
 
 export interface CreateReportExportPayload extends ReportFilters {
   format: "csv" | "xlsx" | "pdf";
-  reportType: "complaints";
+  reportType: "complaints" | "executive";
 }
 
 export interface ReportExportJob {

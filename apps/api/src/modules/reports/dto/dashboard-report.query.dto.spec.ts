@@ -27,6 +27,18 @@ describe('CreateReportExportDto', () => {
     expect(errors).toHaveLength(0);
   });
 
+  it('accepts executive report type', async () => {
+    const dto = plainToInstance(CreateReportExportDto, {
+      from: '2026-01-01',
+      to: '2026-12-31',
+      bucket: 'week',
+      format: 'pdf',
+      reportType: 'executive',
+    });
+    const errors = await validate(dto);
+    expect(errors).toHaveLength(0);
+  });
+
   it('ignores Swagger placeholder string for categoryId', async () => {
     const dto = plainToInstance(CreateReportExportDto, {
       from: '2026-01-01',

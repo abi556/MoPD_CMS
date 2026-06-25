@@ -5,7 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api-client";
 import {
+  createReportExport,
   getChannelsDashboard,
+  getReportExportDownload,
+  getReportExportStatus,
   getResolutionDashboard,
   getSlaDashboard,
   getVolumeDashboard,
@@ -16,6 +19,7 @@ import { ReportsErrorState } from "@/components/staff/reports/reports-error-stat
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { StaffSurfaceCard } from "@/components/staff/ui/staff-surface-card";
 import { StaffAlert } from "@/components/staff/ui/staff-alert";
+import { Button } from "@/components/ui/button";
 
 const VolumeChart = dynamic(
   () => import("./charts/volume-chart").then((m) => m.VolumeChart),
@@ -90,6 +94,8 @@ export function ExecutiveInsightsView() {
   const t = useTranslations("reports");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [bucketPage, setBucketPage] = useState(1);
   const [volume, setVolume] = useState<Awaited<ReturnType<typeof getVolumeDashboard>>>();
   const [sla, setSla] = useState<Awaited<ReturnType<typeof getSlaDashboard>>>();
   const [resolution, setResolution] =
@@ -146,6 +152,66 @@ export function ExecutiveInsightsView() {
     return { total, submittedToday, closedToday, backlog, breachedPct };
   }, [resolution?.backlog, sla?.breachedPct, volume?.buckets.length, volume?.events, volume?.meta]);
 
+  const pagedBuckets = useMemo(() => {
+    if (!volume || !resolution) {
+      return null;
+    }
+
+    const pageSize = 7;
+    const totalPages = Math.max(Math.ceil(volume.buckets.length / pageSize), 1);
+    const safePage = Math.min(bucketPage, totalPages);
+    const start = (safePage - 1) * pageSize;
+    const end = start + pageSize;
+
+    return {
+      pageSize,
+      totalPages,
+      safePage,
+      buckets: volume.buckets.slice(start, end),
+      series: volume.series.map((item) => ({
+        ...item,
+        counts: item.counts.slice(start, end),
+      })),
+      resolutionByBucket: resolution.byBucket.slice(start, end),
+    };
+  }, [bucketPage, resolution, volume]);
+
+  async function handleQuickPdfExport() {
+    setExportingPdf(true);
+    setError(undefined);
+
+    try {
+      const job = await createReportExport({
+        from: isoDate(-29),
+        to: isoDate(0),
+        bucket: "day",
+        format: "pdf",
+        reportType: "executive",
+      });
+
+      const maxPollAttempts = 15;
+      let attempts = 0;
+      while (attempts < maxPollAttempts) {
+        const status = await getReportExportStatus(job.id);
+        if (status.status === "READY") {
+          const download = await getReportExportDownload(job.id);
+          window.open(download.url, "_blank", "noopener,noreferrer");
+          return;
+        }
+        if (status.status === "FAILED" || status.status === "EXPIRED") {
+          throw new Error(t("executive.quickPdfFailed"));
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        attempts += 1;
+      }
+      throw new Error(t("executive.quickPdfTimeout"));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t("executive.quickPdfFailed"));
+    } finally {
+      setExportingPdf(false);
+    }
+  }
+
   if (loading) {
     return <LoadingSkeleton className="h-64 w-full" />;
   }
@@ -166,9 +232,24 @@ export function ExecutiveInsightsView() {
         <KpiStatCard label={t("kpi.breachedPct")} value={`${summary.breachedPct}%`} variant="warning" />
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <StaffAlert variant="info">{t("executive.pdfNotice")}</StaffAlert>
+        <Button
+          type="button"
+          className="min-h-11"
+          disabled={exportingPdf}
+          onClick={() => void handleQuickPdfExport()}
+        >
+          {exportingPdf ? t("executive.preparingPdf") : t("executive.quickPdfExport")}
+        </Button>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-2">
         <StaffSurfaceCard title={t("executive.intakeClosureTitle")} subtitle={t("executive.intakeClosureSubtitle")}>
-          <VolumeChart buckets={volume.buckets} series={volume.series} />
+          <VolumeChart
+            buckets={pagedBuckets?.buckets ?? volume.buckets}
+            series={pagedBuckets?.series ?? volume.series}
+          />
           <StaffAlert variant="info">{t("executive.intakeClosureNote")}</StaffAlert>
         </StaffSurfaceCard>
 
@@ -189,12 +270,46 @@ export function ExecutiveInsightsView() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <StaffSurfaceCard title={t("executive.resolutionTitle")} subtitle={t("executive.resolutionSubtitle")}>
-          <ResolutionChart byBucket={resolution.byBucket} />
+          <ResolutionChart byBucket={pagedBuckets?.resolutionByBucket ?? resolution.byBucket} />
         </StaffSurfaceCard>
 
         <StaffSurfaceCard title={t("executive.platformTitle")} subtitle={t("executive.platformSubtitle")}>
           <StaffAlert variant="info">{t("executive.platformNotAvailable")}</StaffAlert>
         </StaffSurfaceCard>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <span className="text-xs text-staff-text-muted">
+          {t("executive.pageStatus", {
+            page: pagedBuckets?.safePage ?? 1,
+            totalPages: pagedBuckets?.totalPages ?? 1,
+          })}
+        </span>
+        <Button
+          type="button"
+          variant="secondary"
+          className="min-h-10"
+          disabled={(pagedBuckets?.safePage ?? 1) <= 1}
+          onClick={() => setBucketPage((p) => Math.max(1, p - 1))}
+        >
+          {t("executive.previous")}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          className="min-h-10"
+          disabled={(pagedBuckets?.safePage ?? 1) >= (pagedBuckets?.totalPages ?? 1)}
+          onClick={() =>
+            setBucketPage((p) =>
+              Math.min(
+                p + 1,
+                pagedBuckets?.totalPages ?? p + 1,
+              ),
+            )
+          }
+        >
+          {t("executive.next")}
+        </Button>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { AuditService } from '../audit/audit.service';
 import { DocumentStorageFactory } from '../documents/storage/document-storage.factory';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InAppNotificationService } from '../notifications/in-app-notification.service';
+import { RedisHealthService } from '../../queue/redis-health.service';
 
 describe('ReportsService', () => {
   let service: ReportsService;
@@ -27,7 +28,7 @@ describe('ReportsService', () => {
     getSignedDownloadUrl: jest.fn(),
   };
   const storageFactory = { getStorage: () => storage };
-  const queue = { add: jest.fn() };
+  const queue = { add: jest.fn(), getJobCounts: jest.fn().mockResolvedValue({}) };
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -38,6 +39,10 @@ describe('ReportsService', () => {
         { provide: AuditService, useValue: audit },
         { provide: DocumentStorageFactory, useValue: storageFactory },
         { provide: 'BullQueue_report-export', useValue: queue },
+        {
+          provide: RedisHealthService,
+          useValue: { ping: jest.fn().mockResolvedValue({ status: 'ok', latencyMs: 1 }) },
+        },
         {
           provide: InAppNotificationService,
           useValue: { notify: jest.fn().mockResolvedValue(null) },

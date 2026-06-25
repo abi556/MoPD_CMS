@@ -12,6 +12,7 @@ import {
 } from '@prisma/client';
 import { Queue } from 'bullmq';
 import { QUEUE_REPORT_EXPORT } from '../../queue/queue.constants';
+import { RedisHealthService } from '../../queue/redis-health.service';
 import { AuditService } from '../audit/audit.service';
 import { AUDIT_EVENT } from '../audit/audit-event.types';
 import {
@@ -25,6 +26,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { complaintsToCsv } from './report-export-csv.util';
 import { complaintsToXlsxBuffer } from './report-export-xlsx.util';
 import { complaintsToPdfBuffer } from './report-export-pdf.util';
+import { executiveToPdfBuffer } from './report-export-executive-pdf.util';
 import { ReportQueryService } from './report-query.service';
 import { ReportFilters, normalizeReportFilters } from './report-filters';
 import { InAppNotificationService } from '../notifications/in-app-notification.service';
@@ -36,7 +38,7 @@ import { UserNotificationSeverity, UserNotificationType } from '@prisma/client';
 
 export interface CreateExportInput {
   format: 'csv' | 'xlsx' | 'pdf';
-  reportType: 'complaints';
+  reportType: 'complaints' | 'executive';
   from: string;
   to: string;
   bucket?: 'day' | 'week' | 'month';
@@ -79,6 +81,7 @@ export class ReportsService {
     private readonly storageFactory: DocumentStorageFactory,
     @InjectQueue(QUEUE_REPORT_EXPORT)
     private readonly reportExportQueue: Queue,
+    private readonly redisHealth: RedisHealthService,
     private readonly inAppNotifications: InAppNotificationService,
   ) {}
 
@@ -255,7 +258,48 @@ export class ReportsService {
         mimeType =
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       } else if (record.format === ReportExportFormat.pdf) {
-        body = await complaintsToPdfBuffer(exportRows);
+        if (filtersJson.reportType === 'executive') {
+          const [
+            volume,
+            sla,
+            resolution,
+            channels,
+            officers,
+            redis,
+            queueCounts,
+          ] = await Promise.all([
+            this.reportQuery.getVolumeDashboard(filters),
+            this.reportQuery.getSlaDashboard(filters),
+            this.reportQuery.getResolutionDashboard(filters),
+            this.reportQuery.getChannelsDashboard(filters),
+            this.reportQuery.getOfficerInsights(filters),
+            this.redisHealth.ping(),
+            this.reportExportQueue.getJobCounts(
+              'waiting',
+              'active',
+              'delayed',
+              'failed',
+            ),
+          ]);
+          const pendingCount =
+            (queueCounts.waiting ?? 0) +
+            (queueCounts.active ?? 0) +
+            (queueCounts.delayed ?? 0);
+          body = await executiveToPdfBuffer({
+            rows: exportRows,
+            volume,
+            sla,
+            resolution,
+            channels,
+            officers,
+            generatedAt: new Date(),
+            redisStatus: redis.status,
+            redisLatencyMs: redis.latencyMs,
+            exportQueuePending: pendingCount,
+          });
+        } else {
+          body = await complaintsToPdfBuffer(exportRows);
+        }
         mimeType = 'application/pdf';
       } else {
         body = Buffer.from(complaintsToCsv(exportRows), 'utf-8');

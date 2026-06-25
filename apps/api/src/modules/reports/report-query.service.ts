@@ -39,6 +39,13 @@ export interface ChannelsDashboardResult {
   meta: ReportFilters & { total: number };
 }
 
+export interface OfficerInsightsResult {
+  assigneeUserId: string;
+  assigneeEmail: string;
+  totalAssigned: number;
+  closedAssigned: number;
+}
+
 @Injectable()
 export class ReportQueryService {
   constructor(private readonly prisma: PrismaService) {}
@@ -351,5 +358,67 @@ export class ReportQueryService {
         orgUnitId: true,
       },
     });
+  }
+
+  async getOfficerInsights(
+    filters: ReportFilters,
+    take = 10,
+  ): Promise<OfficerInsightsResult[]> {
+    const where = complaintWhereForFilters(filters);
+    const rows = await this.prisma.complaint.findMany({
+      where: {
+        ...where,
+        assignedToUserId: { not: null },
+      },
+      select: {
+        assignedToUserId: true,
+        status: true,
+      },
+    });
+
+    const countsByAssignee = new Map<
+      string,
+      { totalAssigned: number; closedAssigned: number }
+    >();
+    for (const row of rows) {
+      const assigneeUserId = row.assignedToUserId;
+      if (!assigneeUserId) {
+        continue;
+      }
+      const prev = countsByAssignee.get(assigneeUserId) ?? {
+        totalAssigned: 0,
+        closedAssigned: 0,
+      };
+      prev.totalAssigned += 1;
+      if (row.status === ComplaintStatus.CLOSED) {
+        prev.closedAssigned += 1;
+      }
+      countsByAssignee.set(assigneeUserId, prev);
+    }
+
+    const assigneeIds = [...countsByAssignee.keys()];
+
+    if (assigneeIds.length === 0) {
+      return [];
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: assigneeIds } },
+      select: { id: true, email: true },
+    });
+    const emailById = new Map(users.map((u) => [u.id, u.email]));
+
+    return assigneeIds
+      .map((assigneeUserId) => {
+        const counts = countsByAssignee.get(assigneeUserId);
+        return {
+          assigneeUserId,
+          assigneeEmail: emailById.get(assigneeUserId) ?? assigneeUserId,
+          totalAssigned: counts?.totalAssigned ?? 0,
+          closedAssigned: counts?.closedAssigned ?? 0,
+        };
+      })
+      .sort((a, b) => b.totalAssigned - a.totalAssigned)
+      .slice(0, take);
   }
 }
