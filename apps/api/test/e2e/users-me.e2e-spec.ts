@@ -11,6 +11,10 @@ describe('Users profile (e2e)', () => {
     app = await createTestApp();
   });
 
+  afterEach(async () => {
+    await app?.close();
+  });
+
   it('PATCH /users/me updates preferred locale', async () => {
     const token = await loginAsRole(asSupertestApp(app), 'CaseOfficer');
     const res = await request(asSupertestApp(app))

@@ -28,6 +28,11 @@ import { ChatbotAnalyticsRepository } from './services/chatbot-analytics.reposit
 import { KnowledgeIndexProcessor } from './knowledge-index.processor';
 import { ChatbotAnalyticsProcessor } from './chatbot-analytics.processor';
 
+const chatbotWorkerProviders =
+  process.env.NODE_ENV === 'test'
+    ? []
+    : [KnowledgeIndexProcessor, ChatbotAnalyticsProcessor];
+
 @Module({
   imports: [
     PrismaModule,
@@ -53,8 +58,7 @@ import { ChatbotAnalyticsProcessor } from './chatbot-analytics.processor';
     ChatbotAuditService,
     ChatbotAnalyticsRepository,
     ChatbotAnalyticsService,
-    KnowledgeIndexProcessor,
-    ChatbotAnalyticsProcessor,
+    ...chatbotWorkerProviders,
   ],
   exports: [ChatbotService, KnowledgeAdminService],
 })

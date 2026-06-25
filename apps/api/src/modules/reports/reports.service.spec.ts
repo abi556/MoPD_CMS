@@ -28,7 +28,10 @@ describe('ReportsService', () => {
     getSignedDownloadUrl: jest.fn(),
   };
   const storageFactory = { getStorage: () => storage };
-  const queue = { add: jest.fn(), getJobCounts: jest.fn().mockResolvedValue({}) };
+  const queue = {
+    add: jest.fn(),
+    getJobCounts: jest.fn().mockResolvedValue({}),
+  };
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -41,7 +44,9 @@ describe('ReportsService', () => {
         { provide: 'BullQueue_report-export', useValue: queue },
         {
           provide: RedisHealthService,
-          useValue: { ping: jest.fn().mockResolvedValue({ status: 'ok', latencyMs: 1 }) },
+          useValue: {
+            ping: jest.fn().mockResolvedValue({ status: 'ok', latencyMs: 1 }),
+          },
         },
         {
           provide: InAppNotificationService,

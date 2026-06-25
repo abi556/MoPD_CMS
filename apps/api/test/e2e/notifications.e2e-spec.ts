@@ -10,6 +10,10 @@ describe('Notifications (e2e)', () => {
     app = await createTestApp();
   });
 
+  afterEach(async () => {
+    await app?.close();
+  });
+
   it('queues password reset email on forgot-password', async () => {
     const response = await request(asSupertestApp(app))
       .post('/api/v1/auth/forgot-password')

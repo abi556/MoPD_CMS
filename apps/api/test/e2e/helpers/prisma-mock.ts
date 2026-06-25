@@ -214,6 +214,21 @@ interface StoredReportExport {
   completedAt: Date | null;
 }
 
+interface StoredUserNotification {
+  id: string;
+  userId: string;
+  type: string;
+  severity: string;
+  messageKey: string;
+  messageParams: unknown;
+  link: string | null;
+  entityType: string | null;
+  entityId: string | null;
+  dedupKey: string | null;
+  readAt: Date | null;
+  createdAt: Date;
+}
+
 export function createPrismaMock(): PrismaService {
   const store = new Map<string, StoredComplaint>();
   const historyStore: StoredComplaintHistory[] = [];
@@ -239,6 +254,7 @@ export function createPrismaMock(): PrismaService {
   const caseTaskStore = new Map<string, StoredCaseTask>();
   const documentStore = new Map<string, StoredDocument>();
   const reportExportStore = new Map<string, StoredReportExport>();
+  const userNotificationStore = new Map<string, StoredUserNotification>();
   let sequence = 0;
   let historySequence = 0;
   let auditSequence = 0;
@@ -1748,6 +1764,152 @@ export function createPrismaMock(): PrismaService {
   };
 
   // ---------------------------------------------------------------------------
+  // UserNotification
+  // ---------------------------------------------------------------------------
+  const findUserNotificationByDedup = (
+    userId: string,
+    dedupKey: string,
+  ): StoredUserNotification | undefined => {
+    for (const row of userNotificationStore.values()) {
+      if (row.userId === userId && row.dedupKey === dedupKey) {
+        return row;
+      }
+    }
+    return undefined;
+  };
+
+  const userNotificationCreate = (args: {
+    data: Omit<StoredUserNotification, 'id' | 'createdAt' | 'readAt'> & {
+      readAt?: Date | null;
+    };
+  }): Promise<StoredUserNotification> => {
+    const row: StoredUserNotification = {
+      id: randomUUID(),
+      readAt: args.data.readAt ?? null,
+      createdAt: new Date(),
+      userId: args.data.userId,
+      type: args.data.type,
+      severity: args.data.severity,
+      messageKey: args.data.messageKey,
+      messageParams: args.data.messageParams ?? null,
+      link: args.data.link ?? null,
+      entityType: args.data.entityType ?? null,
+      entityId: args.data.entityId ?? null,
+      dedupKey: args.data.dedupKey ?? null,
+    };
+    userNotificationStore.set(row.id, row);
+    return Promise.resolve(row);
+  };
+
+  const userNotificationUpsert = (args: {
+    where: { userId_dedupKey: { userId: string; dedupKey: string } };
+    create: Omit<StoredUserNotification, 'id' | 'createdAt' | 'readAt'> & {
+      readAt?: Date | null;
+    };
+    update: Partial<
+      Omit<StoredUserNotification, 'id' | 'userId' | 'dedupKey' | 'createdAt'>
+    >;
+  }): Promise<StoredUserNotification> => {
+    const { userId, dedupKey } = args.where.userId_dedupKey;
+    const existing = findUserNotificationByDedup(userId, dedupKey);
+    if (existing) {
+      const updated: StoredUserNotification = {
+        ...existing,
+        ...args.update,
+      };
+      userNotificationStore.set(updated.id, updated);
+      return Promise.resolve(updated);
+    }
+    return userNotificationCreate({ data: args.create });
+  };
+
+  const userNotificationFindMany = (args: {
+    where?: {
+      userId?: string;
+      readAt?: Date | null;
+    };
+    orderBy?: { createdAt: 'desc' | 'asc' };
+    skip?: number;
+    take?: number;
+  }): Promise<StoredUserNotification[]> => {
+    let rows = [...userNotificationStore.values()];
+    if (args.where?.userId) {
+      rows = rows.filter((r) => r.userId === args.where!.userId);
+    }
+    if (args.where && 'readAt' in args.where) {
+      const readAt = args.where.readAt;
+      rows = rows.filter((r) =>
+        readAt === null ? r.readAt === null : r.readAt !== null,
+      );
+    }
+    if (args.orderBy?.createdAt === 'desc') {
+      rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
+    const skip = args.skip ?? 0;
+    const take = args.take ?? rows.length;
+    return Promise.resolve(rows.slice(skip, skip + take));
+  };
+
+  const userNotificationCount = (args: {
+    where?: {
+      userId?: string;
+      readAt?: Date | null;
+    };
+  }): Promise<number> => {
+    let rows = [...userNotificationStore.values()];
+    if (args.where?.userId) {
+      rows = rows.filter((r) => r.userId === args.where!.userId);
+    }
+    if (args.where && 'readAt' in args.where) {
+      const readAt = args.where.readAt;
+      rows = rows.filter((r) =>
+        readAt === null ? r.readAt === null : r.readAt !== null,
+      );
+    }
+    return Promise.resolve(rows.length);
+  };
+
+  const userNotificationFindFirst = (args: {
+    where: { id?: string; userId?: string };
+  }): Promise<StoredUserNotification | null> => {
+    for (const row of userNotificationStore.values()) {
+      if (args.where.id && row.id !== args.where.id) continue;
+      if (args.where.userId && row.userId !== args.where.userId) continue;
+      return Promise.resolve(row);
+    }
+    return Promise.resolve(null);
+  };
+
+  const userNotificationUpdate = (args: {
+    where: { id: string };
+    data: Partial<Pick<StoredUserNotification, 'readAt'>>;
+  }): Promise<StoredUserNotification> => {
+    const existing = userNotificationStore.get(args.where.id);
+    if (!existing) {
+      throw new Error('UserNotification not found');
+    }
+    const updated = { ...existing, ...args.data };
+    userNotificationStore.set(updated.id, updated);
+    return Promise.resolve(updated);
+  };
+
+  const userNotificationUpdateMany = (args: {
+    where: { userId: string; readAt?: Date | null };
+    data: Partial<Pick<StoredUserNotification, 'readAt'>>;
+  }): Promise<{ count: number }> => {
+    let count = 0;
+    for (const [id, row] of userNotificationStore.entries()) {
+      if (row.userId !== args.where.userId) continue;
+      if ('readAt' in args.where && row.readAt !== args.where.readAt) {
+        continue;
+      }
+      userNotificationStore.set(id, { ...row, ...args.data });
+      count += 1;
+    }
+    return Promise.resolve({ count });
+  };
+
+  // ---------------------------------------------------------------------------
   // Assembled mock
   // ---------------------------------------------------------------------------
   const prismaLike = {
@@ -1836,6 +1998,15 @@ export function createPrismaMock(): PrismaService {
       create: reportExportCreate,
       findUnique: reportExportFindUnique,
       update: reportExportUpdate,
+    },
+    userNotification: {
+      create: userNotificationCreate,
+      upsert: userNotificationUpsert,
+      findMany: userNotificationFindMany,
+      count: userNotificationCount,
+      findFirst: userNotificationFindFirst,
+      update: userNotificationUpdate,
+      updateMany: userNotificationUpdateMany,
     },
   };
 

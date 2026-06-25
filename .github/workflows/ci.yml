@@ -105,6 +105,8 @@ jobs:
 
       - name: API E2E tests
         if: steps.changes.outputs.api == 'true' || steps.changes.outputs.workflows == 'true'
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm --filter @mopd-cms/api run test:e2e
 
       # Web/shared lint (run if web changed OR workflow changed)

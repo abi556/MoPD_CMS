@@ -11,6 +11,10 @@ describe('RBAC seed (e2e)', () => {
     app = await createTestApp();
   });
 
+  afterEach(async () => {
+    await app?.close();
+  });
+
   it.each(
     Object.keys(E2E_ROLE_CREDENTIALS) as Array<
       keyof typeof E2E_ROLE_CREDENTIALS

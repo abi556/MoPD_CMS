@@ -17,6 +17,12 @@ const DOCUMENT_SCAN_QUEUE_TOKEN = 'BullQueue_document-scan';
 const REPORT_EXPORT_QUEUE_TOKEN = 'BullQueue_report-export';
 const mockQueue = {
   add: jest.fn().mockResolvedValue(undefined),
+  getJobCounts: jest.fn().mockResolvedValue({
+    waiting: 0,
+    active: 0,
+    delayed: 0,
+    failed: 0,
+  }),
   // RedisHealthService awaits `queue.client` then calls `.ping()` on it
   client: Promise.resolve({
     ping: jest.fn().mockResolvedValue('PONG'),
@@ -36,18 +42,21 @@ function applyTestBootstrap(targetApp: INestApplication): void {
   );
   targetApp.useGlobalFilters(new GlobalHttpExceptionFilter());
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('MoPD CMS API')
-    .setDescription('API-first complaint management platform')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addCookieAuth('refresh_token')
-    .build();
-  const swaggerDocument = SwaggerModule.createDocument(
-    targetApp,
-    swaggerConfig,
-  );
-  SwaggerModule.setup('api/docs', targetApp, swaggerDocument);
+  // Swagger is expensive to generate; e2e tests do not assert on docs UI.
+  if (process.env.NODE_ENV !== 'test') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('MoPD CMS API')
+      .setDescription('API-first complaint management platform')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addCookieAuth('refresh_token')
+      .build();
+    const swaggerDocument = SwaggerModule.createDocument(
+      targetApp,
+      swaggerConfig,
+    );
+    SwaggerModule.setup('api/docs', targetApp, swaggerDocument);
+  }
 }
 
 export async function createTestApp(): Promise<INestApplication<Server>> {

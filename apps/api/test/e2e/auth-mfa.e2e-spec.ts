@@ -13,6 +13,10 @@ describe('Auth MFA Enrollment (e2e)', () => {
     app = await createTestApp();
   });
 
+  afterEach(async () => {
+    await app?.close();
+  });
+
   async function loginAdmin(): Promise<string> {
     const res = await request(asSupertestApp(app))
       .post('/api/v1/auth/login')
