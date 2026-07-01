@@ -27,6 +27,7 @@ const EXPECTED_NAMESPACES = [
   "complaintRecoverManual",
   "chatbot",
   "contactForm",
+  "cookies",
   "auth",
   "nav-staff",
   "staff",

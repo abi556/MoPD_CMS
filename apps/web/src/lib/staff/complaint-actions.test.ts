@@ -12,8 +12,8 @@ import {
 
 const OFFICER = [
   "complaint:read:own",
-  "workflow:transition",
-  "complaints:assign",
+  "complaint:assign:self",
+  "complaint:investigate",
   "complaint:escalate",
   "case:read",
   "case:write",
@@ -68,7 +68,12 @@ describe("complaint-actions", () => {
 
   it("officer uses generic transition not QA buttons", () => {
     expect(canApproveQa("QA_LEGAL_REVIEW", OFFICER)).toBe(false);
-    expect(showGenericTransition("ASSIGNED", OFFICER)).toBe(true);
+    expect(
+      showGenericTransition("ASSIGNED", OFFICER, {
+        userId: "officer-1",
+        assignedToUserId: "officer-1",
+      }),
+    ).toBe(true);
   });
 
   it("ombudsperson has no generic workflow transitions", () => {
