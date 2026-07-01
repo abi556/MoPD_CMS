@@ -1,0 +1,17 @@
+{
+  "noticeTitle": "Cookies on this service",
+  "noticeBody": "We use essential cookies and similar storage to make this complaint portal work — for example, language preference and saving your complaint draft. We do not use advertising cookies. Optional analytics cookies are off unless you enable them.",
+  "acceptAll": "Accept all",
+  "rejectNonEssential": "Reject non-essential",
+  "managePreferences": "Manage preferences",
+  "dismiss": "OK, got it",
+  "preferencesTitle": "Cookie preferences",
+  "preferencesIntro": "Choose which optional cookies we may use. Essential cookies are always on because the service cannot work without them.",
+  "essentialTitle": "Essential",
+  "essentialDescription": "Required for language, saving your complaint draft, chat, and making the portal work.",
+  "essentialAlwaysOn": "Always on",
+  "analyticsTitle": "Analytics",
+  "analyticsDescription": "Helps us understand how the portal is used so we can improve it. If you enable this, we collect anonymous page views, device type, and where people get stuck in the complaint form. Data stays on MoPD systems — we do not use advertising trackers.",
+  "savePreferences": "Save preferences",
+  "policyLink": "Cookie policy"
+}

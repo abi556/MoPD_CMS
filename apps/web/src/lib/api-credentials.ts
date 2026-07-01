@@ -43,6 +43,12 @@ export function isPublicApiPath(path: string): boolean {
   ) {
     return true;
   }
+  if (normalized === '/contact' || normalized.startsWith('/consent/')) {
+    return true;
+  }
+  if (normalized === '/analytics/events' || normalized.startsWith('/analytics/')) {
+    return true;
+  }
   return false;
 }
 

@@ -12,6 +12,7 @@ import {
   readStoredChatLocale,
   writeStoredChatLocale,
 } from "@/lib/chat-locale";
+import { trackAnalyticsEvent } from "@/lib/public/web-analytics";
 
 export function ChatWidget() {
   const siteLocale = useLocale() as AppLocale;
@@ -55,7 +56,14 @@ export function ChatWidget() {
   const launcher = (
     <button
       type="button"
-      onClick={() => setOpen(true)}
+      onClick={() => {
+        trackAnalyticsEvent({
+          eventType: "chat.open",
+          funnelName: "chat",
+          locale: siteLocale,
+        });
+        setOpen(true);
+      }}
       aria-expanded={open}
       aria-controls="mopd-chat-panel"
       aria-label={tSite("openLabel")}

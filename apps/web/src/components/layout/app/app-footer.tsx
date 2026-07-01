@@ -30,6 +30,12 @@ export function AppFooter() {
           </Link>
           <Link
             className="transition-colors hover:text-staff-nav-active"
+            href="/cookies"
+          >
+            {t("footerCookies")}
+          </Link>
+          <Link
+            className="transition-colors hover:text-staff-nav-active"
             href="/contact"
           >
             {t("footerContact")}

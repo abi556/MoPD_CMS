@@ -7,11 +7,13 @@ import {
   type LegalNavSection,
 } from "@/components/public/public-legal-document-layout";
 import { FileDown } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 
 const EN_SECTIONS: LegalNavSection[] = [
   { id: "legal-basis", title: "Legal basis" },
   { id: "data-collection", title: "Data we collect" },
   { id: "data-use", title: "How we use data" },
+  { id: "cookies", title: "Cookies & storage" },
   { id: "data-security", title: "Data security" },
   { id: "your-rights", title: "Your rights" },
   { id: "retention", title: "Data retention" },
@@ -23,6 +25,7 @@ const AM_SECTIONS: LegalNavSection[] = [
   { id: "legal-basis", title: "የሕግ መሠረት" },
   { id: "data-collection", title: "የምንሰበስባቸው መረጃዎች" },
   { id: "data-use", title: "መረጃን የምንጠቀምበት መንገድ" },
+  { id: "cookies", title: "ኩኪዎች እና ማከማቻ" },
   { id: "data-security", title: "የመረጃ ደህንነት" },
   { id: "your-rights", title: "የእርስዎ መብቶች" },
   { id: "retention", title: "የመረጃ ማቆያ" },
@@ -100,6 +103,21 @@ export default async function PrivacyPage({
               <li>የቅሬታ ሁኔታ ማሻሻያዎችን በኢሜይል ወይም SMS ለማሳወቅ።</li>
               <li>በማጣቀሻ ቁጥር ቅሬታዎን በራስዎ እንዲከታተሉ ለማስቻል።</li>
             </ul>
+          </PublicLegalSection>
+
+          <PublicLegalSection id="cookies" title="ኩኪዎች እና ማከማቻ">
+            <p>
+              ድረ-ገጹ ለቋንቋ ምርጫ፣ የቅሬታ ረቂቅ ማስቀመጥ እና ቻት (ሲጠቀሙ) አስፈላጊ ኩኪዎችን
+              እና ተመሳሳይ ቴክኖሎጂዎችን ይጠቀማል። አማራጭ የትንታኔ ኩኪዎች ከመረጡ በኋላ
+              ብቻ ይጠቀማሉ። ሙሉ ዝርዝር በ{" "}
+              <Link
+                href="/cookies"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                የኩኪ እና የማከማቻ ፖሊሲ
+              </Link>{" "}
+              ላይ ይገኛል።
+            </p>
           </PublicLegalSection>
 
           <PublicLegalSection id="data-security" title="የመረጃ ደህንነት">
@@ -215,6 +233,22 @@ export default async function PrivacyPage({
               <li>To send status updates via email or SMS.</li>
               <li>To let you track your complaint using your reference number.</li>
             </ul>
+          </PublicLegalSection>
+
+          <PublicLegalSection id="cookies" title="Cookies & similar technologies">
+            <p>
+              The portal uses essential cookies and similar browser storage for
+              language preference, saving in-progress complaints, and chat when
+              you use it. Optional analytics are off unless you enable them. See
+              the full{" "}
+              <Link
+                href="/cookies"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                Cookie &amp; Storage Policy
+              </Link>
+              .
+            </p>
           </PublicLegalSection>
 
           <PublicLegalSection id="data-security" title="Data security">

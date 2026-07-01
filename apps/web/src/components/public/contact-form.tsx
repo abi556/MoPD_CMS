@@ -1,27 +1,57 @@
 "use client";
 
-import { useForm, ValidationError } from "@formspree/react";
+import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const FALLBACK_FORM_ID = "dummy";
+import { apiPost, ApiError } from "@/lib/api-client";
+import { trackAnalyticsEvent } from "@/lib/public/web-analytics";
+import { useLocale } from "next-intl";
 
 export function ContactForm() {
   const t = useTranslations("contactForm");
-  const formId = process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID ?? "";
-  const [state, handleSubmit] = useForm(formId || FALLBACK_FORM_ID);
+  const locale = useLocale() as "en" | "am";
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [succeeded, setSucceeded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!formId) {
-    return (
-      <div className="rounded-none border border-warning/30 bg-warning/5 p-6 text-body-sm text-text-secondary">
-        Contact form is not configured. Set <code className="font-mono">NEXT_PUBLIC_FORMSPREE_FORM_ID</code> in{" "}
-        <code className="font-mono">.env.local</code>.
-      </div>
-    );
-  }
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      await apiPost<{ message: string }>(
+        "/contact",
+        {
+          name: name.trim() || undefined,
+          email: email.trim(),
+          subject: subject.trim(),
+          message: message.trim(),
+        },
+        { auth: false },
+      );
+      trackAnalyticsEvent({
+        eventType: "contact.submit_success",
+        funnelName: "contact",
+        locale,
+      });
+      setSucceeded(true);
+    } catch (err) {
+      const messageText =
+        err instanceof ApiError
+          ? err.message
+          : t("errorBody");
+      setError(messageText);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-  if (state.succeeded) {
+  if (succeeded) {
     return (
       <div className="rounded-none border border-success/20 bg-success/5 p-6 text-center animate-scale-in">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success/10 text-success">
@@ -48,7 +78,7 @@ export function ContactForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5" suppressHydrationWarning>
+      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5" suppressHydrationWarning>
         <div>
           <label
             htmlFor="name"
@@ -60,11 +90,12 @@ export function ContactForm() {
             id="name"
             type="text"
             name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder={t("namePlaceholder")}
             suppressHydrationWarning
             className="mt-1.5 w-full rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <ValidationError prefix="Name" field="name" errors={state.errors} />
         </div>
 
         <div>
@@ -79,11 +110,12 @@ export function ContactForm() {
             type="email"
             name="email"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder={t("emailPlaceholder")}
             suppressHydrationWarning
             className="mt-1.5 w-full rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <ValidationError prefix="Email" field="email" errors={state.errors} />
         </div>
 
         <div>
@@ -98,11 +130,12 @@ export function ContactForm() {
             type="text"
             name="subject"
             required
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
             placeholder={t("subjectPlaceholder")}
             suppressHydrationWarning
             className="mt-1.5 w-full rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <ValidationError prefix="Subject" field="subject" errors={state.errors} />
         </div>
 
         <div>
@@ -117,28 +150,28 @@ export function ContactForm() {
             name="message"
             required
             rows={5}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
             placeholder={t("messagePlaceholder")}
             suppressHydrationWarning
             className="mt-1.5 w-full resize-none rounded-none border border-border-standard bg-surface-bright px-4 py-3 text-body text-on-surface transition-all duration-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <ValidationError prefix="Message" field="message" errors={state.errors} />
         </div>
 
-        {state.errors != null &&
-          Object.keys(state.errors as unknown as Record<string, unknown>).length > 0 && (
+        {error ? (
           <div className="flex items-start gap-2.5 rounded-none border border-danger/20 bg-danger/5 p-4 text-danger animate-scale-in">
             <AlertCircle className="h-5 w-5 shrink-0" />
             <div>
               <h4 className="font-label text-label font-bold">{t("errorTitle")}</h4>
               <p className="mt-1 text-body-sm text-danger/90 leading-relaxed">
-                {t("errorBody")}
+                {error}
               </p>
             </div>
           </div>
-        )}
+        ) : null}
 
-        <Button type="submit" size="lg" fullWidth disabled={state.submitting}>
-          {state.submitting ? t("submitting") : t("submit")}
+        <Button type="submit" size="lg" fullWidth disabled={submitting}>
+          {submitting ? t("submitting") : t("submit")}
         </Button>
       </form>
     </div>

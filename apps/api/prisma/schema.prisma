@@ -581,3 +581,25 @@ model ChatAnalyticsDaily {
 
   @@unique([date, locale])
 }
+
+/// First-party web analytics events (consent-gated on the client).
+model WebAnalyticsEvent {
+  id               String           @id @default(uuid())
+  sessionId        String
+  eventType        String           @db.VarChar(64)
+  pagePath         String?          @db.VarChar(256)
+  locale           ComplaintLocale?
+  funnelName       String?          @db.VarChar(64)
+  funnelStep       String?          @db.VarChar(64)
+  funnelPhase      String?          @db.VarChar(64)
+  deviceClass      String?          @db.VarChar(16)
+  referrerCategory String?          @db.VarChar(16)
+  correlationId    String?
+  metadata         Json?
+  occurredAt       DateTime         @default(now())
+
+  @@index([eventType, occurredAt])
+  @@index([funnelName, funnelStep, occurredAt])
+  @@index([pagePath, occurredAt])
+  @@index([occurredAt])
+}

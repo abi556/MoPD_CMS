@@ -9,6 +9,7 @@ const PUBLIC_PATHS: { path: string; priority: number; changeFrequency: MetadataR
   { path: "/faq", priority: 0.7, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.6, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.4, changeFrequency: "yearly" },
+  { path: "/cookies", priority: 0.4, changeFrequency: "yearly" },
   { path: "/terms", priority: 0.4, changeFrequency: "yearly" },
   { path: "/accessibility", priority: 0.4, changeFrequency: "yearly" },
 ];

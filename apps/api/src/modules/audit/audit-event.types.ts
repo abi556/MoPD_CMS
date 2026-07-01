@@ -57,6 +57,8 @@ export const AUDIT_EVENT = {
   REPORT_EXPORT_REQUESTED: 'report.export.requested',
   REPORT_EXPORT_COMPLETED: 'report.export.completed',
   REPORT_EXPORT_FAILED: 'report.export.failed',
+  CONTACT_FORM_SUBMITTED: 'contact.form.submitted',
+  COOKIE_CONSENT_UPDATED: 'cookie.consent.updated',
 } as const;
 
 export type AuditEventType = (typeof AUDIT_EVENT)[keyof typeof AUDIT_EVENT];

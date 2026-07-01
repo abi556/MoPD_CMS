@@ -23,6 +23,11 @@ import {
   deriveAckContext,
   maskEmailForDisplay,
 } from "@/lib/complaint-ack-context";
+import {
+  COMPLAINT_SUBMIT_FUNNEL,
+  trackAnalyticsEvent,
+  wizardStepName,
+} from "@/lib/public/web-analytics";
 import { ComplaintInfoCards } from "./ComplaintInfoCards";
 import { ComplaintEvidencePanel } from "./ComplaintEvidencePanel";
 import { ComplaintStepContactLocation } from "./ComplaintStepContactLocation";
@@ -131,6 +136,59 @@ export function ComplaintSubmitWizard() {
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [optionsRetrying, setOptionsRetrying] = useState(false);
   const persistEnabledRef = useRef(false);
+  const funnelStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (funnelStartedRef.current) return;
+    funnelStartedRef.current = true;
+    trackAnalyticsEvent({
+      eventType: "funnel.start",
+      funnelName: COMPLAINT_SUBMIT_FUNNEL,
+      locale,
+    });
+  }, [locale]);
+
+  useEffect(() => {
+    if (state.phase === "wizard") {
+      trackAnalyticsEvent({
+        eventType: "funnel.step_view",
+        funnelName: COMPLAINT_SUBMIT_FUNNEL,
+        funnelStep: wizardStepName(state.wizardStep),
+        funnelPhase: "wizard",
+        locale,
+      });
+      return;
+    }
+    if (state.phase === "submitting") {
+      trackAnalyticsEvent({
+        eventType: "funnel.submit_start",
+        funnelName: COMPLAINT_SUBMIT_FUNNEL,
+        funnelStep: "review",
+        funnelPhase: "submitting",
+        locale,
+      });
+      return;
+    }
+    if (state.phase === "success") {
+      trackAnalyticsEvent({
+        eventType: "funnel.submit_success",
+        funnelName: COMPLAINT_SUBMIT_FUNNEL,
+        funnelStep: "success",
+        funnelPhase: "success",
+        locale,
+      });
+      return;
+    }
+    if (state.phase === "evidence") {
+      trackAnalyticsEvent({
+        eventType: "funnel.evidence_open",
+        funnelName: COMPLAINT_SUBMIT_FUNNEL,
+        funnelStep: "evidence",
+        funnelPhase: "evidence",
+        locale,
+      });
+    }
+  }, [state.phase, state.wizardStep, locale]);
 
   useEffect(() => {
     let cancelled = false;
@@ -321,6 +379,13 @@ export function ComplaintSubmitWizard() {
       });
     } catch (err) {
       dispatch({ type: "SET_PHASE", phase: "wizard" });
+      trackAnalyticsEvent({
+        eventType: "funnel.submit_error",
+        funnelName: COMPLAINT_SUBMIT_FUNNEL,
+        funnelStep: "review",
+        funnelPhase: "wizard",
+        locale,
+      });
       dispatch({
         type: "SET_ERROR",
         error: {
@@ -391,7 +456,16 @@ export function ComplaintSubmitWizard() {
         uploadSession={state.submitted.uploadSession}
         sessionExpired={state.evidenceSessionExpired}
         onBack={() => dispatch({ type: "SET_PHASE", phase: "success" })}
-        onFinish={() => router.push("/complaints/track")}
+        onFinish={() => {
+          trackAnalyticsEvent({
+            eventType: "funnel.evidence_complete",
+            funnelName: COMPLAINT_SUBMIT_FUNNEL,
+            funnelStep: "evidence",
+            funnelPhase: "evidence",
+            locale,
+          });
+          router.push("/complaints/track");
+        }}
       />
     );
   }
@@ -424,10 +498,24 @@ export function ComplaintSubmitWizard() {
             onChange={(patch) => dispatch({ type: "PATCH_FORM", patch })}
             onNext={() => {
               if (validateStep1()) {
+                trackAnalyticsEvent({
+                  eventType: "funnel.step_complete",
+                  funnelName: COMPLAINT_SUBMIT_FUNNEL,
+                  funnelStep: "details",
+                  funnelPhase: "wizard",
+                  locale,
+                });
                 dispatch({ type: "SET_STEP", step: 2 });
               }
             }}
             onCancel={() => {
+              trackAnalyticsEvent({
+                eventType: "funnel.abandon",
+                funnelName: COMPLAINT_SUBMIT_FUNNEL,
+                funnelStep: wizardStepName(state.wizardStep),
+                funnelPhase: "wizard",
+                locale,
+              });
               clearComplaintSubmitDraft();
               router.push("/");
             }}
@@ -442,6 +530,13 @@ export function ComplaintSubmitWizard() {
             onChange={(patch) => dispatch({ type: "PATCH_FORM", patch })}
             onNext={() => {
               if (validateStep2()) {
+                trackAnalyticsEvent({
+                  eventType: "funnel.step_complete",
+                  funnelName: COMPLAINT_SUBMIT_FUNNEL,
+                  funnelStep: "contact",
+                  funnelPhase: "wizard",
+                  locale,
+                });
                 dispatch({ type: "SET_STEP", step: 3 });
               }
             }}

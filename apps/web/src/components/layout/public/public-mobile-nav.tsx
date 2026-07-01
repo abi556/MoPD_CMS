@@ -162,6 +162,11 @@ export function PublicMobileNav() {
           match: (path) => path === "/terms",
         },
         {
+          href: "/cookies",
+          label: pub("footerCookies"),
+          match: (path) => path === "/cookies",
+        },
+        {
           href: "/accessibility",
           label: pub("footerAccessibility"),
           match: (path) => path === "/accessibility",

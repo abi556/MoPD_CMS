@@ -236,6 +236,21 @@ export function createPrismaMock(): PrismaService {
   const permissionStore = new Map<string, StoredPermission>();
   const userStore = new Map<string, StoredUser>();
   const auditLogStore: StoredAuditLog[] = [];
+  const webAnalyticsEventStore: Array<{
+    id: string;
+    sessionId: string;
+    eventType: string;
+    pagePath: string | null;
+    locale: 'en' | 'am' | null;
+    funnelName: string | null;
+    funnelStep: string | null;
+    funnelPhase: string | null;
+    deviceClass: string | null;
+    referrerCategory: string | null;
+    correlationId: string | null;
+    metadata: unknown;
+    occurredAt: Date;
+  }> = [];
   const userRoleStore = new Set<string>();
   const rolePermissionStore = new Set<string>();
   const categoryStore = new Map<string, StoredComplaintCategory>();
@@ -891,6 +906,44 @@ export function createPrismaMock(): PrismaService {
       rows = rows.slice(0, args.take);
     }
     return Promise.resolve(rows.map((row) => ({ ...row })));
+  };
+
+  // ---------------------------------------------------------------------------
+  // WebAnalyticsEvent
+  // ---------------------------------------------------------------------------
+  const webAnalyticsEventCreateMany = (args: {
+    data: Array<{
+      sessionId: string;
+      eventType: string;
+      pagePath?: string | null;
+      locale?: 'en' | 'am' | null;
+      funnelName?: string | null;
+      funnelStep?: string | null;
+      funnelPhase?: string | null;
+      deviceClass?: string | null;
+      referrerCategory?: string | null;
+      correlationId?: string | null;
+      metadata?: unknown;
+    }>;
+  }): Promise<{ count: number }> => {
+    for (const row of args.data) {
+      webAnalyticsEventStore.push({
+        id: randomUUID(),
+        occurredAt: new Date(),
+        pagePath: row.pagePath ?? null,
+        locale: row.locale ?? null,
+        funnelName: row.funnelName ?? null,
+        funnelStep: row.funnelStep ?? null,
+        funnelPhase: row.funnelPhase ?? null,
+        deviceClass: row.deviceClass ?? null,
+        referrerCategory: row.referrerCategory ?? null,
+        correlationId: row.correlationId ?? null,
+        metadata: row.metadata ?? null,
+        sessionId: row.sessionId,
+        eventType: row.eventType,
+      });
+    }
+    return Promise.resolve({ count: args.data.length });
   };
 
   // ---------------------------------------------------------------------------
@@ -1934,6 +1987,7 @@ export function createPrismaMock(): PrismaService {
     },
     userRole: { upsert: userRoleUpsert },
     auditLog: { create: auditLogCreate, findMany: auditLogFindMany },
+    webAnalyticsEvent: { createMany: webAnalyticsEventCreateMany },
     complaintCategory: {
       create: categoryCreate,
       findUnique: categoryFindUnique,

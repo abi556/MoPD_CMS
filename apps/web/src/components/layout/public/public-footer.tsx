@@ -48,6 +48,9 @@ export function PublicFooter() {
             <Link className={footerLinkClass} href="/terms">
               {pub("footerTerms")}
             </Link>
+            <Link className={footerLinkClass} href="/cookies">
+              {pub("footerCookies")}
+            </Link>
             <Link className={footerLinkClass} href="/accessibility">
               {pub("footerAccessibility")}
             </Link>

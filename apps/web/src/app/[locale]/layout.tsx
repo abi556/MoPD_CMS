@@ -3,6 +3,7 @@ import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { SkipToContent } from "@/components/layout/skip-to-content";
+import { AnalyticsScripts } from "@/components/public/analytics-scripts";
 import { ClientIntlProvider } from "@/components/providers/client-intl-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { routing, type AppLocale } from "@/i18n/routing";
@@ -46,6 +47,7 @@ export default async function LocaleLayout({
         >
           {children}
         </div>
+        <AnalyticsScripts />
       </ToastProvider>
     </ClientIntlProvider>
   );

@@ -281,6 +281,120 @@ describe('Platform/Public (e2e)', () => {
     );
   });
 
+  it('POST /api/v1/contact accepts public contact form', async () => {
+    const response = await request(asSupertestApp(app))
+      .post('/api/v1/contact')
+      .send({
+        name: 'Test Citizen',
+        email: 'citizen@example.com',
+        subject: 'Portal question',
+        message: 'How do I track my complaint?',
+      })
+      .expect(201);
+
+    const body = getBody<{ data: { message: string } }>(response);
+    expect(body.data.message).toContain('received your message');
+  });
+
+  it('POST /api/v1/consent/cookie records consent audit event', async () => {
+    await request(asSupertestApp(app))
+      .post('/api/v1/consent/cookie')
+      .send({
+        action: 'reject_non_essential',
+        policyVersion: '2026-06-01',
+        categories: { essential: true, analytics: false },
+        locale: 'en',
+      })
+      .expect(201);
+
+    const adminLogin = await request(asSupertestApp(app))
+      .post('/api/v1/auth/login')
+      .send({ email: 'admin@mopd.local', password: 'AdminPass123!' })
+      .expect(200);
+    const token = getBody<LoginResponse>(adminLogin).data.accessToken!;
+
+    const audit = await request(asSupertestApp(app))
+      .get('/api/v1/audit-logs')
+      .query({ eventType: 'cookie.consent.updated', limit: 5 })
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    const auditBody = getBody<{ data: Array<{ eventType: string }> }>(audit);
+    expect(
+      auditBody.data.some((e) => e.eventType === 'cookie.consent.updated'),
+    ).toBe(true);
+  });
+
+  it('POST /api/v1/analytics/events records first-party events', async () => {
+    const response = await request(asSupertestApp(app))
+      .post('/api/v1/analytics/events')
+      .send({
+        sessionId: 'test-analytics-session',
+        events: [
+          {
+            eventType: 'page.view',
+            pagePath: '/en/complaints/new',
+            locale: 'en',
+            deviceClass: 'desktop',
+            referrerCategory: 'direct',
+          },
+        ],
+      })
+      .expect(201);
+
+    const body = getBody<{ data: { recorded: number } }>(response);
+    expect(body.data.recorded).toBe(1);
+  });
+
+  it('POST /api/v1/analytics/events records complaint funnel batch', async () => {
+    const response = await request(asSupertestApp(app))
+      .post('/api/v1/analytics/events')
+      .send({
+        sessionId: 'funnel-session',
+        events: [
+          {
+            eventType: 'funnel.start',
+            funnelName: 'complaint_submit',
+            locale: 'en',
+          },
+          {
+            eventType: 'funnel.step_view',
+            funnelName: 'complaint_submit',
+            funnelStep: 'details',
+            funnelPhase: 'wizard',
+            locale: 'en',
+          },
+        ],
+      })
+      .expect(201);
+
+    const body = getBody<{ data: { recorded: number } }>(response);
+    expect(body.data.recorded).toBe(2);
+  });
+
+  it('POST /api/v1/analytics/events rejects invalid event types', async () => {
+    const response = await request(asSupertestApp(app))
+      .post('/api/v1/analytics/events')
+      .send({
+        sessionId: 'bad-session',
+        events: [{ eventType: 'page.secret_pii_dump' }],
+      })
+      .expect(422);
+
+    const body = getBody<ErrorEnvelope>(response);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('POST /api/v1/analytics/events rejects empty batches', async () => {
+    await request(asSupertestApp(app))
+      .post('/api/v1/analytics/events')
+      .send({
+        sessionId: 'empty-session',
+        events: [],
+      })
+      .expect(422);
+  });
+
   afterEach(async () => {
     await app.close();
   });

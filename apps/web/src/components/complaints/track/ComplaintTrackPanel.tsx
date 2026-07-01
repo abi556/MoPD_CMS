@@ -22,6 +22,8 @@ import {
   type ComplaintTrackResult,
 } from "@/lib/complaint-track";
 import { trackComplaintByReference } from "@/lib/public-complaints";
+import { trackAnalyticsEvent } from "@/lib/public/web-analytics";
+import { useAppLocale } from "@/hooks/use-locale";
 import { ComplaintTrackProgressVisual } from "./ComplaintTrackProgressVisual";
 import { ComplaintTrackResults } from "./ComplaintTrackResults";
 
@@ -87,6 +89,7 @@ function TrackSplitCard({
 
 function ComplaintTrackPanelInner() {
   const t = useTranslations("complaintTrack");
+  const locale = useAppLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -135,6 +138,11 @@ function ComplaintTrackPanelInner() {
           subject: data.subject,
           submittedAt: data.submittedAt,
         });
+        trackAnalyticsEvent({
+          eventType: "track.search_success",
+          funnelName: "complaint_track",
+          locale,
+        });
         prevUrlRef.current = data.referenceNo;
         const params = new URLSearchParams(searchParams.toString());
         params.set(REF_QUERY, data.referenceNo);
@@ -143,6 +151,11 @@ function ComplaintTrackPanelInner() {
         setResult(null);
         if (err instanceof ApiError && err.status === 404) {
           setErrorState({ code: "notFound" });
+          trackAnalyticsEvent({
+            eventType: "track.search_not_found",
+            funnelName: "complaint_track",
+            locale,
+          });
         } else if (err instanceof ApiError) {
           setErrorState({ code: "generic", detail: err.message });
         } else {
@@ -157,7 +170,7 @@ function ComplaintTrackPanelInner() {
         manualSearchInFlightRef.current = null;
       }
     },
-    [pathname, router, searchParams],
+    [locale, pathname, router, searchParams],
   );
 
   // Load from ?ref= only when the URL reference actually changes (not when loading toggles).

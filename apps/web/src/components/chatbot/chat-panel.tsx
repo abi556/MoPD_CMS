@@ -24,6 +24,7 @@ import {
   type ChatSource,
 } from "@/lib/public/chatbot-api";
 import { getOrCreateChatSessionId } from "@/lib/public/chat-session";
+import { trackAnalyticsEvent } from "@/lib/public/web-analytics";
 import { ApiError } from "@/lib/api-client";
 
 interface ChatMessage {
@@ -140,6 +141,11 @@ function ChatPanelInner({
       if (!trimmed || typing) return;
 
       setMessages((prev) => [...prev, { id: newId(), role: "user", text: trimmed }]);
+      trackAnalyticsEvent({
+        eventType: "chat.message_sent",
+        funnelName: "chat",
+        locale: chatLocale,
+      });
       setInput("");
       scrollToBottom();
       setTyping(true);
@@ -178,7 +184,23 @@ function ChatPanelInner({
   };
 
   const onQuickPrompt = (promptKey: string) => {
+    trackAnalyticsEvent({
+      eventType: "chat.quick_action",
+      funnelName: "chat",
+      locale: chatLocale,
+      metadata: { quickActionId: promptKey },
+    });
     void handleUserText(t(promptKey as "promptHours"));
+  };
+
+  const onQuickLink = (actionId: string) => {
+    trackAnalyticsEvent({
+      eventType: "chat.quick_action",
+      funnelName: "chat",
+      locale: chatLocale,
+      metadata: { quickActionId: actionId },
+    });
+    onClose();
   };
 
   return (
@@ -324,7 +346,7 @@ function ChatPanelInner({
               <Link
                 key={item.id}
                 href={item.href}
-                onClick={onClose}
+                onClick={() => onQuickLink(item.id)}
                 className="shrink-0 cursor-pointer rounded-full border border-primary/25 bg-brand-wash px-3 py-1.5 text-[12px] font-medium text-primary transition-colors hover:bg-primary hover:text-on-primary"
               >
                 {t(item.labelKey as "quickSubmit")}
