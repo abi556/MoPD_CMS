@@ -1,5 +1,5 @@
 import request from 'supertest';
-import type { Server } from 'http';
+import type { App as SupertestApp } from 'supertest/types';
 import type { LoginResponse } from './types';
 import { getBody } from './utils';
 
@@ -45,7 +45,7 @@ export const E2E_ROLE_CREDENTIALS = {
 export type E2eRoleName = keyof typeof E2E_ROLE_CREDENTIALS;
 
 export async function loginAsRole(
-  httpServer: Server,
+  httpServer: SupertestApp,
   role: E2eRoleName,
 ): Promise<string> {
   const credentials = E2E_ROLE_CREDENTIALS[role];

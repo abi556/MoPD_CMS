@@ -149,18 +149,14 @@ describe('Complaints Staff (e2e)', () => {
       .expect(201);
     const createdBody = getBody<ComplaintCreateResponse>(created);
 
-    const officerLogin = await request(asSupertestApp(app))
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'officer@mopd.local',
-        password: 'OfficerPass123!',
-      })
-      .expect(200);
-    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+    const adminToken = await loginAsRole(
+      asSupertestApp(app),
+      'ComplaintsAdmin',
+    );
 
     await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         toStatus: 'TRIAGE',
         reason: 'Initial triage completed by complaints desk.',
@@ -169,7 +165,7 @@ describe('Complaints Staff (e2e)', () => {
 
     const assigned = await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assigneeUserId: 'user-officer-0001',
         reason: 'Routing based on transport infrastructure expertise.',
@@ -195,18 +191,15 @@ describe('Complaints Staff (e2e)', () => {
       .expect(201);
     const createdBody = getBody<ComplaintCreateResponse>(created);
 
-    const officerLogin = await request(asSupertestApp(app))
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'officer@mopd.local',
-        password: 'OfficerPass123!',
-      })
-      .expect(200);
-    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+    const adminToken = await loginAsRole(
+      asSupertestApp(app),
+      'ComplaintsAdmin',
+    );
+    const officerToken = await loginAsRole(asSupertestApp(app), 'CaseOfficer');
 
     await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         toStatus: 'TRIAGE',
         reason: 'Initial triage completed by complaints desk.',
@@ -215,7 +208,7 @@ describe('Complaints Staff (e2e)', () => {
 
     await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assigneeUserId: 'user-officer-0001',
         reason: 'Routing based on transport infrastructure expertise.',
@@ -224,7 +217,7 @@ describe('Complaints Staff (e2e)', () => {
 
     const transitioned = await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${officerToken}`)
       .send({
         toStatus: 'IN_INVESTIGATION',
         reason: 'Field verification started by assigned officer.',
@@ -249,25 +242,21 @@ describe('Complaints Staff (e2e)', () => {
       .expect(201);
     const createdBody = getBody<ComplaintCreateResponse>(created);
 
-    const officerLogin = await request(asSupertestApp(app))
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'officer@mopd.local',
-        password: 'OfficerPass123!',
-      })
-      .expect(200);
-    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+    const adminToken = await loginAsRole(
+      asSupertestApp(app),
+      'ComplaintsAdmin',
+    );
 
     const response = await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         toStatus: 'CLOSED',
         reason: 'Attempt to skip mandatory state.',
       })
       .expect(422);
     const body = getBody<ErrorEnvelope>(response);
-    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.code).toBe('workflow_forbidden');
   });
 
   it('returns complaint history timeline for staff users', async () => {
@@ -285,18 +274,15 @@ describe('Complaints Staff (e2e)', () => {
       .expect(201);
     const createdBody = getBody<ComplaintCreateResponse>(created);
 
-    const officerLogin = await request(asSupertestApp(app))
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'officer@mopd.local',
-        password: 'OfficerPass123!',
-      })
-      .expect(200);
-    const officerLoginBody = getBody<LoginResponse>(officerLogin);
+    const adminToken = await loginAsRole(
+      asSupertestApp(app),
+      'ComplaintsAdmin',
+    );
+    const officerToken = await loginAsRole(asSupertestApp(app), 'CaseOfficer');
 
     await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         toStatus: 'TRIAGE',
         reason: 'Initial triage completed by complaints desk.',
@@ -305,7 +291,7 @@ describe('Complaints Staff (e2e)', () => {
 
     await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assigneeUserId: 'user-officer-0001',
         reason: 'Routing based on transport infrastructure expertise.',
@@ -314,7 +300,7 @@ describe('Complaints Staff (e2e)', () => {
 
     await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${officerToken}`)
       .send({
         toStatus: 'IN_INVESTIGATION',
         reason: 'Field verification started by assigned officer.',
@@ -323,7 +309,7 @@ describe('Complaints Staff (e2e)', () => {
 
     const response = await request(asSupertestApp(app))
       .get(`/api/v1/complaints/${createdBody.data.id}/history`)
-      .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+      .set('Authorization', `Bearer ${officerToken}`)
       .expect(200);
     const body = getBody<ComplaintHistoryResponse>(response);
     expect(body.data).toHaveLength(3);
@@ -433,18 +419,14 @@ describe('Complaints Staff (e2e)', () => {
         .expect(201);
       const createdBody = getBody<ComplaintCreateResponse>(created);
 
-      const officerLogin = await request(asSupertestApp(app))
-        .post('/api/v1/auth/login')
-        .send({
-          email: 'officer@mopd.local',
-          password: 'OfficerPass123!',
-        })
-        .expect(200);
-      const officerLoginBody = getBody<LoginResponse>(officerLogin);
+      const adminToken = await loginAsRole(
+        asSupertestApp(app),
+        'ComplaintsAdmin',
+      );
 
       await request(asSupertestApp(app))
         .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
-        .set('Authorization', `Bearer ${officerLoginBody.data.accessToken}`)
+        .set('Authorization', `Bearer ${adminToken}`)
         .send({
           toStatus: 'TRIAGE',
           reason: 'Initial triage completed by complaints desk.',

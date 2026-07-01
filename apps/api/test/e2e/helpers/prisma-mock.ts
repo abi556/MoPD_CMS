@@ -394,6 +394,17 @@ export function createPrismaMock(): PrismaService {
   };
 
   type ComplaintWhere = {
+    AND?: ComplaintWhere[];
+    OR?: Array<
+      | {
+          assignedToUserId?: string | null;
+          status?: { in: StoredComplaint['status'][] };
+        }
+      | {
+          referenceNo?: { contains: string; mode?: string };
+          subject?: { contains: string; mode?: string };
+        }
+    >;
     status?: StoredComplaint['status'] | { not: StoredComplaint['status'] };
     channel?: StoredComplaint['channel'];
     locale?: StoredComplaint['locale'];
@@ -401,25 +412,50 @@ export function createPrismaMock(): PrismaService {
     orgUnitId?: string;
     assignedToUserId?: string | null;
     submittedAt?: { gte?: Date; lte?: Date };
-    OR?: Array<{
-      assignedToUserId?: string | null;
-      status?: { in: StoredComplaint['status'][] };
-    }>;
   };
 
   const matchesComplaintWhere = (
     item: StoredComplaint,
     where: ComplaintWhere,
   ): boolean => {
+    if (where.AND && where.AND.length > 0) {
+      return where.AND.every((clause) => matchesComplaintWhere(item, clause));
+    }
+
     if (where.OR && where.OR.length > 0) {
+      const isSearchOr = where.OR.some(
+        (clause) => 'referenceNo' in clause || 'subject' in clause,
+      );
+      if (isSearchOr) {
+        return where.OR.some((clause) => {
+          if ('referenceNo' in clause && clause.referenceNo?.contains) {
+            const needle = clause.referenceNo.contains.toLowerCase();
+            return item.referenceNo.toLowerCase().includes(needle);
+          }
+          if ('subject' in clause && clause.subject?.contains) {
+            const needle = clause.subject.contains.toLowerCase();
+            return item.subject.toLowerCase().includes(needle);
+          }
+          return false;
+        });
+      }
+
       const orMatch = where.OR.some((clause) => {
+        if (!('assignedToUserId' in clause) && !('status' in clause)) {
+          return false;
+        }
         if (
+          'assignedToUserId' in clause &&
           clause.assignedToUserId !== undefined &&
           item.assignedToUserId !== clause.assignedToUserId
         ) {
           return false;
         }
-        if (clause.status?.in && !clause.status.in.includes(item.status)) {
+        if (
+          'status' in clause &&
+          clause.status?.in &&
+          !clause.status.in.includes(item.status)
+        ) {
           return false;
         }
         return true;

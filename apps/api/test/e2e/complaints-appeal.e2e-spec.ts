@@ -35,12 +35,25 @@ describe('Complaints appeal and patch (e2e)', () => {
       })
       .expect(201);
     const createdBody = getBody<ComplaintCreateResponse>(created);
+    const adminToken = await loginAsRole(
+      asSupertestApp(app),
+      'ComplaintsAdmin',
+    );
     const officerToken = await loginAsRole(asSupertestApp(app), 'CaseOfficer');
 
     await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${createdBody.data.id}/transition`)
-      .set('Authorization', `Bearer ${officerToken}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({ toStatus: 'TRIAGE', reason: 'Triage before metadata patch.' })
+      .expect(200);
+
+    await request(asSupertestApp(app))
+      .post(`/api/v1/complaints/${createdBody.data.id}/assign`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        assigneeUserId: 'user-officer-0001',
+        reason: 'Assign to case officer for metadata patch.',
+      })
       .expect(200);
 
     const patched = await request(asSupertestApp(app))
@@ -65,15 +78,23 @@ describe('Complaints appeal and patch (e2e)', () => {
       })
       .expect(201);
     const createdBody = getBody<ComplaintCreateResponse>(created);
+    const adminToken = await loginAsRole(
+      asSupertestApp(app),
+      'ComplaintsAdmin',
+    );
     const officerToken = await loginAsRole(asSupertestApp(app), 'CaseOfficer');
     const complaintId = createdBody.data.id;
 
-    const steps = [
-      'TRIAGE',
-      'ASSIGNED',
-      'IN_INVESTIGATION',
-      'DRAFT_RESPONSE',
-    ] as const;
+    await request(asSupertestApp(app))
+      .post(`/api/v1/complaints/${complaintId}/transition`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        toStatus: 'TRIAGE',
+        reason: 'Triage before officer workflow policy test.',
+      })
+      .expect(200);
+
+    const steps = ['ASSIGNED', 'IN_INVESTIGATION', 'DRAFT_RESPONSE'] as const;
     for (const toStatus of steps) {
       if (toStatus === 'ASSIGNED') {
         await request(asSupertestApp(app))
@@ -96,12 +117,30 @@ describe('Complaints appeal and patch (e2e)', () => {
         .expect(200);
     }
 
-    const response = await request(asSupertestApp(app))
+    await request(asSupertestApp(app))
+      .patch(`/api/v1/complaints/${complaintId}`)
+      .set('Authorization', `Bearer ${officerToken}`)
+      .send({
+        responseDraft:
+          'Draft response prepared for legal review with sufficient detail.',
+      })
+      .expect(200);
+
+    await request(asSupertestApp(app))
       .post(`/api/v1/complaints/${complaintId}/transition`)
       .set('Authorization', `Bearer ${officerToken}`)
       .send({
         toStatus: 'QA_LEGAL_REVIEW',
-        reason: 'Should require complaint:review permission.',
+        reason: 'Send draft to QA before approval test.',
+      })
+      .expect(200);
+
+    const response = await request(asSupertestApp(app))
+      .post(`/api/v1/complaints/${complaintId}/transition`)
+      .set('Authorization', `Bearer ${officerToken}`)
+      .send({
+        toStatus: 'RESPONSE_ISSUED',
+        reason: 'Should require complaint:approve permission.',
       })
       .expect(422);
     const err = getBody<ErrorEnvelope>(response);
