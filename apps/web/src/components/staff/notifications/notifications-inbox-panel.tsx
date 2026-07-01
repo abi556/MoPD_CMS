@@ -110,7 +110,7 @@ export function NotificationsInboxPanel() {
         </div>
         <Button
           type="button"
-          variant="outline"
+          variant="staffSecondary"
           size="sm"
           disabled={markingAll || loading}
           onClick={() => void handleMarkAllRead()}
@@ -120,16 +120,18 @@ export function NotificationsInboxPanel() {
       </div>
 
       {error ? (
-        <StaffAlert variant="error" className="mb-4">
-          {error}{" "}
-          <button
-            type="button"
-            className="cursor-pointer underline"
-            onClick={() => void fetchRows()}
-          >
-            {t("retry")}
-          </button>
-        </StaffAlert>
+        <div className="mb-4">
+          <StaffAlert variant="error">
+            {error}{" "}
+            <button
+              type="button"
+              className="cursor-pointer underline"
+              onClick={() => void fetchRows()}
+            >
+              {t("retry")}
+            </button>
+          </StaffAlert>
+        </div>
       ) : null}
 
       {loading ? (
@@ -171,7 +173,7 @@ export function NotificationsInboxPanel() {
         <div className="mt-6 flex items-center justify-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="staffSecondary"
             size="sm"
             disabled={page <= 1 || loading}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -183,7 +185,7 @@ export function NotificationsInboxPanel() {
           </span>
           <Button
             type="button"
-            variant="outline"
+            variant="staffSecondary"
             size="sm"
             disabled={page >= totalPages || loading}
             onClick={() => setPage((p) => p + 1)}
