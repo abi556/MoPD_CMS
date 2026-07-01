@@ -41,7 +41,7 @@ export function RolesAdminPanel() {
   }, [tc]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- load roles on mount
+     
     void fetchRoles();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- load roles on mount
   }, []);

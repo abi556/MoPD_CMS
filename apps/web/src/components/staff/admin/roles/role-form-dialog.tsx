@@ -63,7 +63,7 @@ export function RoleFormDialog({
 
   useEffect(() => {
     if (!open) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset form when dialog opens
+     
     setError(undefined);
     if (mode === "edit" && role && permissions.length > 0) {
       setRoleId(role.id);

@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api-client";
 import {
   createNotificationTemplate,
-  listNotificationTemplates,
   updateNotificationTemplate,
   type NotificationTemplateItem,
 } from "@/lib/staff/notification-templates-api";

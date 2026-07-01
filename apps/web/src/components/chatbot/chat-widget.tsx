@@ -26,7 +26,7 @@ export function ChatWidget() {
 
   useEffect(() => {
     // Portal target exists only after hydration.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR guard
+     
     setMounted(true);
     const stored = readStoredChatLocale();
     setChatLocale(stored ?? siteLocale);

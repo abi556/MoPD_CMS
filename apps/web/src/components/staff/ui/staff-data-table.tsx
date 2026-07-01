@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { DashboardPager, StaffPagerIconButton } from "@/components/staff/dashboard/dashboard-pager";
 import { StaffEmptyState } from "./staff-empty-state";

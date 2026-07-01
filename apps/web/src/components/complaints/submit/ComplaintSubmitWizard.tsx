@@ -228,7 +228,6 @@ export function ComplaintSubmitWizard() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount revalidate only
   }, []);
 
   useEffect(() => {

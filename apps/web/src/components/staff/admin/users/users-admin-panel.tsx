@@ -78,7 +78,7 @@ export function UsersAdminPanel() {
   }, [page, debouncedEmail, activeFilter, tc]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- load users when filters or page change
+     
     void fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch when filters or page change
   }, [page, debouncedEmail, activeFilter]);

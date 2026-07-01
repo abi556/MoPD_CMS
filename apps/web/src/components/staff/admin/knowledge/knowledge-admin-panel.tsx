@@ -68,7 +68,7 @@ export function KnowledgeAdminPanel() {
   }, [localeFilter, statusFilter, tc]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- load articles when filters change
+     
     void fetchArticles();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch when filters change
   }, [localeFilter, statusFilter]);

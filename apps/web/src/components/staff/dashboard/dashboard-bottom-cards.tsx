@@ -217,7 +217,7 @@ export function DashboardBottomCards() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on mount
+     
     void load();
   }, [load]);
 

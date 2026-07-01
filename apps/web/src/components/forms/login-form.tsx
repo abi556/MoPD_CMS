@@ -30,7 +30,7 @@ export function LoginForm() {
     try {
       const stored = localStorage.getItem(REMEMBER_EMAIL_KEY);
       if (stored) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- restore remembered email
+         
         setEmail(stored);
         setRememberEmail(true);
       }

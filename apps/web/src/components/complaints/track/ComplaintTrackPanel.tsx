@@ -201,7 +201,7 @@ function ComplaintTrackPanelInner() {
       return;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch when ?ref= changes (load, locale switch)
+     
     void runSearch(urlRef);
   }, [isClient, urlRef, runSearch]);
 

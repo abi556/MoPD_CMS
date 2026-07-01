@@ -23,7 +23,7 @@ export function ForgotPasswordForm() {
   useEffect(() => {
     const fromQuery = searchParams.get("email");
     if (fromQuery) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- prefill from query
+       
       setEmail(fromQuery);
     }
   }, [searchParams]);

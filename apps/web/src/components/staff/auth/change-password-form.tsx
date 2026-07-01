@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 
 export function ChangePasswordForm() {
   const t = useTranslations("auth");
-  const { changePassword, user, refreshSession } = useSession();
+  const { changePassword, refreshSession } = useSession();
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

@@ -208,7 +208,8 @@ export function ComplaintQueueFiltersBar({
             className="min-h-10 cursor-pointer"
             onClick={() => {
               if (!presetName.trim()) return;
-              const { page: _p, ...rest } = filters;
+              const { page, ...rest } = filters;
+              void page;
               saveFilterPreset({ name: presetName.trim(), filters: rest });
               setPresetName("");
               refreshPresets();
