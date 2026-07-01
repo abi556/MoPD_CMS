@@ -67,7 +67,10 @@ export class WebAnalyticsEventDto {
   @MaxLength(64)
   funnelPhase?: string;
 
-  @ApiPropertyOptional({ example: 'mobile', enum: ['mobile', 'tablet', 'desktop'] })
+  @ApiPropertyOptional({
+    example: 'mobile',
+    enum: ['mobile', 'tablet', 'desktop'],
+  })
   @IsOptional()
   @IsIn(['mobile', 'tablet', 'desktop'])
   deviceClass?: 'mobile' | 'tablet' | 'desktop';

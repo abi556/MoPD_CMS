@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ComplaintLocale, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   RecordAnalyticsEventsDto,
@@ -43,7 +43,7 @@ export class AnalyticsService {
       sessionId,
       eventType: event.eventType,
       pagePath: this.sanitizePagePath(event.pagePath),
-      locale: event.locale as ComplaintLocale | undefined,
+      locale: event.locale,
       funnelName: event.funnelName?.trim() || null,
       funnelStep: event.funnelStep?.trim() || null,
       funnelPhase: event.funnelPhase?.trim() || null,

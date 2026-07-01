@@ -21,7 +21,9 @@ export class CookieConsentCategoriesDto {
 }
 
 export class RecordCookieConsentDto {
-  @ApiProperty({ enum: ['accept_all', 'reject_non_essential', 'save_preferences'] })
+  @ApiProperty({
+    enum: ['accept_all', 'reject_non_essential', 'save_preferences'],
+  })
   @IsIn(['accept_all', 'reject_non_essential', 'save_preferences'])
   action!: 'accept_all' | 'reject_non_essential' | 'save_preferences';
 
